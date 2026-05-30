@@ -43,6 +43,18 @@ singlefile/anthropic/anthropic_building_effective_agents.html
 - `captured_at`: 保存日時
 - `raw_path`: 保存したSingleFile HTMLの相対パス
 
+### 古い保存済みファイルだけ差し替える
+
+既存ファイルは通常skipされます。保存済みファイルが指定日数より古い場合だけ再保存したい場合は、`--refresh-days` を使います。
+
+例えば、30日以上古いファイルだけ差し替える場合:
+
+```bash
+node scripts/save_singlefile.js --all --refresh-days 30
+```
+
+`--all` を付けると、`saved` の行も確認対象になります。`--all` を付けない場合は、従来どおり `pending` または `failed` の行だけが対象です。
+
 ### すべて再保存する
 
 既存ファイルも上書きして保存したい場合は、次を実行します。
