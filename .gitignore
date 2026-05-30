@@ -5,6 +5,8 @@ singlefile/
 html/
 raw/
 markdown/
+content/
+assets/
 
 # Logs
 *.log
