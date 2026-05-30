@@ -1,0 +1,17 @@
+{
+  "name": "ai-agent-best-practices",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "save:singlefile": "node scripts/save_singlefile.js",
+    "save:singlefile:dry-run": "node scripts/save_singlefile.js --dry-run"
+  },
+  "dependencies": {
+    "csv-parse": "latest",
+    "csv-stringify": "latest",
+    "single-file-cli": "latest"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
