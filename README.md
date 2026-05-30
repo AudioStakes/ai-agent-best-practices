@@ -43,6 +43,16 @@ singlefile/anthropic/anthropic_building_effective_agents.html
 - `captured_at`: 保存日時
 - `raw_path`: 保存したSingleFile HTMLの相対パス
 
+### タイムアウトした記事をskipする
+
+SingleFileの取得が長時間止まる場合に備えて、デフォルトで120秒のタイムアウトを設定しています。タイムアウトした記事は `failed` にして、次の記事へ進みます。
+
+タイムアウト時間を変更する場合:
+
+```bash
+node scripts/save_singlefile.js --timeout-seconds 300
+```
+
 ### 古い保存済みファイルだけ差し替える
 
 既存ファイルは通常skipされます。保存済みファイルが指定日数より古い場合だけ再保存したい場合は、`--refresh-days` を使います。
