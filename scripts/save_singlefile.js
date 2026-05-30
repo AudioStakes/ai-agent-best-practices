@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
@@ -10,7 +10,8 @@ import { stringify } from "csv-stringify/sync";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "..");
 
-const args = new Set(process.argv.slice(2));
+const rawArgs = process.argv.slice(2);
+const args = new Set(rawArgs);
 const dryRun = args.has("--dry-run");
 const overwrite = args.has("--overwrite");
 const pendingOnly = !args.has("--all");
@@ -22,9 +23,15 @@ function usage() {
   console.log(`Usage: node scripts/save_singlefile.js [options]
 
 Options:
-  --dry-run     Show what would be saved without downloading pages.
-  --overwrite   Re-save pages even when the output file already exists.
-  --all         Save all rows, not only rows whose status is pending or failed.
+  --dry-run             Show what would be saved without downloading pages.
+  --overwrite           Re-save pages even when the output file already exists.
+  --refresh-days <days> Re-save an existing file when it is older than this many days.
+  --all                 Save all rows, not only rows whose status is pending or failed.
+
+Examples:
+  npm run save:singlefile
+  node scripts/save_singlefile.js --all --refresh-days 30
+  node scripts/save_singlefile.js --all --overwrite
 
 Output:
   singlefile/<source>/<id>.html
@@ -34,6 +41,28 @@ Output:
 if (args.has("--help") || args.has("-h")) {
   usage();
   process.exit(0);
+}
+
+function readNumberArg(name) {
+  const equalsPrefix = `${name}=`;
+  const equalsArg = rawArgs.find((arg) => arg.startsWith(equalsPrefix));
+
+  if (equalsArg) {
+    return Number(equalsArg.slice(equalsPrefix.length));
+  }
+
+  const index = rawArgs.indexOf(name);
+  if (index === -1) {
+    return null;
+  }
+
+  return Number(rawArgs[index + 1]);
+}
+
+const refreshDays = readNumberArg("--refresh-days");
+
+if (refreshDays !== null && (!Number.isFinite(refreshDays) || refreshDays < 0)) {
+  throw new Error("--refresh-days must be a non-negative number.");
 }
 
 function normalizeSource(source) {
@@ -49,6 +78,11 @@ function ensureDir(path) {
   if (!existsSync(path)) {
     mkdirSync(path, { recursive: true });
   }
+}
+
+function fileAgeDays(path) {
+  const { mtimeMs } = statSync(path);
+  return (Date.now() - mtimeMs) / (1000 * 60 * 60 * 24);
 }
 
 function run(command, commandArgs) {
@@ -104,6 +138,29 @@ function writeArticles(rows) {
   writeFileSync(csvPath, csv, "utf8");
 }
 
+function shouldRefreshExistingFile(outputPath) {
+  if (overwrite) {
+    return { refresh: true, reason: "overwrite requested" };
+  }
+
+  if (refreshDays === null) {
+    return { refresh: false, reason: "existing file" };
+  }
+
+  const ageDays = fileAgeDays(outputPath);
+  if (ageDays >= refreshDays) {
+    return {
+      refresh: true,
+      reason: `existing file is ${ageDays.toFixed(1)} days old`,
+    };
+  }
+
+  return {
+    refresh: false,
+    reason: `existing file is ${ageDays.toFixed(1)} days old; refresh threshold is ${refreshDays} days`,
+  };
+}
+
 async function saveArticle(row) {
   const id = row.id?.trim();
   const url = row.url?.trim();
@@ -117,18 +174,24 @@ async function saveArticle(row) {
   const outputPath = join(outputDir, `${id}.html`);
   const relativeOutputPath = `singlefile/${sourceDir}/${id}.html`;
 
-  if (existsSync(outputPath) && !overwrite) {
-    console.log(`skip existing: ${relativeOutputPath}`);
-    row.status = row.status || "saved";
-    row.raw_path = row.raw_path || relativeOutputPath;
-    return;
+  if (existsSync(outputPath)) {
+    const { refresh, reason } = shouldRefreshExistingFile(outputPath);
+
+    if (!refresh) {
+      console.log(`skip existing: ${relativeOutputPath} (${reason})`);
+      row.status = row.status || "saved";
+      row.raw_path = row.raw_path || relativeOutputPath;
+      return "skipped";
+    }
+
+    console.log(`refresh existing: ${relativeOutputPath} (${reason})`);
   }
 
   console.log(`${dryRun ? "would save" : "saving"}: ${url}`);
   console.log(`  -> ${relativeOutputPath}`);
 
   if (dryRun) {
-    return;
+    return "saved";
   }
 
   ensureDir(outputDir);
@@ -142,6 +205,8 @@ async function saveArticle(row) {
   row.status = "saved";
   row.captured_at = new Date().toISOString();
   row.raw_path = relativeOutputPath;
+
+  return "saved";
 }
 
 async function main() {
@@ -162,8 +227,12 @@ async function main() {
     }
 
     try {
-      await saveArticle(row);
-      saved += dryRun ? 0 : 1;
+      const result = await saveArticle(row);
+      if (result === "skipped") {
+        skipped += 1;
+      } else if (!dryRun) {
+        saved += 1;
+      }
     } catch (error) {
       failed += 1;
       row.status = "failed";
