@@ -43,6 +43,24 @@ singlefile/anthropic/anthropic_building_effective_agents.html
 - `captured_at`: 保存日時
 - `raw_path`: 保存したSingleFile HTMLの相対パス
 
+## 保存済みSingleFileを一覧表示する
+
+`npm run save:singlefile` を実行すると、保存処理のあとに次の一覧ページが生成されます。
+
+```text
+singlefile/index.html
+```
+
+ブラウザでこのファイルを開くと、ローカルに保存済みのSingleFile HTMLへリンクできます。
+
+一覧ページだけ作り直したい場合:
+
+```bash
+npm run build:index
+```
+
+一覧ページには、タイトル・提供元・カテゴリ・保存状態・元URLへのリンクが表示されます。検索ボックスで絞り込みもできます。
+
 ### タイムアウトした記事をskipする
 
 SingleFileの取得が長時間止まる場合に備えて、デフォルトで120秒のタイムアウトを設定しています。タイムアウトした記事は `failed` にして、次の記事へ進みます。
