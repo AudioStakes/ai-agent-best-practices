@@ -260,6 +260,10 @@ async function saveArticle(row) {
       { timeoutMs: timeoutSeconds * 1000 },
     );
 
+    if (!existsSync(tempOutputPath)) {
+      throw new Error(`SingleFile finished but did not create output: ${tempOutputPath}`);
+    }
+
     renameSync(tempOutputPath, outputPath);
   } catch (error) {
     removeFileIfExists(tempOutputPath);
