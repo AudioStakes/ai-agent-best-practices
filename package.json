@@ -3,8 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "save:singlefile": "node scripts/save_singlefile.js",
-    "save:singlefile:dry-run": "node scripts/save_singlefile.js --dry-run"
+    "save:singlefile": "node scripts/save_singlefile.js && node scripts/build_singlefile_index.js",
+    "save:singlefile:dry-run": "node scripts/save_singlefile.js --dry-run",
+    "build:index": "node scripts/build_singlefile_index.js"
   },
   "dependencies": {
     "csv-parse": "latest",
