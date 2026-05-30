@@ -5,12 +5,17 @@
   "scripts": {
     "save:singlefile": "node scripts/save_singlefile.js && node scripts/build_singlefile_index.js",
     "save:singlefile:dry-run": "node scripts/save_singlefile.js --dry-run",
+    "save:content": "node scripts/save_content.js",
+    "save:content:dry-run": "node scripts/save_content.js --dry-run",
     "build:index": "node scripts/build_singlefile_index.js"
   },
   "dependencies": {
+    "@mozilla/readability": "latest",
     "csv-parse": "latest",
     "csv-stringify": "latest",
-    "single-file-cli": "latest"
+    "jsdom": "latest",
+    "single-file-cli": "latest",
+    "turndown": "latest"
   },
   "engines": {
     "node": ">=20"
