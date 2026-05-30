@@ -1,6 +1,14 @@
 #!/usr/bin/env node
 
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
@@ -18,19 +26,22 @@ const pendingOnly = !args.has("--all");
 
 const csvPath = join(repoRoot, "articles.csv");
 const outputRoot = join(repoRoot, "singlefile");
+const defaultTimeoutSeconds = 120;
 
 function usage() {
   console.log(`Usage: node scripts/save_singlefile.js [options]
 
 Options:
-  --dry-run             Show what would be saved without downloading pages.
-  --overwrite           Re-save pages even when the output file already exists.
-  --refresh-days <days> Re-save an existing file when it is older than this many days.
-  --all                 Save all rows, not only rows whose status is pending or failed.
+  --dry-run                   Show what would be saved without downloading pages.
+  --overwrite                 Re-save pages even when the output file already exists.
+  --refresh-days <days>       Re-save an existing file when it is older than this many days.
+  --timeout-seconds <seconds> Skip a page when SingleFile takes longer than this. Default: ${defaultTimeoutSeconds}.
+  --all                       Save all rows, not only rows whose status is pending or failed.
 
 Examples:
   npm run save:singlefile
   node scripts/save_singlefile.js --all --refresh-days 30
+  node scripts/save_singlefile.js --all --timeout-seconds 300
   node scripts/save_singlefile.js --all --overwrite
 
 Output:
@@ -60,9 +71,14 @@ function readNumberArg(name) {
 }
 
 const refreshDays = readNumberArg("--refresh-days");
+const timeoutSeconds = readNumberArg("--timeout-seconds") ?? defaultTimeoutSeconds;
 
 if (refreshDays !== null && (!Number.isFinite(refreshDays) || refreshDays < 0)) {
   throw new Error("--refresh-days must be a non-negative number.");
+}
+
+if (!Number.isFinite(timeoutSeconds) || timeoutSeconds <= 0) {
+  throw new Error("--timeout-seconds must be a positive number.");
 }
 
 function normalizeSource(source) {
@@ -80,23 +96,58 @@ function ensureDir(path) {
   }
 }
 
+function removeFileIfExists(path) {
+  if (existsSync(path)) {
+    rmSync(path, { force: true });
+  }
+}
+
 function fileAgeDays(path) {
   const { mtimeMs } = statSync(path);
   return (Date.now() - mtimeMs) / (1000 * 60 * 60 * 24);
 }
 
-function run(command, commandArgs) {
+function run(command, commandArgs, { timeoutMs }) {
   return new Promise((resolve, reject) => {
+    let settled = false;
+    let timedOut = false;
+
     const child = spawn(command, commandArgs, {
       cwd: repoRoot,
       stdio: "inherit",
       shell: process.platform === "win32",
     });
 
-    child.on("error", reject);
-    child.on("close", (code) => {
-      if (code === 0) {
+    const timer = setTimeout(() => {
+      timedOut = true;
+      console.error(`timeout: ${command} exceeded ${(timeoutMs / 1000).toFixed(0)} seconds`);
+      child.kill("SIGTERM");
+
+      setTimeout(() => {
+        if (!settled) {
+          child.kill("SIGKILL");
+        }
+      }, 5000);
+    }, timeoutMs);
+
+    child.on("error", (error) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      reject(error);
+    });
+
+    child.on("close", (code, signal) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+
+      if (timedOut) {
+        reject(new Error(`${command} timed out after ${(timeoutMs / 1000).toFixed(0)} seconds`));
+      } else if (code === 0) {
         resolve();
+      } else if (signal) {
+        reject(new Error(`${command} exited with signal ${signal}`));
       } else {
         reject(new Error(`${command} exited with code ${code}`));
       }
@@ -172,6 +223,7 @@ async function saveArticle(row) {
 
   const outputDir = join(outputRoot, sourceDir);
   const outputPath = join(outputDir, `${id}.html`);
+  const tempOutputPath = join(outputDir, `${id}.tmp.html`);
   const relativeOutputPath = `singlefile/${sourceDir}/${id}.html`;
 
   if (existsSync(outputPath)) {
@@ -195,12 +247,24 @@ async function saveArticle(row) {
   }
 
   ensureDir(outputDir);
+  removeFileIfExists(tempOutputPath);
 
-  await run("npx", [
-    "single-file",
-    url,
-    outputPath,
-  ]);
+  try {
+    await run(
+      "npx",
+      [
+        "single-file",
+        url,
+        tempOutputPath,
+      ],
+      { timeoutMs: timeoutSeconds * 1000 },
+    );
+
+    renameSync(tempOutputPath, outputPath);
+  } catch (error) {
+    removeFileIfExists(tempOutputPath);
+    throw error;
+  }
 
   row.status = "saved";
   row.captured_at = new Date().toISOString();
