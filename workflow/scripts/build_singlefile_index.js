@@ -6,18 +6,20 @@ import { fileURLToPath } from "node:url";
 import { parse } from "csv-parse/sync";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const repoRoot = join(__dirname, "..");
+const repoRoot = join(__dirname, "../..");
 const csvPath = join(repoRoot, "articles.csv");
 const singlefileRoot = join(repoRoot, "singlefile");
 const indexPath = join(singlefileRoot, "index.html");
 
 function normalizeSource(source) {
-  return String(source || "unknown")
-    .trim()
-    .toLowerCase()
-    .replace(/&/g, "and")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "") || "unknown";
+  return (
+    String(source || "unknown")
+      .trim()
+      .toLowerCase()
+      .replace(/&/g, "and")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "unknown"
+  );
 }
 
 function escapeHtml(value) {
@@ -51,14 +53,21 @@ function resolveSinglefilePath(row) {
 }
 
 function pathFromIndex(relativePathFromRepoRoot) {
-  return relative(singlefileRoot, join(repoRoot, relativePathFromRepoRoot)).replaceAll("\\", "/");
+  return relative(
+    singlefileRoot,
+    join(repoRoot, relativePathFromRepoRoot),
+  ).replaceAll("\\", "/");
 }
 
 function buildIndex(rows) {
   const generatedAt = new Date().toISOString();
   const total = rows.length;
-  const saved = rows.filter((row) => existsSync(join(repoRoot, resolveSinglefilePath(row)))).length;
-  const failed = rows.filter((row) => String(row.status || "").toLowerCase() === "failed").length;
+  const saved = rows.filter((row) =>
+    existsSync(join(repoRoot, resolveSinglefilePath(row))),
+  ).length;
+  const failed = rows.filter(
+    (row) => String(row.status || "").toLowerCase() === "failed",
+  ).length;
   const pending = total - saved - failed;
 
   const grouped = Map.groupBy(rows, (row) => row.source || "Unknown");

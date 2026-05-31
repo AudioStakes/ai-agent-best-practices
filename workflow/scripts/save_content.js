@@ -16,7 +16,7 @@ import { JSDOM } from "jsdom";
 import TurndownService from "turndown";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const repoRoot = join(__dirname, "..");
+const repoRoot = join(__dirname, "../..");
 
 const rawArgs = process.argv.slice(2);
 const args = new Set(rawArgs);
@@ -31,7 +31,7 @@ const assetsRoot = join(repoRoot, "assets");
 const defaultTimeoutSeconds = 60;
 
 function usage() {
-  console.log(`Usage: node scripts/save_content.js [options]
+  console.log(`Usage: node workflow/scripts/save_content.js [options]
 
 Options:
   --dry-run                   Show what would be saved without downloading pages.
@@ -43,9 +43,9 @@ Options:
 
 Examples:
   npm run save:content
-  node scripts/save_content.js --all --refresh-days 30
-  node scripts/save_content.js --all --overwrite
-  node scripts/save_content.js --no-images
+  node workflow/scripts/save_content.js --all --refresh-days 30
+  node workflow/scripts/save_content.js --all --overwrite
+  node workflow/scripts/save_content.js --no-images
 
 Output:
   content/<source>/<id>.md
@@ -75,9 +75,13 @@ function readNumberArg(name) {
 }
 
 const refreshDays = readNumberArg("--refresh-days");
-const timeoutSeconds = readNumberArg("--timeout-seconds") ?? defaultTimeoutSeconds;
+const timeoutSeconds =
+  readNumberArg("--timeout-seconds") ?? defaultTimeoutSeconds;
 
-if (refreshDays !== null && (!Number.isFinite(refreshDays) || refreshDays < 0)) {
+if (
+  refreshDays !== null &&
+  (!Number.isFinite(refreshDays) || refreshDays < 0)
+) {
   throw new Error("--refresh-days must be a non-negative number.");
 }
 
@@ -86,12 +90,14 @@ if (!Number.isFinite(timeoutSeconds) || timeoutSeconds <= 0) {
 }
 
 function normalizeSource(source) {
-  return String(source || "unknown")
-    .trim()
-    .toLowerCase()
-    .replace(/&/g, "and")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "") || "unknown";
+  return (
+    String(source || "unknown")
+      .trim()
+      .toLowerCase()
+      .replace(/&/g, "and")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "unknown"
+  );
 }
 
 function ensureDir(path) {
@@ -112,13 +118,13 @@ function fileAgeDays(path) {
 }
 
 function escapeYaml(value) {
-  return String(value ?? "").replace(/\\/g, "\\\\").replace(/"/g, "\\\"");
+  return String(value ?? "")
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"');
 }
 
 function sanitizeMarkdown(markdown) {
-  return markdown
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+  return markdown.replace(/\n{3,}/g, "\n\n").trim();
 }
 
 function extensionFromContentType(contentType) {
@@ -141,7 +147,9 @@ function extensionFromUrl(url) {
   try {
     const pathname = new URL(url).pathname;
     const ext = extname(pathname).toLowerCase();
-    if ([".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".avif"].includes(ext)) {
+    if (
+      [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".avif"].includes(ext)
+    ) {
       return ext === ".jpeg" ? ".jpg" : ext;
     }
   } catch {
@@ -173,7 +181,8 @@ async function fetchWithTimeout(url, options = {}) {
       signal: controller.signal,
       headers: {
         "user-agent": "Mozilla/5.0 ai-agent-best-practices-content-archiver",
-        accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         ...(options.headers ?? {}),
       },
     });
@@ -194,7 +203,10 @@ function shouldProcessContent(outputPath) {
   if (refreshDays !== null) {
     const ageDays = fileAgeDays(outputPath);
     if (ageDays >= refreshDays) {
-      return { process: true, reason: `content file is ${ageDays.toFixed(1)} days old` };
+      return {
+        process: true,
+        reason: `content file is ${ageDays.toFixed(1)} days old`,
+      };
     }
 
     return {
@@ -207,10 +219,19 @@ function shouldProcessContent(outputPath) {
 }
 
 function prepareArticleHtml(document) {
-  document.querySelectorAll("script, style, noscript, iframe, nav, header, footer, aside, form, button").forEach((node) => node.remove());
+  document
+    .querySelectorAll(
+      "script, style, noscript, iframe, nav, header, footer, aside, form, button",
+    )
+    .forEach((node) => {
+      node.remove();
+    });
 
   document.querySelectorAll("img").forEach((img) => {
-    const src = img.getAttribute("src") || img.getAttribute("data-src") || img.getAttribute("data-original");
+    const src =
+      img.getAttribute("src") ||
+      img.getAttribute("data-src") ||
+      img.getAttribute("data-original");
     if (src) {
       img.setAttribute("src", src);
     }
@@ -242,7 +263,10 @@ async function downloadImages(articleDom, articleUrl, assetsDir, markdownPath) {
 
     try {
       const response = await fetchWithTimeout(absoluteUrl, {
-        headers: { accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8" },
+        headers: {
+          accept:
+            "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+        },
       });
 
       if (!response.ok) {
@@ -251,17 +275,25 @@ async function downloadImages(articleDom, articleUrl, assetsDir, markdownPath) {
 
       const contentType = response.headers.get("content-type") || "";
       if (!contentType.toLowerCase().startsWith("image/")) {
-        throw new Error(`not an image: ${contentType || "unknown content-type"}`);
+        throw new Error(
+          `not an image: ${contentType || "unknown content-type"}`,
+        );
       }
 
-      const ext = extensionFromContentType(contentType) ?? extensionFromUrl(absoluteUrl) ?? ".img";
+      const ext =
+        extensionFromContentType(contentType) ??
+        extensionFromUrl(absoluteUrl) ??
+        ".img";
       const filename = `image-${String(index).padStart(3, "0")}${ext}`;
       const imagePath = join(assetsDir, filename);
       const bytes = Buffer.from(await response.arrayBuffer());
 
       writeFileSync(imagePath, bytes);
 
-      const markdownRelativePath = relative(dirname(markdownPath), imagePath).replaceAll("\\", "/");
+      const markdownRelativePath = relative(
+        dirname(markdownPath),
+        imagePath,
+      ).replaceAll("\\", "/");
       img.setAttribute("src", markdownRelativePath);
       index += 1;
     } catch (error) {
@@ -346,7 +378,9 @@ async function saveArticle(row) {
   await downloadImages(articleDom, url, assetsDir, outputPath);
 
   const turndown = configureTurndown();
-  const markdownBody = sanitizeMarkdown(turndown.turndown(articleDom.window.document.body.innerHTML));
+  const markdownBody = sanitizeMarkdown(
+    turndown.turndown(articleDom.window.document.body.innerHTML),
+  );
   const capturedAt = new Date().toISOString();
   const title = article.title || row.title || id;
   const byline = article.byline || "";

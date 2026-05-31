@@ -16,7 +16,7 @@ import { parse } from "csv-parse/sync";
 import { stringify } from "csv-stringify/sync";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const repoRoot = join(__dirname, "..");
+const repoRoot = join(__dirname, "../..");
 
 const rawArgs = process.argv.slice(2);
 const args = new Set(rawArgs);
@@ -29,7 +29,7 @@ const outputRoot = join(repoRoot, "singlefile");
 const defaultTimeoutSeconds = 120;
 
 function usage() {
-  console.log(`Usage: node scripts/save_singlefile.js [options]
+  console.log(`Usage: node workflow/scripts/save_singlefile.js [options]
 
 Options:
   --dry-run                   Show what would be saved without downloading pages.
@@ -40,9 +40,9 @@ Options:
 
 Examples:
   npm run save:singlefile
-  node scripts/save_singlefile.js --all --refresh-days 30
-  node scripts/save_singlefile.js --all --timeout-seconds 300
-  node scripts/save_singlefile.js --all --overwrite
+  node workflow/scripts/save_singlefile.js --all --refresh-days 30
+  node workflow/scripts/save_singlefile.js --all --timeout-seconds 300
+  node workflow/scripts/save_singlefile.js --all --overwrite
 
 Output:
   singlefile/<source>/<id>.html
@@ -71,9 +71,13 @@ function readNumberArg(name) {
 }
 
 const refreshDays = readNumberArg("--refresh-days");
-const timeoutSeconds = readNumberArg("--timeout-seconds") ?? defaultTimeoutSeconds;
+const timeoutSeconds =
+  readNumberArg("--timeout-seconds") ?? defaultTimeoutSeconds;
 
-if (refreshDays !== null && (!Number.isFinite(refreshDays) || refreshDays < 0)) {
+if (
+  refreshDays !== null &&
+  (!Number.isFinite(refreshDays) || refreshDays < 0)
+) {
   throw new Error("--refresh-days must be a non-negative number.");
 }
 
@@ -82,12 +86,14 @@ if (!Number.isFinite(timeoutSeconds) || timeoutSeconds <= 0) {
 }
 
 function normalizeSource(source) {
-  return String(source || "unknown")
-    .trim()
-    .toLowerCase()
-    .replace(/&/g, "and")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "") || "unknown";
+  return (
+    String(source || "unknown")
+      .trim()
+      .toLowerCase()
+      .replace(/&/g, "and")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "unknown"
+  );
 }
 
 function ensureDir(path) {
@@ -120,7 +126,9 @@ function run(command, commandArgs, { timeoutMs }) {
 
     const timer = setTimeout(() => {
       timedOut = true;
-      console.error(`timeout: ${command} exceeded ${(timeoutMs / 1000).toFixed(0)} seconds`);
+      console.error(
+        `timeout: ${command} exceeded ${(timeoutMs / 1000).toFixed(0)} seconds`,
+      );
       child.kill("SIGTERM");
 
       setTimeout(() => {
@@ -143,7 +151,11 @@ function run(command, commandArgs, { timeoutMs }) {
       clearTimeout(timer);
 
       if (timedOut) {
-        reject(new Error(`${command} timed out after ${(timeoutMs / 1000).toFixed(0)} seconds`));
+        reject(
+          new Error(
+            `${command} timed out after ${(timeoutMs / 1000).toFixed(0)} seconds`,
+          ),
+        );
       } else if (code === 0) {
         resolve();
       } else if (signal) {
@@ -250,18 +262,14 @@ async function saveArticle(row) {
   removeFileIfExists(tempOutputPath);
 
   try {
-    await run(
-      "npx",
-      [
-        "single-file",
-        url,
-        tempOutputPath,
-      ],
-      { timeoutMs: timeoutSeconds * 1000 },
-    );
+    await run("npx", ["single-file", url, tempOutputPath], {
+      timeoutMs: timeoutSeconds * 1000,
+    });
 
     if (!existsSync(tempOutputPath)) {
-      throw new Error(`SingleFile finished but did not create output: ${tempOutputPath}`);
+      throw new Error(
+        `SingleFile finished but did not create output: ${tempOutputPath}`,
+      );
     }
 
     renameSync(tempOutputPath, outputPath);
@@ -284,7 +292,9 @@ async function main() {
   let failed = 0;
 
   for (const row of rows) {
-    const status = String(row.status || "").trim().toLowerCase();
+    const status = String(row.status || "")
+      .trim()
+      .toLowerCase();
     const shouldProcess = pendingOnly
       ? status === "pending" || status === "failed" || status === ""
       : true;
