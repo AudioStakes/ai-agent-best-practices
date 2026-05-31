@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>09.
+[ マルチエージェントシステム システム](../domain-glossary.md#multi-agent-system)系</title>
+  <link rel="stylesheet" href="../style.css?v=20260531-clean-style-1" />
+  <script src="../term-popup.js?v=20260531-mobile-term-title-1" defer></script>
+</head>
+<body>
+<div class="container"><p class="nav"><a href="../index.html">← Index</a><a href="../domain-glossary.html">用語集</a></p><article class="article"><h1 id="09-マルチエージェントシステムシステムdomain-glossarymdmulti-agent-system系">09.
+[<a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>システム](../domain-glossary.md#multi-agent-system)系</h1><p class="rating-guide">★は重要度を表します。★★★★★ほど、設計・運用時に優先して確認すべき項目です。</p>
+
+<h2 id="対象タグ">対象タグ</h2>
+<p data-no-term="true"><code>multi_agent</code></p>
+<h2 id="対象記事">対象記事</h2>
+<ul data-no-term="true">
+<li>Anthropic — <a href="https://www.anthropic.com/engineering/multi-agent-research-system">How
+we built our multi-agent research system</a></li>
+<li>Anthropic — <a href="https://www.anthropic.com/engineering/building-effective-agents">Building
+effective agents</a></li>
+<li>OpenAI — <a href="https://developers.openai.com/tracks/building-agents">Building
+agents</a></li>
+<li>Google Cloud — <a href="https://docs.cloud.google.com/architecture/choose-design-pattern-agentic-ai-system">Choose
+a design pattern for your agentic AI system</a></li>
+<li>LangChain — <a href="https://docs.langchain.com/oss/python/langgraph/workflows-agents">Workflows
+and agents</a></li>
+</ul>
+<h2 id="結論">結論</h2>
+<p>結論から言うと、[<a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>システム](../domain-glossary.md#multi-agent-system)系で一番大事なのは、**複数の<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>に分けること自体ではなく、「<a class="term" data-description="ひとつのエージェントがツールやコンテキストを使ってタスクを進める構成。まずこの構成から始め、必要な場合だけマルチエージェント化する。" href="../domain-glossary.html#single-agent-system">単一エージェントシステム</a>では足りない理由があるときだけ、役割・情報・責任を分けること」**です。</p>
+<h2 id="どの記事でも共通">どの記事でも共通</h2>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="1-まず単一エージェントシステム単一ワークフローで足りるか確認する">1.
+まず<a class="term" data-description="ひとつのエージェントがツールやコンテキストを使ってタスクを進める構成。まずこの構成から始め、必要な場合だけマルチエージェント化する。" href="../domain-glossary.html#single-agent-system">単一エージェントシステム</a>・単一<a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>で足りるか確認する</h3>
+<p>[<a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>システム](../domain-glossary.md#multi-agent-system)系で一番大事なのは、<strong>いきなり複数の<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>にしないこと</strong>です。</p>
+<p>複数の<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>にすると、たしかに役割分担や並列探索ができます。
+しかし同時に、</p>
+<ol class="process-steps">
+  <li>設計が複雑になる</li>
+  <li>デバッグが難しくなる</li>
+  <li>コストが増える</li>
+  <li>レイテンシが増える</li>
+  <li>エージェント間の情報伝達ミスが起きる</li>
+  <li>責任範囲が曖昧になる</li>
+</ol>
+<p>という問題も増えます。</p>
+<p>なので、最初の判断はこれです。</p>
+<div class="term-chip-list">
+  <span>単一プロンプトで足りるか</span>
+  <span>固定ワークフローで足りるか</span>
+  <span>単一エージェントで足りるか</span>
+  <span>それでも足りない理由があるか</span>
+</div>
+<p><a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>は便利そうに見えますが、<strong>複雑性を増やす設計</strong>です。
+必要性が明確な場合だけ使うべきです。</p>
+<hr/>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="2-エージェントごとの役割を明確に分ける">2.
+エージェントごとの役割を明確に分ける</h3>
+<p>複数の<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>を使うなら、各<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>の役割をはっきり分ける必要があります。</p>
+<p>悪い例：</p>
+<div class="term-chip-list">
+  <span>調査エージェントA</span>
+  <span>調査エージェントB</span>
+  <span>調査エージェントC</span>
+</div>
+<p>これだと、何が違うのか分かりません。</p>
+<p>良い例：</p>
+<ul class="source-claims">
+  <li><strong>Planner:</strong> 調査計画を立てる</li>
+  <li><strong>Researcher:</strong> 情報を集める</li>
+  <li><strong>Critic:</strong> 根拠や抜け漏れを確認する</li>
+  <li><strong>Synthesizer:</strong> 最終回答に統合する</li>
+  <li><strong>Tool executor:</strong> ツール実行だけ担当する</li>
+</ul>
+<p>重要なのは、</p>
+<div class="term-chip-list">
+  <span>誰が何をするか</span>
+  <span>誰が何をしないか</span>
+  <span>誰が最終判断するか</span>
+  <span>誰が人間に確認するか</span>
+</div>
+<p>を明確にすることです。</p>
+<p>役割が曖昧だと、<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>同士が同じ作業を重複したり、誰も重要な確認をしなかったりします。</p>
+<hr/>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="3-情報共有の設計が重要">3. 情報共有の設計が重要</h3>
+<p><a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>では、各<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>が何を知っているかがとても重要です。</p>
+<p><a class="term" data-description="ひとつのエージェントがツールやコンテキストを使ってタスクを進める構成。まずこの構成から始め、必要な場合だけマルチエージェント化する。" href="../domain-glossary.html#single-agent-system">単一エージェントシステム</a>なら、同じ会話履歴や<a class="term" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。" href="../domain-glossary.html#context">コンテキスト</a>を見ています。
+しかし<a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>では、</p>
+<div class="term-chip-list">
+  <span>全員が全部の情報を見るのか</span>
+  <span>必要な情報だけ渡すのか</span>
+  <span>中間結果をどう共有するのか</span>
+  <span>誰が全体状態を持つのか</span>
+  <span>古い情報や誤情報をどう扱うのか</span>
+</div>
+<p>を設計する必要があります。</p>
+<p>特に大事なのは、<strong>情報共有しすぎても、しなさすぎても失敗する</strong>ことです。</p>
+<p>共有しすぎると、</p>
+<ol class="process-steps">
+  <li>コンテキストが肥大化する</li>
+  <li>重要情報が埋もれる</li>
+  <li>各エージェントの役割がぼやける</li>
+</ol>
+<p>共有しなさすぎると、</p>
+<ol class="process-steps">
+  <li>重複作業する</li>
+  <li>前提がズレる</li>
+  <li>最終統合で矛盾する</li>
+</ol>
+<p><a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>の成功は、かなりの部分が
+<strong>情報設計</strong> にかかっています。</p>
+<hr/>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="4-オーケストレーションを担うオーケストレーション担当を置くか決める">4.
+<a class="term" data-description="複数のステップ、ツール、エージェント、分岐、ハンドオフをどの順番・条件で動かすかを設計し管理すること。" href="../domain-glossary.html#orchestration">オーケストレーション</a>を担う<a class="term" data-description="複数のステップ、ツール、エージェント、分岐、ハンドオフをどの順番・条件で動かすかを設計し管理すること。" href="../domain-glossary.html#orchestration">オーケストレーション</a>担当を置くか決める</h3>
+<p>複数の<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>を使う場合、誰が全体を管理するのかを決める必要があります。</p>
+<p>代表的にはこの2つです。</p>
+<div class="structured-list">
+  <div class="structured-item"><strong>中央集権型</strong><ul><li>オーケストレーターがタスクを分解し、各エージェントへ指示し、結果を統合する</li></ul></div>
+  <div class="structured-item"><strong>分散型</strong><ul><li>各エージェントが互いにやり取りしながら進める</li></ul></div>
+</div>
+<p>実務では、まず中央集権型のほうが扱いやすいです。</p>
+<ol class="flow-list">
+  <li>Planner / Manager</li>
+  <li>Worker agents</li>
+  <li>Synthesizer / Reviewer</li>
+</ol>
+<p>のような形です。</p>
+<p>分散型は柔軟ですが、制御が難しくなります。</p>
+<p>なので最初は、</p>
+<div class="takeaway-box">全体の責任を持つエージェントを置く</div>
+<p>のが安全です。</p>
+<hr/>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="5-結果統合レビュー担当を決める">5. <a class="term" data-description="複数エージェントや複数処理から得た結果を比較・要約・矛盾解消し、最終出力や次の判断にまとめること。" href="../domain-glossary.html#result-synthesis">結果統合</a>・レビュー担当を決める</h3>
+<p><a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>では、複数の出力が出ます。
+それを誰が<a class="term" data-description="複数エージェントや複数処理から得た結果を比較・要約・矛盾解消し、最終出力や次の判断にまとめること。" href="../domain-glossary.html#result-synthesis">結果統合</a>し、矛盾や重複を解消するかが重要です。</p>
+<p>たとえば調査タスクでは、</p>
+<ul class="source-claims">
+  <li><strong>Researcher A:</strong> 技術情報を調べる</li>
+  <li><strong>Researcher B:</strong> 事例を調べる</li>
+  <li><strong>Researcher C:</strong> リスクを調べる</li>
+</ul>
+<p>だけでは終わりません。</p>
+<p>最後に、</p>
+<div class="term-chip-list">
+  <span>どの情報を採用するか</span>
+  <span>矛盾する情報をどう扱うか</span>
+  <span>根拠が弱い情報を除外するか</span>
+  <span>最終回答をどう構成するか</span>
+  <span>不確実性をどう明記するか</span>
+</div>
+<p>を決める必要があります。</p>
+<p>これを担当する Synthesizer / Reviewer / Critic が必要です。</p>
+<p><strong><a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>は、分担より<a class="term" data-description="複数エージェントや複数処理から得た結果を比較・要約・矛盾解消し、最終出力や次の判断にまとめること。" href="../domain-glossary.html#result-synthesis">結果統合</a>が難しい</strong>です。
+ここを軽視すると、出力が散らかります。</p>
+<hr/>
+<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
+<h3 id="6-並列化は有用だがコストと重複に注意する">6. <a class="term" data-description="複数の処理、LLM呼び出し、ツール実行、エージェント作業を並列に走らせ、速度向上や多面的な検討を行うワークフローパターン。" href="../domain-glossary.html#parallelization">並列化</a>は有用だが、コストと重複に注意する</h3>
+<p><a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>の強みの1つは<a class="term" data-description="複数の処理、LLM呼び出し、ツール実行、エージェント作業を並列に走らせ、速度向上や多面的な検討を行うワークフローパターン。" href="../domain-glossary.html#parallelization">並列化</a>です。</p>
+<p>たとえば、</p>
+<ol class="process-steps">
+  <li>複数の情報源を同時に調べる</li>
+  <li>複数の仮説を同時に検証する</li>
+  <li>複数の観点でレビューする</li>
+  <li>複数の実装案を比較する</li>
+</ol>
+<p>には向いています。</p>
+<p>ただし、<a class="term" data-description="複数の処理、LLM呼び出し、ツール実行、エージェント作業を並列に走らせ、速度向上や多面的な検討を行うワークフローパターン。" href="../domain-glossary.html#parallelization">並列化</a>にはコストがあります。</p>
+<ol class="process-steps">
+  <li>APIコストが増える</li>
+  <li>実行時間が読みにくい</li>
+  <li>同じ情報を何度も調べる</li>
+  <li>統合が難しくなる</li>
+</ol>
+<p>なので、<a class="term" data-description="複数の処理、LLM呼び出し、ツール実行、エージェント作業を並列に走らせ、速度向上や多面的な検討を行うワークフローパターン。" href="../domain-glossary.html#parallelization">並列化</a>は「速くしたいから」だけではなく、</p>
+<div class="term-chip-list">
+  <span>独立した観点で調べる価値があるか</span>
+  <span>複数案を比較する価値があるか</span>
+</div>
+<p>で判断するのが良いです。</p>
+<hr/>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="7-評価ログトレースがより重要になる">7. <a class="term" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。" href="../domain-glossary.html#evaluation">評価</a>・ログ・<a class="term" data-description="1回のエージェント実行で起きたモデル呼び出し、ツール利用、ハンドオフ、ガードレール、カスタムイベントなどの時系列記録。" href="../domain-glossary.html#trace">トレース</a>がより重要になる</h3>
+<p><a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>は失敗箇所が増えます。</p>
+<div class="term-chip-list">
+  <span>タスク分解が悪い</span>
+  <span>役割分担が悪い</span>
+  <span>情報共有が悪い</span>
+  <span>特定エージェントの出力が悪い</span>
+  <span>統合が悪い</span>
+  <span>レビューが機能していない</span>
+</div>
+<p>どこで失敗したのか分からないと改善できません。</p>
+<p>そのため、</p>
+<div class="term-chip-list">
+  <span>どのエージェントが何をしたか</span>
+  <span>どんな入力を受け取ったか</span>
+  <span>どんな出力を返したか</span>
+  <span>どのツールを使ったか</span>
+  <span>最終回答にどの出力が使われたか</span>
+</div>
+<p>を追えるようにする必要があります。</p>
+<p><a class="term" data-description="ひとつのエージェントがツールやコンテキストを使ってタスクを進める構成。まずこの構成から始め、必要な場合だけマルチエージェント化する。" href="../domain-glossary.html#single-agent-system">単一エージェントシステム</a>よりも、ログ・<a class="term" data-description="1回のエージェント実行で起きたモデル呼び出し、ツール利用、ハンドオフ、ガードレール、カスタムイベントなどの時系列記録。" href="../domain-glossary.html#trace">トレース</a>の重要性は上がります。</p>
+<hr/>
+<h2 id="openaiとanthropicで共通">OpenAIとAnthropicで共通</h2>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="1-複数のエージェントは役割分担のために使う">1. 複数の<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>は「役割分担」のために使う</h3>
+<p>OpenAI と Anthropic で共通しているのは、<a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>を単なる数の増加ではなく、<strong>役割分担の仕組み</strong>として扱う点です。</p>
+<p>OpenAI では、<a class="term" data-description="あるエージェントや処理ステップから、別の専門エージェントや担当処理へ作業を引き渡すこと。責任の移動と、渡す情報の設計が重要になる。" href="../domain-glossary.html#handoff">ハンドオフ</a>
+や <a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>での協調
+の文脈で、<a class="term" data-description="特定の領域、作業、判断、ツール利用に特化したエージェント。調査、要約、コード、レビュー、財務分析などの役割を持つ。" href="../domain-glossary.html#specialist-agent">専門エージェント</a>へ処理を渡す発想があります。
+Anthropic では、<a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>によるリサーチシステム
+で、調査・探索・統合などを分けています。</p>
+<p>共通する大事な点はこれです。</p>
+<div class="takeaway-box">複数にするなら、役割が違う必要がある</div>
+<p>同じ能力の<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>を何体も並べるだけでは、コストが増えるだけになりやすいです。</p>
+<hr/>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="2-オーケストレーションが中心になる">2.
+オーケストレーションが中心になる</h3>
+<p>OpenAI も Anthropic も、<a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>では<a class="term" data-description="複数のステップ、ツール、エージェント、分岐、ハンドオフをどの順番・条件で動かすかを設計し管理すること。" href="../domain-glossary.html#orchestration">オーケストレーション</a>が重要になります。</p>
+<p>つまり、</p>
+<div class="term-chip-list">
+  <span>どのエージェントを呼ぶか</span>
+  <span>どの順番で呼ぶか</span>
+  <span>何を渡すか</span>
+  <span>結果をどう受け取るか</span>
+  <span>いつ止めるか</span>
+  <span>いつ人間に渡すか</span>
+</div>
+<p>を設計する必要があります。</p>
+<p><a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>は、プロンプトを複数書けば終わりではありません。
+<strong><a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>間の流れを設計すること</strong>が本体です。</p>
+<hr/>
+<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
+<h3 id="3-ハンドオフ時の情報量を制御する">3. <a class="term" data-description="あるエージェントや処理ステップから、別の専門エージェントや担当処理へ作業を引き渡すこと。責任の移動と、渡す情報の設計が重要になる。" href="../domain-glossary.html#handoff">ハンドオフ</a>時の情報量を制御する</h3>
+<p>OpenAI では <a class="term" data-description="あるエージェントや処理ステップから、別の専門エージェントや担当処理へ作業を引き渡すこと。責任の移動と、渡す情報の設計が重要になる。" href="../domain-glossary.html#handoff">ハンドオフ</a>、Anthropic では各<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>間の情報共有に相当する話です。</p>
+<p>ある<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>から別の<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>へ渡すとき、</p>
+<ol class="process-steps">
+  <li>全部の会話履歴を渡す</li>
+  <li>必要な要約だけ渡す</li>
+  <li>成果物だけ渡す</li>
+  <li>判断理由も渡す</li>
+  <li>根拠リンクも渡す</li>
+</ol>
+<p>などの選択があります。</p>
+<p>ここで重要なのは、</p>
+<div class="takeaway-box">次のエージェントが仕事をするために必要な情報だけ渡す</div>
+<p>ことです。</p>
+<p>情報を渡しすぎると混乱し、渡さなすぎると前提が欠けます。
+これはかなり重要ですが、<a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>を本格運用する段階で特に効くので重要度★★★★☆です。</p>
+<hr/>
+<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
+<h3 id="4-人間レビューやガードレールを組み込む">4. <a class="term" data-description="エージェントの出力、判断、ツール利用、外部送信、高リスク操作などを人間が確認すること。完全自動化せず、人間の判断を挟む安全制御として使う。" href="../domain-glossary.html#human-review">人間レビュー</a>や<a class="term" data-description="入力、出力、ツール利用、権限操作などを検査・制御し、エージェントの危険な振る舞いを防ぐための安全制御。" href="../domain-glossary.html#guardrail">ガードレール</a>を組み込む</h3>
+<p>OpenAIもAnthropicも、複数の<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>が動く場合でも、危険な処理や不確実な処理には制御が必要という立場です。</p>
+<p>特に、</p>
+<div class="risk-ladder">
+  <div class="risk-item risk-high">外部送信</div>
+  <div class="risk-item risk-mid">コード実行</div>
+  <div class="risk-item risk-mid">ファイル変更</div>
+  <div class="risk-item risk-high">本番操作</div>
+  <div class="risk-item risk-high">機密情報共有</div>
+  <div class="risk-item risk-high">高リスク判断</div>
+</div>
+<p>では、<a class="term" data-description="エージェントの出力、判断、ツール利用、外部送信、高リスク操作などを人間が確認すること。完全自動化せず、人間の判断を挟む安全制御として使う。" href="../domain-glossary.html#human-review">人間レビュー</a>や<a class="term" data-description="ツールごとに許可される読み取り、書き込み、実行、送信、削除などの操作範囲。ガードレールや人間確認と組み合わせて管理する。" href="../domain-glossary.html#tool-permission">ツール権限</a>制御が必要です。</p>
+<p><a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>になると、どの<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>がどの権限を持つかも重要になります。</p>
+<div class="takeaway-box">全エージェントに同じ権限を渡さない</div>
+<p>これは大事です。</p>
+<hr/>
+<h2 id="openaiのみ">OpenAIのみ</h2>
+<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
+<h3 id="1-ハンドオフdomain-glossarymdハンドオフ-を明示的な設計部品として扱う">1.
+<a class="term" data-description="あるエージェントや処理ステップから、別の専門エージェントや担当処理へ作業を引き渡すこと。責任の移動と、渡す情報の設計が重要になる。" href="../domain-glossary.html#handoff">ハンドオフ</a>(../domain-glossary.md#<a class="term" data-description="あるエージェントや処理ステップから、別の専門エージェントや担当処理へ作業を引き渡すこと。責任の移動と、渡す情報の設計が重要になる。" href="../domain-glossary.html#handoff">ハンドオフ</a>)
+を明示的な設計部品として扱う</h3>
+<p>OpenAI の特徴は、<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>間の引き継ぎ、つまり <a class="term" data-description="あるエージェントや処理ステップから、別の専門エージェントや担当処理へ作業を引き渡すこと。責任の移動と、渡す情報の設計が重要になる。" href="../domain-glossary.html#handoff">ハンドオフ</a>
+を設計部品として扱うところです。</p>
+<p>たとえば、</p>
+<ol class="flow-list">
+  <li>受付エージェント</li>
+  <li>専門エージェント</li>
+  <li>レビューエージェント</li>
+</ol>
+<p>のように処理を渡します。</p>
+<p>ここで大事なのは、</p>
+<div class="term-chip-list">
+  <span>どの条件でハンドオフするか</span>
+  <span>何を渡すか</span>
+  <span>ハンドオフ先は何を担当するか</span>
+  <span>戻り値をどう扱うか</span>
+</div>
+<p>です。</p>
+<p>これはOpenAIスタックで作るなら重要です。
+ただし、一般原則としては「分岐・<a class="term" data-description="入力内容や状況に応じて、使用する処理、ツール、モデル、エージェントを選び分けるワークフローパターン。" href="../domain-glossary.html#routing">ルーティング</a>・責任分担」の一部なので重要度★★★★☆です。</p>
+<hr/>
+<p aria-label="重要度 3 / 5" class="stars">★★★☆☆</p>
+<h3 id="2-agents-sdk-上でマルチエージェントシステムシステムdomain-glossarymdmulti-agent-system構成を作りやすい">2.
+Agents SDK 上で[<a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>システム](../domain-glossary.md#multi-agent-system)構成を作りやすい</h3>
+<p>OpenAIでは、Agents SDKで Agent、<a class="term" data-description="あるエージェントや処理ステップから、別の専門エージェントや担当処理へ作業を引き渡すこと。責任の移動と、渡す情報の設計が重要になる。" href="../domain-glossary.html#handoff">ハンドオフ</a>(../domain-glossary.md#<a class="term" data-description="あるエージェントや処理ステップから、別の専門エージェントや担当処理へ作業を引き渡すこと。責任の移動と、渡す情報の設計が重要になる。" href="../domain-glossary.html#handoff">ハンドオフ</a>)、Guardrail、Session、Tracing
+などを使って構成できます。</p>
+<p>これは実装上便利です。</p>
+<p>ただし、ベストプラクティスとして本質的なのはSDK機能ではなく、</p>
+<div class="term-chip-list">
+  <span>役割分担</span>
+  <span>情報共有</span>
+  <span>責任範囲</span>
+  <span>評価</span>
+  <span>トレース</span>
+</div>
+<p>です。</p>
+<p>なので重要度は3です。</p>
+<p>OpenAIで実装するなら使う価値はありますが、概念整理では製品依存として扱えばよいです。</p>
+<hr/>
+<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
+<h3 id="3-専門エージェントに分ける発想がある">3. <a class="term" data-description="特定の領域、作業、判断、ツール利用に特化したエージェント。調査、要約、コード、レビュー、財務分析などの役割を持つ。" href="../domain-glossary.html#specialist-agent">専門エージェント</a>に分ける発想がある</h3>
+<p>OpenAIの<a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>文脈では、専門性ごとに<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>を分ける発想があります。</p>
+<p>たとえば、</p>
+<div class="term-chip-list">
+  <span>triage agent</span>
+  <span>refund agent</span>
+  <span>technical support agent</span>
+  <span>sales agent</span>
+</div>
+<p>のような形です。</p>
+<p>これは実務ではかなり使いやすいです。</p>
+<p>ただし、分ける理由が必要です。</p>
+<div class="risk-ladder">
+  <div class="risk-item risk-mid">入力の種類が違う</div>
+  <div class="risk-item risk-mid">必要なツールが違う</div>
+  <div class="risk-item risk-mid">権限が違う</div>
+  <div class="risk-item risk-mid">判断基準が違う</div>
+  <div class="risk-item risk-mid">専門知識が違う</div>
+</div>
+<p>場合に分ける価値があります。</p>
+<hr/>
+<p aria-label="重要度 3 / 5" class="stars">★★★☆☆</p>
+<h3 id="4-セッション状態管理をsdk側で扱う発想がある">4.
+セッション・状態管理をSDK側で扱う発想がある</h3>
+<p>OpenAIでは、Session や tracing
+などを通じて、<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>の状態や履歴を管理しやすくする方向があります。</p>
+<p>これは<a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>では重要ですが、一般原則としては製品機能寄りです。</p>
+<p>本質は、</p>
+<div class="term-chip-list">
+  <span>各エージェントがどの状態を見ているか</span>
+  <span>会話履歴や中間結果をどう保持するか</span>
+  <span>状態の不整合をどう防ぐか</span>
+</div>
+<p>です。</p>
+<p>重要度は★★★☆☆〜★★★★☆くらいです。</p>
+<hr/>
+<h2 id="anthropicのみ">Anthropicのみ</h2>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="1-マルチエージェントシステムはリサーチのような広い探索に向く">1.
+<a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>はリサーチのような広い探索に向く</h3>
+<p>Anthropic の
+<code>How we built our [マルチエージェントシステム](../domain-glossary.md#multi-agent-system)によるリサーチシステム</code>
+で特に重要なのは、<a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>が向くタスクの条件です。</p>
+<p>向いているのは、</p>
+<div class="term-chip-list">
+  <span>調査範囲が広い</span>
+  <span>複数の情報源を探索する必要がある</span>
+  <span>複数の観点から検討したい</span>
+  <span>並列に探索したい</span>
+  <span>最終的に統合が必要</span>
+</div>
+<p>ようなタスクです。</p>
+<p>つまり、<a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>は、単純なQAや固定業務よりも、<strong>探索・調査・統合</strong>に向いています。</p>
+<p>これは非常に重要です。</p>
+<hr/>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="2-スーパーバイザーエージェント--サブエージェント-の階層構造が重要">2.
+<a class="term" data-description="複数の専門エージェントの選択、呼び出し、作業配分、結果統合を管理する上位エージェント。階層型マルチエージェント構成で使う。" href="../domain-glossary.html#supervisor-agent">スーパーバイザーエージェント</a>
+/ <a class="term" data-description="あるエージェントやオーケストレーターから呼び出される下位エージェント。専門性を持つ場合もあるが、階層上の位置を表す語として使う。" href="../domain-glossary.html#sub-agent">サブエージェント</a>
+の階層構造が重要</h3>
+<p>Anthropicの[<a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>システム](../domain-glossary.md#multi-agent-system)研究システムでは、中心となる
+<a class="term" data-description="複数の専門エージェントの選択、呼び出し、作業配分、結果統合を管理する上位エージェント。階層型マルチエージェント構成で使う。" href="../domain-glossary.html#supervisor-agent">スーパーバイザーエージェント</a>
+が<a class="term" data-description="あるエージェントやオーケストレーターから呼び出される下位エージェント。専門性を持つ場合もあるが、階層上の位置を表す語として使う。" href="../domain-glossary.html#sub-agent">サブエージェント</a>を管理する構造が重要です。</p>
+<p>イメージはこうです。</p>
+<div class="structured-list">
+  <div class="structured-item"><strong>Lead agent</strong><ul><li>調査計画、タスク分解、サブエージェント起動、統合を担当</li></ul></div>
+  <div class="structured-item"><strong>Subagents</strong><ul><li>個別の調査、探索、分析を担当</li></ul></div>
+</div>
+<p>これは実務でも使いやすい形です。</p>
+<p>分散型の自由会話より、まずはこのような階層型が安定します。</p>
+<div class="takeaway-box">司令塔を置き、作業担当を分ける</div>
+<p>ということです。</p>
+<hr/>
+<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
+<h3 id="3-サブエージェントには独立したコンテキストを持たせる">3. <a class="term" data-description="あるエージェントやオーケストレーターから呼び出される下位エージェント。専門性を持つ場合もあるが、階層上の位置を表す語として使う。" href="../domain-glossary.html#sub-agent">サブエージェント</a>には独立した<a class="term" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。" href="../domain-glossary.html#context">コンテキスト</a>を持たせる</h3>
+<p>Anthropicの重要ポイントとして、<a class="term" data-description="あるエージェントやオーケストレーターから呼び出される下位エージェント。専門性を持つ場合もあるが、階層上の位置を表す語として使う。" href="../domain-glossary.html#sub-agent">サブエージェント</a>が独立した<a class="term" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。" href="../domain-glossary.html#context">コンテキスト</a>を持てることがあります。</p>
+<p>メリットは、</p>
+<div class="term-chip-list">
+  <span>並列探索しやすい</span>
+  <span>各エージェントが特定観点に集中できる</span>
+  <span>メインコンテキストを圧迫しにくい</span>
+  <span>複数の仮説を同時に検証できる</span>
+</div>
+<p>です。</p>
+<p>ただし、独立<a class="term" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。" href="../domain-glossary.html#context">コンテキスト</a>には注意も必要です。</p>
+<ol class="process-steps">
+  <li>前提がズレる</li>
+  <li>重複調査する</li>
+  <li>統合時に矛盾する</li>
+</ol>
+<p>そのため、独立させるだけでなく、<strong>戻り値の形式と統合ルール</strong>が必要です。</p>
+<hr/>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="4-統合引用根拠管理が重要">4. 統合・<a class="term" data-description="回答や説明の根拠として、どの情報源・箇所に基づいたかを示す表示。ユーザーやレビュアーが根拠を確認できるようにする。" href="../domain-glossary.html#citation">引用</a>・<a class="term" data-description="回答、判断、評価、承認の裏付けとして使う具体的な情報。引用箇所、検索結果、ツール結果、ログ、評価結果などを含む。" href="../domain-glossary.html#evidence">根拠</a>管理が重要</h3>
+<p>Anthropicの[<a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>システム](../domain-glossary.md#multi-agent-system)によるリサーチで非常に重要なのが、最終的な統合です。</p>
+<p>複数の<a class="term" data-description="あるエージェントやオーケストレーターから呼び出される下位エージェント。専門性を持つ場合もあるが、階層上の位置を表す語として使う。" href="../domain-glossary.html#sub-agent">サブエージェント</a>が調べた情報を集めたあと、</p>
+<div class="term-chip-list">
+  <span>根拠があるか</span>
+  <span>情報源が信頼できるか</span>
+  <span>矛盾がないか</span>
+  <span>重要情報が抜けていないか</span>
+  <span>引用できるか</span>
+  <span>最終回答として一貫しているか</span>
+</div>
+<p>を確認する必要があります。</p>
+<p>リサーチ系では、調べることより <strong><a class="term" data-description="複数エージェントや複数処理から得た結果を比較・要約・矛盾解消し、最終出力や次の判断にまとめること。" href="../domain-glossary.html#result-synthesis">結果統合</a>の品質</strong>
+が重要です。</p>
+<p><a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>は情報量を増やせますが、情報品質を自動で保証してくれるわけではありません。</p>
+<hr/>
+<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
+<h3 id="5-マルチエージェントシステムはコストトークン使用量が大きい">5.
+<a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>はコスト・トークン使用量が大きい</h3>
+<p>Anthropicは、<a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>が効果的な一方で、コストやトークン使用量が増えることも示唆しています。</p>
+<p>複数の<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>を使うと、</p>
+<ol class="process-steps">
+  <li>同時に複数モデル呼び出しが発生する</li>
+  <li>各エージェントが独自にコンテキストを使う</li>
+  <li>統合にも追加コストがかかる</li>
+  <li>探索範囲が広がりすぎる</li>
+</ol>
+<p>ことがあります。</p>
+<p>そのため、重要なのは、</p>
+<div class="takeaway-box">マルチエージェントで得られる品質向上が、コストに見合うか</div>
+<p>です。</p>
+<p>これは本番運用ではかなり重要です。</p>
+<hr/>
+<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
+<h3 id="6-評価しながら役割分担を改善する">6. <a class="term" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。" href="../domain-glossary.html#evaluation">評価</a>しながら役割分担を改善する</h3>
+<p>Anthropicの<a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>記事では、システムを作って終わりではなく、<a class="term" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。" href="../domain-glossary.html#evaluation">評価</a>と反復改善が重要です。</p>
+<p>見るべきなのは、</p>
+<div class="term-chip-list">
+  <span>サブエージェントの分担は適切か</span>
+  <span>何度も同じ情報を調べていないか</span>
+  <span>重要な観点が抜けていないか</span>
+  <span>lead agent が統合に失敗していないか</span>
+  <span>どのエージェントが品質に貢献しているか</span>
+</div>
+<p>です。</p>
+<p><a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>は構成要素が多いので、<a class="term" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。" href="../domain-glossary.html#evaluation">評価</a>なしでは改善しづらいです。</p>
+<hr/>
+<h2 id="実務で重要な順">実務で重要な順</h2>
+<p>[<a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>システム](../domain-glossary.md#multi-agent-system)系で押さえるべき順番はこうです。</p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: right;">重要度</th>
+<th>ポイント</th>
+<th>判断への使い方</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td>まず<a class="term" data-description="ひとつのエージェントがツールやコンテキストを使ってタスクを進める構成。まずこの構成から始め、必要な場合だけマルチエージェント化する。" href="../domain-glossary.html#single-agent-system">単一エージェントシステム</a>で足りるか確認する</td>
+<td>複雑化する前に必要性を疑う</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td>役割を明確に分ける</td>
+<td>各<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>の責務を定義する</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td><a class="term" data-description="複数のステップ、ツール、エージェント、分岐、ハンドオフをどの順番・条件で動かすかを設計し管理すること。" href="../domain-glossary.html#orchestration">オーケストレーション</a>担当を置く</td>
+<td>最初は司令塔ありの階層型が扱いやすい</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td>情報共有を設計する</td>
+<td>何を渡し、何を渡さないか決める</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td><a class="term" data-description="複数エージェントや複数処理から得た結果を比較・要約・矛盾解消し、最終出力や次の判断にまとめること。" href="../domain-glossary.html#result-synthesis">結果統合</a>・レビュー担当を決める</td>
+<td>分担より<a class="term" data-description="複数エージェントや複数処理から得た結果を比較・要約・矛盾解消し、最終出力や次の判断にまとめること。" href="../domain-glossary.html#result-synthesis">結果統合</a>が難しい</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td>ログ・<a class="term" data-description="1回のエージェント実行で起きたモデル呼び出し、ツール利用、ハンドオフ、ガードレール、カスタムイベントなどの時系列記録。" href="../domain-glossary.html#trace">トレース</a>を残す</td>
+<td>どの<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>が何をしたか追う</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td><a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>に向くタスクを選ぶ</td>
+<td>広い探索・複数観点・調査<a class="term" data-description="複数エージェントや複数処理から得た結果を比較・要約・矛盾解消し、最終出力や次の判断にまとめること。" href="../domain-glossary.html#result-synthesis">結果統合</a>に向く</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td><a class="term" data-description="回答、判断、評価、承認の裏付けとして使う具体的な情報。引用箇所、検索結果、ツール結果、ログ、評価結果などを含む。" href="../domain-glossary.html#evidence">根拠</a>・<a class="term" data-description="回答や説明の根拠として、どの情報源・箇所に基づいたかを示す表示。ユーザーやレビュアーが根拠を確認できるようにする。" href="../domain-glossary.html#citation">引用</a>・矛盾を管理する</td>
+<td>リサーチ系では特に重要</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4</td>
+<td><a class="term" data-description="あるエージェントや処理ステップから、別の専門エージェントや担当処理へ作業を引き渡すこと。責任の移動と、渡す情報の設計が重要になる。" href="../domain-glossary.html#handoff">ハンドオフ</a>条件を設計する</td>
+<td>いつ誰に渡すか決める</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td><a class="term" data-description="エージェントの出力、判断、ツール利用、外部送信、高リスク操作などを人間が確認すること。完全自動化せず、人間の判断を挟む安全制御として使う。" href="../domain-glossary.html#human-review">人間レビュー</a>・<a class="term" data-description="ツールごとに許可される読み取り、書き込み、実行、送信、削除などの操作範囲。ガードレールや人間確認と組み合わせて管理する。" href="../domain-glossary.html#tool-permission">ツール権限</a>制御を入れる</td>
+<td>すべての<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>に同じ<a class="term" data-description="ツールごとに許可される読み取り、書き込み、実行、送信、削除などの操作範囲。ガードレールや人間確認と組み合わせて管理する。" href="../domain-glossary.html#tool-permission">ツール権限</a>を渡さない</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4</td>
+<td>コスト・トークン使用量を見る</td>
+<td>品質向上に見合うか確認する</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td><a class="term" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。" href="../domain-glossary.html#evaluation">評価</a>しながら役割分担を改善する</td>
+<td>重複・抜け漏れ・統合失敗を直す</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td>SDKの<a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>機能を使う</td>
+<td>便利だが本質ではない</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">3</td>
+<td>完全分散型にする</td>
+<td>制御が難しいので応用編</td>
+</tr>
+</tbody>
+</table>
+<h2 id="一言でいうと">一言でいうと</h2>
+<p>[<a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>システム](../domain-glossary.md#multi-agent-system)系で一番大事なのは、これです。</p>
+<ul class="guideline-list">
+  <li>複数に分けることではなく、</li>
+  <li>単一エージェントでは難しい探索・分担・統合を、</li>
+  <li>役割と情報共有を設計して安全に行うこと。</li>
+</ul>
+<p>実務向けにはこうです。</p>
+<ol class="process-steps">
+  <li>まず単一エージェントで足りるか確認する</li>
+  <li>複数にする理由を明確にする</li>
+  <li>役割を分ける</li>
+  <li>司令塔を置く</li>
+  <li>各エージェントに渡す情報を決める</li>
+  <li>結果の形式を揃える</li>
+  <li>最終統合・レビュー担当を置く</li>
+  <li>ログを残す</li>
+  <li>コストと品質改善のバランスを見る</li>
+</ol>
+<p><a class="term" data-description="複数のエージェントが役割分担、委譲、協調、レビュー、統合を行いながらタスクを解く構成。単一エージェントより複雑になるため、必要性と評価が重要。" href="../domain-glossary.html#multi-agent-system">マルチエージェントシステム</a>は、なんとなく先進的に見えるので手を出したくなります。
+でも実務では、<strong>「複数にしたら賢くなる」ではなく、「複数にしないと探索範囲・専門性・並列性が足りない」場合に使う</strong>、くらいで考えるのが安全です。</p>
+</article></div>
+<script>
+(function () {
+  function closeTerms(except) {
+    document.querySelectorAll('.term[data-open="true"]').forEach(function (el) {
+      if (el !== except) el.removeAttribute('data-open');
+    });
+  }
+  document.addEventListener('click', function (event) {
+    var term = event.target.closest('.term');
+    if (!term) { closeTerms(); return; }
+    event.preventDefault();
+    var isOpen = term.getAttribute('data-open') === 'true';
+    closeTerms(term);
+    if (isOpen) term.removeAttribute('data-open');
+    else term.setAttribute('data-open', 'true');
+  });
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') closeTerms();
+  });
+})();
+</script>
+</body>
+</html>

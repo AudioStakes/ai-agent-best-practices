@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>02. ワークフロー設計系</title>
+  <link rel="stylesheet" href="../style.css?v=20260531-clean-style-1" />
+  <script src="../term-popup.js?v=20260531-mobile-term-title-1" defer></script>
+</head>
+<body>
+<div class="container"><p class="nav"><a href="../index.html">← Index</a><a href="../domain-glossary.html">用語集</a></p><article class="article"><h1 id="02-ワークフロー設計系">02. ワークフロー設計系</h1><p class="rating-guide">★は重要度を表します。★★★★★ほど、設計・運用時に優先して確認すべき項目です。</p>
+
+<h2 id="対象タグ">対象タグ</h2>
+<p data-no-term="true"><code>workflow_design</code></p>
+<h2 id="対象記事">対象記事</h2>
+<ul data-no-term="true">
+<li>Anthropic — <a href="https://www.anthropic.com/engineering/building-effective-agents">Building
+effective agents</a></li>
+<li>OpenAI — <a href="https://developers.openai.com/tracks/building-agents">Building
+agents</a></li>
+<li>Google Cloud — <a href="https://docs.cloud.google.com/architecture/choose-design-pattern-agentic-ai-system">Choose
+a design pattern for your agentic AI system</a></li>
+<li>Google Cloud — <a href="https://docs.cloud.google.com/customer-engagement-ai/conversational-agents/ps/best-practices">Best
+practices and patterns</a></li>
+<li>LangChain — <a href="https://docs.langchain.com/oss/python/langgraph/workflows-agents">Workflows
+and agents</a></li>
+<li>LangChain — <a href="https://docs.langchain.com/oss/python/langgraph/thinking-in-langgraph">Thinking
+in LangGraph</a></li>
+</ul>
+<h2 id="結論">結論</h2>
+<p>ここでの結論は、**<a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>設計とは「AIに自由に任せる前に、仕事の流れをどう制御するか決めること」**です。</p>
+<h2 id="どの記事でも共通">どの記事でも共通</h2>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="1-まず作業をステップに分解する">1.
+まず作業を「ステップ」に分解する</h3>
+<p><a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>設計で一番大事なのは、AIにいきなり「全部やって」と渡さず、作業をステップに分けることです。</p>
+<p>たとえば、</p>
+<ol class="process-steps">
+  <li>調査する</li>
+  <li>分類する</li>
+  <li>判断する</li>
+  <li>実行する</li>
+  <li>検証する</li>
+  <li>修正する</li>
+  <li>人間に確認する</li>
+</ol>
+<p>のように、AIが進む道筋を作ります。</p>
+<p>Anthropic は <a class="term" data-description="複雑なタスクを複数のLLM呼び出しに分け、前の出力を次の入力として渡しながら処理するワークフローパターン。各ステップを検査・調整しやすい。" href="../domain-glossary.html#prompt-chaining">プロンプトチェーン</a>、<a class="term" data-description="入力内容や状況に応じて、使用する処理、ツール、モデル、エージェントを選び分けるワークフローパターン。" href="../domain-glossary.html#routing">ルーティング</a>、<a class="term" data-description="複数の処理、LLM呼び出し、ツール実行、エージェント作業を並列に走らせ、速度向上や多面的な検討を行うワークフローパターン。" href="../domain-glossary.html#parallelization">並列化</a>
+などの形で、処理を段階化しています。 LangChain
+は「まず自動化したいプロセスを離散的なステップに分解する」とかなり明示的です。
+Google Cloud も sequential pattern、<a class="term" data-description="複数の処理、LLM呼び出し、ツール実行、エージェント作業を並列に走らせ、速度向上や多面的な検討を行うワークフローパターン。" href="../domain-glossary.html#parallelization">並列化</a>、loop pattern、review pattern
+など、流れの形で分類しています。 OpenAI も <a class="term" data-description="複数のステップ、ツール、エージェント、分岐、ハンドオフをどの順番・条件で動かすかを設計し管理すること。" href="../domain-glossary.html#orchestration">オーケストレーション</a>
+の文脈で、複数ステップ、<a class="term" data-description="エージェントが目的達成のためにツールを選び、入力を作り、結果を解釈して次の行動に反映すること。単なる関数呼び出しではなく、判断を含む行為を指す。" href="../domain-glossary.html#tool-use">ツール利用</a>、<a class="term" data-description="あるエージェントや処理ステップから、別の専門エージェントや担当処理へ作業を引き渡すこと。責任の移動と、渡す情報の設計が重要になる。" href="../domain-glossary.html#handoff">ハンドオフ</a>、<a class="term" data-description="入力、出力、ツール利用、権限操作などを検査・制御し、エージェントの危険な振る舞いを防ぐための安全制御。" href="../domain-glossary.html#guardrail">ガードレール</a>を管理する話をしています。</p>
+<p>なので、<a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>設計の第一歩はこれです。</p>
+<div class="takeaway-box">AIに任せる仕事を、処理単位に分解する</div>
+<p>これは最重要です。</p>
+<hr/>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="2-各ステップの役割を明確にする">2.
+各ステップの役割を明確にする</h3>
+<p>ステップに分けるだけでは不十分で、各ステップが何をするのかを明確にする必要があります。</p>
+<p>たとえば、</p>
+<ol class="process-steps">
+  <li>このステップは分類だけする</li>
+  <li>このステップは情報収集だけする</li>
+  <li>このステップはツールを呼ぶ</li>
+  <li>このステップは出力を評価する</li>
+  <li>このステップは人間に確認する</li>
+</ol>
+<p>のように分けます。</p>
+<p>LangChain は特に、LLM steps、data steps、action steps、user input
+steps に分けて考えています。 Anthropic も、<a class="term" data-description="入力内容や状況に応じて、使用する処理、ツール、モデル、エージェントを選び分けるワークフローパターン。" href="../domain-glossary.html#routing">ルーティング</a>、<a class="term" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。" href="../domain-glossary.html#evaluation">評価</a>、改善、並列処理など、各ステップの役割を分けています。
+Google Cloud も、設計パターンごとに役割分担を変えています。 OpenAI
+も、モデル、<a class="term" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。" href="../domain-glossary.html#tool">ツール</a>、<a class="term" data-description="複数のステップ、ツール、エージェント、分岐、ハンドオフをどの順番・条件で動かすかを設計し管理すること。" href="../domain-glossary.html#orchestration">オーケストレーション</a>、<a class="term" data-description="入力、出力、ツール利用、権限操作などを検査・制御し、エージェントの危険な振る舞いを防ぐための安全制御。" href="../domain-glossary.html#guardrail">ガードレール</a>を分けて説明しています。</p>
+<p>ここで大事なのは、<strong>AIに何でもやらせるステップを作らないこと</strong>です。</p>
+<div class="takeaway-box">曖昧な巨大ステップを作らず、責務を分ける</div>
+<hr/>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="3-固定できる流れは固定する">3. 固定できる流れは固定する</h3>
+<p><a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>設計系でかなり強い共通点です。</p>
+<p>AIが自由に判断する必要がない部分は、AIに任せず固定します。</p>
+<p>たとえば、</p>
+<ol class="process-steps">
+  <li>必ず最初に入力チェックする</li>
+  <li>必ず最後に形式チェックする</li>
+  <li>金額が一定以上なら必ず人間確認に回す</li>
+  <li>ツールAの後は必ずツールBを呼ぶ</li>
+</ol>
+<p>のようなものです。</p>
+<p>Anthropic
+は、予測可能な処理は<a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>として組むべきだとしています。 Google
+Cloud は、deterministic workflow と dynamic <a class="term" data-description="複数のステップ、ツール、エージェント、分岐、ハンドオフをどの順番・条件で動かすかを設計し管理すること。" href="../domain-glossary.html#orchestration">オーケストレーション</a>
+を分けています。 LangChain も、グラフの edge
+を使って固定された流れを作ります。 OpenAI も、<a class="term" data-description="入力、出力、ツール利用、権限操作などを検査・制御し、エージェントの危険な振る舞いを防ぐための安全制御。" href="../domain-glossary.html#guardrail">ガードレール</a>や<a class="term" data-description="エージェントやモデルが、特定のツール名と入力を指定して実行を要求すること。Tool Use の中の実行単位として扱う。" href="../domain-glossary.html#tool-call">ツール呼び出し</a>、<a class="term" data-description="あるエージェントや処理ステップから、別の専門エージェントや担当処理へ作業を引き渡すこと。責任の移動と、渡す情報の設計が重要になる。" href="../domain-glossary.html#handoff">ハンドオフ</a>を<a class="term" data-description="複数のステップ、ツール、エージェント、分岐、ハンドオフをどの順番・条件で動かすかを設計し管理すること。" href="../domain-glossary.html#orchestration">オーケストレーション</a>の対象にしています。</p>
+<p>つまり、重要なのはこれです。</p>
+<div class="takeaway-box">AIが考えるべきところと、システムが制御すべきところを分ける</div>
+<p>これはかなり重要です。 <a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>の失敗は、AIに考えさせすぎているところから起きやすいです。</p>
+<hr/>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="4-分岐ルーティングを設計する">4.
+分岐・ルーティングを設計する</h3>
+<p><a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>設計では、「次に何をするか」をどう決めるかが重要です。</p>
+<p>たとえば、</p>
+<div class="term-chip-list">
+  <span>問い合わせ内容によって担当エージェントを変える</span>
+  <span>コード修正ならコーディング用フローへ進む</span>
+  <span>請求書なら会計処理フローへ進む</span>
+  <span>信頼度が低いなら人間確認へ進む</span>
+</div>
+<p>のような分岐です。</p>
+<p>Anthropic は <a class="term" data-description="入力内容や状況に応じて、使用する処理、ツール、モデル、エージェントを選び分けるワークフローパターン。" href="../domain-glossary.html#routing">ルーティング</a>
+を代表的な<a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>パターンとして扱っています。 LangChain も
+<a class="term" data-description="入力内容や状況に応じて、使用する処理、ツール、モデル、エージェントを選び分けるワークフローパターン。" href="../domain-glossary.html#routing">ルーティング</a> を実装パターンとして扱っています。 Google Cloud も
+coordinator pattern や custom logic pattern で分岐を整理しています。
+OpenAI も multi-agent collaboration や <a class="term" data-description="あるエージェントや処理ステップから、別の専門エージェントや担当処理へ作業を引き渡すこと。責任の移動と、渡す情報の設計が重要になる。" href="../domain-glossary.html#handoff">ハンドオフ</a>
+の文脈で、どの<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>・処理へ渡すかを扱っています。</p>
+<p>ポイントは、<strong>分岐条件を曖昧にしないこと</strong>です。</p>
+<div class="takeaway-box">何を見て、どのルートへ進むかを決める</div>
+<hr/>
+<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
+<h3 id="5-評価レビュー修正ループを入れる">5.
+評価・レビュー・修正ループを入れる</h3>
+<p><a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>設計では、AIの出力をそのまま終わりにしないことが重要です。</p>
+<p>よく出てくる形は、</p>
+<ol class="process-steps">
+  <li>生成する</li>
+  <li>評価する</li>
+  <li>修正する</li>
+  <li>再評価する</li>
+</ol>
+<p>です。</p>
+<p>Anthropic は <a class="term" data-description="生成結果を評価者が確認し、その評価をもとに改善者が出力を修正する反復型ワークフローパターン。品質改善ループに使う。" href="../domain-glossary.html#evaluator-optimizer">評価者・改善者</a>
+パターンを扱っています。 Google Cloud は review and critique、iterative
+refinement、loop pattern を扱っています。 LangChain も <a class="term" data-description="生成結果を評価者が確認し、その評価をもとに改善者が出力を修正する反復型ワークフローパターン。品質改善ループに使う。" href="../domain-glossary.html#evaluator-optimizer">評価者・改善者</a>
+を実装パターンとして扱います。 OpenAI も出力検証、<a class="term" data-description="入力、出力、ツール利用、権限操作などを検査・制御し、エージェントの危険な振る舞いを防ぐための安全制御。" href="../domain-glossary.html#guardrail">ガードレール</a>、<a class="term" data-description="1回のエージェント実行で起きたモデル呼び出し、ツール利用、ハンドオフ、ガードレール、カスタムイベントなどの時系列記録。" href="../domain-glossary.html#trace">トレース</a>
+などの文脈で、結果を確認する設計に触れています。</p>
+<p>これは重要度★★★★☆にしました。
+理由は、すべての軽いタスクで必須ではないからです。
+ただし、業務利用ではかなり重要です。</p>
+<div class="takeaway-box">重要な出力ほど、生成ステップと確認ステップを分ける</div>
+<hr/>
+<p aria-label="重要度 3 / 5" class="stars">★★★☆☆</p>
+<h3 id="6-並列化できる処理は並列化する">6.
+並列化できる処理は並列化する</h3>
+<p>複数の独立した処理がある場合、並列に走らせる設計もあります。</p>
+<p>たとえば、</p>
+<ol class="process-steps">
+  <li>複数観点で同時にレビューする</li>
+  <li>複数の情報源を並列に調べる</li>
+  <li>複数案を生成して比較する</li>
+</ol>
+<p>Anthropic、Google Cloud、LangChain は <a class="term" data-description="複数の処理、LLM呼び出し、ツール実行、エージェント作業を並列に走らせ、速度向上や多面的な検討を行うワークフローパターン。" href="../domain-glossary.html#parallelization">並列化</a> を扱っています。 OpenAI
+でも複数<a class="term" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。" href="../domain-glossary.html#tool">ツール</a>や複数<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>の協調に近い話があります。</p>
+<p>ただし、これは最初から必須ではありません。</p>
+<p>まずは、</p>
+<ol class="process-steps">
+  <li>順番に処理する</li>
+  <li>分岐する</li>
+  <li>レビューする</li>
+</ol>
+<p>が先です。
+<a class="term" data-description="複数の処理、LLM呼び出し、ツール実行、エージェント作業を並列に走らせ、速度向上や多面的な検討を行うワークフローパターン。" href="../domain-glossary.html#parallelization">並列化</a>は、速度や多面的検討が必要になったときに使えばよいです。</p>
+<hr/>
+<h2 id="openaiとanthropicで共通">OpenAIとAnthropicで共通</h2>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="1-ワークフローはオーケストレーションの問題である">1.
+ワークフローは「オーケストレーション」の問題である</h3>
+<p>OpenAI と Anthropic
+で共通している重要点は、<a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>設計を単なる<a class="term" data-description="エージェントが適切に判断できるように、目的、背景、制約、関連情報、ツール結果、成功条件を設計して渡すこと。単なるプロンプト文面ではなく、利用可能な文脈全体を扱う。" href="../domain-glossary.html#context-engineering">コンテキスト設計</a>ではなく、<strong>複数ステップ・<a class="term" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。" href="../domain-glossary.html#tool">ツール</a>・判断・検証をどう流すか</strong>の問題として扱っていることです。</p>
+<p>OpenAI は <a class="term" data-description="複数のステップ、ツール、エージェント、分岐、ハンドオフをどの順番・条件で動かすかを設計し管理すること。" href="../domain-glossary.html#orchestration">オーケストレーション</a> という言葉で、</p>
+<div class="term-chip-list">
+  <span>複数ステップ</span>
+  <span>ツール利用</span>
+  <span>エージェント間ハンドオフ</span>
+  <span>ガードレール</span>
+  <span>コンテキスト管理</span>
+</div>
+<p>を扱います。</p>
+<p>Anthropic は workflows と agents
+を分け、<a class="term" data-description="複雑なタスクを複数のLLM呼び出しに分け、前の出力を次の入力として渡しながら処理するワークフローパターン。各ステップを検査・調整しやすい。" href="../domain-glossary.html#prompt-chaining">プロンプトチェーン</a>、<a class="term" data-description="入力内容や状況に応じて、使用する処理、ツール、モデル、エージェントを選び分けるワークフローパターン。" href="../domain-glossary.html#routing">ルーティング</a>、<a class="term" data-description="複数の処理、LLM呼び出し、ツール実行、エージェント作業を並列に走らせ、速度向上や多面的な検討を行うワークフローパターン。" href="../domain-glossary.html#parallelization">並列化</a>、<a class="term" data-description="中央のオーケストレーターがタスクを分解し、複数のワーカーに割り当て、結果を統合するワークフローパターン。" href="../domain-glossary.html#orchestrator-workers">オーケストレーター・ワーカー</a>、<a class="term" data-description="生成結果を評価者が確認し、その評価をもとに改善者が出力を修正する反復型ワークフローパターン。品質改善ループに使う。" href="../domain-glossary.html#evaluator-optimizer">評価者・改善者</a>
+などで整理しています。</p>
+<p>つまり共通点はこれです。</p>
+<div class="takeaway-box">プロンプト単体ではなく、処理全体の流れを設計する</div>
+<p>これは最重要です。</p>
+<hr/>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="2-ツール利用をワークフローに組み込む">2.
+ツール利用をワークフローに組み込む</h3>
+<p>OpenAI も Anthropic
+も、<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>や<a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>を「モデルだけ」で完結するものとして見ていません。
+<a class="term" data-description="エージェントが目的達成のためにツールを選び、入力を作り、結果を解釈して次の行動に反映すること。単なる関数呼び出しではなく、判断を含む行為を指す。" href="../domain-glossary.html#tool-use">ツール利用</a>が前提です。</p>
+<p>OpenAI は <a class="term" data-description="モデル提供側やプラットフォーム側でホストされる検索、ファイル検索、コード実行などの組み込みツール。自前実装の負担を下げられるが、提供環境への依存がある。" href="../domain-glossary.html#hosted-tool">Hosted
+Tool</a>、<a class="term" data-description="モデルが定義済みの関数形式ツールを選び、構造化された引数を生成して、外部機能やアプリケーション側の処理と接続する仕組み。OpenAI文脈では実装寄りの語として扱う。" href="../domain-glossary.html#function-calling">Function
+Calling</a>、file search、web search、code interpreter
+などを扱っています。 Anthropic は augmented
+LLM、つまり<a class="term" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。" href="../domain-glossary.html#tool">ツール</a>・検索・メモリで拡張されたLLMを基本単位にしています。</p>
+<p>共通する重要点はこれです。</p>
+<div class="takeaway-box">どのステップで、どのツールを、何のために使うかを決める</div>
+<p><a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>の中で<a class="term" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。" href="../domain-glossary.html#tool">ツール</a>の位置づけが曖昧だと、AIはかなり迷います。</p>
+<hr/>
+<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
+<h3 id="3-必要に応じて人間レビューを入れる">3. 必要に応じて<a class="term" data-description="エージェントの出力、判断、ツール利用、外部送信、高リスク操作などを人間が確認すること。完全自動化せず、人間の判断を挟む安全制御として使う。" href="../domain-glossary.html#human-review">人間レビュー</a>を入れる</h3>
+<p>OpenAI と Anthropic の両方に、<a class="term" data-description="エージェントの出力、判断、ツール利用、外部送信、高リスク操作などを人間が確認すること。完全自動化せず、人間の判断を挟む安全制御として使う。" href="../domain-glossary.html#human-review">人間レビュー</a>を残す発想があります。</p>
+<p>OpenAI では<a class="term" data-description="入力、出力、ツール利用、権限操作などを検査・制御し、エージェントの危険な振る舞いを防ぐための安全制御。" href="../domain-glossary.html#guardrail">ガードレール</a>や <a class="term" data-description="エージェントの出力、判断、ツール利用、外部送信、高リスク操作などを人間が確認すること。完全自動化せず、人間の判断を挟む安全制御として使う。" href="../domain-glossary.html#human-review">人間レビュー</a> の文脈で出てきます。 Anthropic
+でも、<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>が途中で人間に判断を求めたり、チェックポイントで確認したりする設計が出てきます。</p>
+<p>重要なのは、</p>
+<div class="takeaway-box">全部自動化するか、人間確認するか</div>
+<p>ではなく、</p>
+<div class="takeaway-box">どの地点で人間確認を入れるか</div>
+<p>です。</p>
+<p>たとえば、</p>
+<div class="risk-ladder">
+  <div class="risk-item risk-mid">実行前</div>
+  <div class="risk-item risk-high">外部送信前</div>
+  <div class="risk-item risk-mid">高額処理前</div>
+  <div class="risk-item risk-high">削除前</div>
+  <div class="risk-item risk-low">信頼度が低いとき</div>
+</div>
+<p>です。</p>
+<p>これは業務利用ではかなり重要です。</p>
+<hr/>
+<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
+<h3 id="4-ワークフローを観測デバッグできるようにする">4.
+ワークフローを観測・デバッグできるようにする</h3>
+<p>OpenAI は <a class="term" data-description="1回のエージェント実行で起きたモデル呼び出し、ツール利用、ハンドオフ、ガードレール、カスタムイベントなどの時系列記録。" href="../domain-glossary.html#trace">トレース</a> を重視しています。 Anthropic
+も、<a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>や<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>は測定しながら改善するべきという立場です。</p>
+<p>共通するのは、</p>
+<div class="term-chip-list">
+  <span>AIがなぜその判断をしたか</span>
+  <span>どのツールを呼んだか</span>
+  <span>どこで失敗したか</span>
+</div>
+<p>を追えるようにすることです。</p>
+<p>これがないと、<a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>は改善できません。
+個人利用なら軽くてもよいですが、業務化するなら重要度は5に近いです。</p>
+<hr/>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="5-複雑にする前に単純な流れから始める">5.
+複雑にする前に単純な流れから始める</h3>
+<p>OpenAI も Anthropic
+も、いきなり複雑なマルチ<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>や動的<a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>に行くべきではない、という考え方が読み取れます。</p>
+<p>Anthropic は特に強く「シンプルに始める」と言っています。 OpenAI
+も、まず core logic を作り、必要に応じて tools や <a class="term" data-description="複数のステップ、ツール、エージェント、分岐、ハンドオフをどの順番・条件で動かすかを設計し管理すること。" href="../domain-glossary.html#orchestration">オーケストレーション</a>
+を増やしていく構成です。</p>
+<p>共通する実務判断はこれです。</p>
+<ol class="process-steps">
+  <li>最初は単純な固定フローで作る</li>
+  <li>足りないところだけ分岐・ツール・エージェント化する</li>
+</ol>
+<p>これはかなり重要です。</p>
+<hr/>
+<h2 id="openaiのみ">OpenAIのみ</h2>
+<p aria-label="重要度 3 / 5" class="stars">★★★☆☆</p>
+<h3 id="1-agents-sdk-によるオーケストレーションを前提に整理している">1.
+Agents SDK によるオーケストレーションを前提に整理している</h3>
+<p>OpenAI
+の特徴は、<a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>設計をかなり実装プリミティブに寄せて説明しているところです。</p>
+<p>たとえば、</p>
+<div class="term-chip-list">
+  <span>Agent</span>
+  <span>Handoff</span>
+  <span>Guardrail</span>
+  <span>Session</span>
+  <span>Tracing</span>
+  <span>Built-in tools</span>
+</div>
+<p>のような単位で設計します。</p>
+<p>これはOpenAIスタックで作るなら重要です。
+ただし、<a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>設計の一般原則としては製品依存が強いので、重要度は3です。</p>
+<hr/>
+<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
+<h3 id="2-モデル選定もワークフロー設計に含める">2. <a class="term" data-description="品質、速度、コスト、コンテキスト長、ツール利用能力、安全要件などに応じて、利用するモデルを選ぶこと。" href="../domain-glossary.html#model-selection">モデル選定</a>もワークフロー設計に含める</h3>
+<p>OpenAI
+は、どのステップにどのモデルを使うかをかなり重視しています。</p>
+<p>たとえば、</p>
+<div class="definition-box">
+<dl>
+  <dt>複雑な計画・判断</dt>
+  <dd>reasoning model</dd>
+  <dt>低遅延な会話応答</dt>
+  <dd>lighter model</dd>
+  <dt>ツール利用・コード生成</dt>
+  <dd>能力の高いモデル</dd>
+</dl>
+</div>
+<p>のような考え方です。</p>
+<p><a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>全体で1つのモデルを使うのではなく、<strong>ステップごとにモデルを選ぶ</strong>という発想です。</p>
+<p>これは実務的には重要です。
+コスト・速度・精度のバランスを取りやすくなります。</p>
+<hr/>
+<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
+<h3 id="3-入力出力のガードレールを明示的に設計要素にしている">3.
+入力・出力のガードレールを明示的に設計要素にしている</h3>
+<p>OpenAI
+は、ユーザー入力やモデル出力をどう扱うかをベストプラクティスとして整理しています。</p>
+<p>たとえば、</p>
+<div class="risk-ladder">
+  <div class="risk-item risk-mid">ユーザー入力を制限する</div>
+  <div class="risk-item risk-high">危険な入力を検出する</div>
+  <div class="risk-item risk-mid">出力形式を制御する</div>
+  <div class="risk-item risk-mid">失敗時の対応を決める</div>
+</div>
+<p>のような話です。</p>
+<p><a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>設計でいうと、これは
+<strong>前処理・後処理ステップ</strong> です。</p>
+<div class="takeaway-box">入力チェック → 実行 → 出力検証</div>
+<p>という流れを組むときに使えます。</p>
+<hr/>
+<p aria-label="重要度 3 / 5" class="stars">★★★☆☆</p>
+<h3 id="4-複数エージェント間の-ハンドオフ-を設計要素として扱う">4.
+複数エージェント間の ハンドオフ を設計要素として扱う</h3>
+<p>OpenAI は、multi-agent collaboration や <a class="term" data-description="あるエージェントや処理ステップから、別の専門エージェントや担当処理へ作業を引き渡すこと。責任の移動と、渡す情報の設計が重要になる。" href="../domain-glossary.html#handoff">ハンドオフ</a>
+を設計要素として扱います。</p>
+<p>たとえば、</p>
+<div class="term-chip-list">
+  <span>受付エージェント</span>
+  <span>専門エージェント</span>
+  <span>確認エージェント</span>
+</div>
+<p>のように分ける設計です。</p>
+<p>ただし、これは最初からやるものではありません。
+単一<a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>で難しくなったときに検討する応用編です。</p>
+<p>重要度は3で十分です。</p>
+<hr/>
+<h2 id="anthropicのみ">Anthropicのみ</h2>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="1-ワークフローパターンの分類が非常に明確">1.
+ワークフローパターンの分類が非常に明確</h3>
+<p>Anthropic
+の強みは、<a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>の基本パターンをかなりきれいに整理している点です。</p>
+<p>代表的には、</p>
+<div class="term-chip-list">
+  <span>Prompt chaining</span>
+  <span>Routing</span>
+  <span>Parallelization</span>
+  <span>Orchestrator-workers</span>
+  <span>Evaluator-optimizer</span>
+</div>
+<p>です。</p>
+<p>これは非常に使いやすいです。
+<a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>設計の型として、そのまま知識ベース化できます。</p>
+<p>特に重要なのは、<strong>どの型をいつ使うか</strong>です。</p>
+<div class="definition-box">
+<dl>
+  <dt>段階的に処理したい</dt>
+  <dd>prompt chaining</dd>
+  <dt>入力ごとに処理を変えたい</dt>
+  <dd>routing</dd>
+  <dt>独立した処理を同時に進めたい</dt>
+  <dd>parallelization</dd>
+  <dt>タスク分解が必要</dt>
+  <dd>orchestrator-workers</dd>
+  <dt>品質改善したい</dt>
+  <dd>evaluator-optimizer</dd>
+</dl>
+</div>
+<p>これは重要度★★★★★です。</p>
+<hr/>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="2-ワークフローとエージェントの線引きが明確">2.
+「ワークフロー」と「エージェント」の線引きが明確</h3>
+<p>Anthropic
+は、<a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>と<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>をかなりはっきり分けています。</p>
+<div class="structured-list">
+  <div class="structured-item"><strong>ワークフロー</strong><ul><li>事前に定義されたコードパスに沿ってLLMやツールを動かす</li></ul></div>
+  <div class="structured-item"><strong>エージェント</strong><ul><li>LLMが自分でプロセスやツール利用を動的に決める</li></ul></div>
+</div>
+<p>これは<a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>設計系でかなり大事です。</p>
+<p>なぜなら、多くの業務では「<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>」と呼んでいても、実際には<a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>で十分だからです。</p>
+<ol class="process-steps">
+  <li>まずワークフローで済むか考える</li>
+  <li>必要な部分だけエージェント化する</li>
+</ol>
+<p>この判断は、設計の失敗をかなり減らします。</p>
+<hr/>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="3-複雑性には必ずコストがあるという警戒が強い">3.
+複雑性には必ずコストがある、という警戒が強い</h3>
+<p>Anthropic
+は、複雑な<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>や多段<a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>には、コスト・レイテンシ・デバッグ困難性があることをかなり強く警告しています。</p>
+<p>これは<a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>設計でも重要です。</p>
+<ol class="process-steps">
+  <li>ステップを増やす</li>
+  <li>分岐を増やす</li>
+  <li>ツールを増やす</li>
+  <li>エージェントを増やす</li>
+</ol>
+<p>ほど、制御は難しくなります。</p>
+<p>したがって、Anthropic 的には、</p>
+<ol class="flow-list">
+  <li>単純なプロンプト</li>
+  <li>単純なワークフロー</li>
+  <li>複雑なワークフロー</li>
+  <li>自律エージェント</li>
+</ol>
+<p>の順に進むべき、という読み方ができます。</p>
+<hr/>
+<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
+<h3 id="4-評価しながら反復改善する前提が強い">4.
+評価しながら反復改善する前提が強い</h3>
+<p>Anthropic
+は、<a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>や<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>は一度作って終わりではなく、<a class="term" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。" href="../domain-glossary.html#evaluation">評価</a>しながら改善するものとして扱っています。</p>
+<p>特に <a class="term" data-description="生成結果を評価者が確認し、その評価をもとに改善者が出力を修正する反復型ワークフローパターン。品質改善ループに使う。" href="../domain-glossary.html#evaluator-optimizer">評価者・改善者</a>
+は、その考え方そのものです。</p>
+<ol class="process-steps">
+  <li>出力する</li>
+  <li>評価する</li>
+  <li>改善する</li>
+  <li>再実行する</li>
+</ol>
+<p>これは品質が重要なタスクでは非常に有効です。</p>
+<p>ただし、軽いタスクでは重すぎる場合もあるので、重要度は4にしました。</p>
+<hr/>
+<h2 id="実務で重要な順">実務で重要な順</h2>
+<p><a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>設計系で、最終的に押さえるべき順番はこうです。</p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: right;">重要度</th>
+<th>ポイント</th>
+<th>判断への使い方</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td>作業をステップに分解する</td>
+<td>AIに丸投げせず、処理単位を作る</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td>固定できる流れは固定する</td>
+<td>AIに考えさせる場所を減らす</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td><a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>と<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>を分ける</td>
+<td>予測可能なら<a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>でよい</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td>分岐・<a class="term" data-description="入力内容や状況に応じて、使用する処理、ツール、モデル、エージェントを選び分けるワークフローパターン。" href="../domain-glossary.html#routing">ルーティング</a>を設計する</td>
+<td>入力や状況に応じて正しい処理へ送る</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td><a class="term" data-description="エージェントが目的達成のためにツールを選び、入力を作り、結果を解釈して次の行動に反映すること。単なる関数呼び出しではなく、判断を含む行為を指す。" href="../domain-glossary.html#tool-use">ツール利用</a>を流れに組み込む</td>
+<td>どのステップで何の<a class="term" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。" href="../domain-glossary.html#tool">ツール</a>を使うか決める</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td><a class="term" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。" href="../domain-glossary.html#evaluation">評価</a>・レビュー・修正ループを入れる</td>
+<td>重要な出力は確認・改善ステップを分ける</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4</td>
+<td><a class="term" data-description="エージェントの出力、判断、ツール利用、外部送信、高リスク操作などを人間が確認すること。完全自動化せず、人間の判断を挟む安全制御として使う。" href="../domain-glossary.html#human-review">人間レビュー</a>ポイントを設計する</td>
+<td>高リスク・不可逆操作では必須</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td>ログ・<a class="term" data-description="1回のエージェント実行で起きたモデル呼び出し、ツール利用、ハンドオフ、ガードレール、カスタムイベントなどの時系列記録。" href="../domain-glossary.html#trace">トレース</a>で観測可能にする</td>
+<td>後から改善できるようにする</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4</td>
+<td>モデルをステップごとに選ぶ</td>
+<td>コスト・速度・精度を調整する</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">3</td>
+<td><a class="term" data-description="複数の処理、LLM呼び出し、ツール実行、エージェント作業を並列に走らせ、速度向上や多面的な検討を行うワークフローパターン。" href="../domain-glossary.html#parallelization">並列化</a>する</td>
+<td>速度や多面的検討が必要な場合に使う</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td>マルチ<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>化する</td>
+<td>単一<a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>で限界が出たら検討する</td>
+</tr>
+</tbody>
+</table>
+<hr/>
+<h2 id="一言でいうと">一言でいうと</h2>
+<p><a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>設計系で一番大事なのは、これです。</p>
+<ul class="guideline-list">
+  <li>AIに自由にやらせる前に、</li>
+  <li>仕事の流れを分解し、</li>
+  <li>固定できるところは固定し、</li>
+  <li>AIが判断すべきところだけ判断させる。</li>
+</ul>
+<p>もう少し実務的に言うと、</p>
+<ol class="process-steps">
+  <li>まず作業手順を書く</li>
+  <li>各ステップの役割を決める</li>
+  <li>分岐条件を決める</li>
+  <li>使うツールを決める</li>
+  <li>確認・評価・人間承認ポイントを入れる</li>
+  <li>必要になってから自律性を増やす</li>
+</ol>
+<p>です。</p>
+<p>このタグでは、<strong>「<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>を賢くする」より「仕事の進め方を迷わせない」こと</strong>が中心です。</p>
+</article></div>
+<script>
+(function () {
+  function closeTerms(except) {
+    document.querySelectorAll('.term[data-open="true"]').forEach(function (el) {
+      if (el !== except) el.removeAttribute('data-open');
+    });
+  }
+  document.addEventListener('click', function (event) {
+    var term = event.target.closest('.term');
+    if (!term) { closeTerms(); return; }
+    event.preventDefault();
+    var isOpen = term.getAttribute('data-open') === 'true';
+    closeTerms(term);
+    if (isOpen) term.removeAttribute('data-open');
+    else term.setAttribute('data-open', 'true');
+  });
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') closeTerms();
+  });
+})();
+</script>
+</body>
+</html>
