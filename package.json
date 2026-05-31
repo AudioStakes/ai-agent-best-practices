@@ -7,7 +7,7 @@
     "format": "biome format --write AGENTS.md README.md README.html biome.json docs/*.md domain-glossary.html domain-glossary.md index.html semantic-overrides.css style.css term-popup.js tests workflow/AGENTS.md workflow/README.md workflow/scripts scripts",
     "format:check": "biome format AGENTS.md README.md README.html biome.json docs/*.md domain-glossary.html domain-glossary.md index.html semantic-overrides.css style.css term-popup.js tests workflow/AGENTS.md workflow/README.md workflow/scripts scripts",
     "test": "playwright test tests/ui-behavior-checklist.test.mjs",
-    "verify": "npm run lint && npm run format:check && npm test && npm run verify:pages",
+    "verify": "npm run lint && npm run format:check && npm test",
     "build": "npm run build:pages",
     "verify:pages": "node scripts/check-pages-output.mjs",
     "save:singlefile": "node workflow/scripts/save_singlefile.js && node workflow/scripts/build_singlefile_index.js",

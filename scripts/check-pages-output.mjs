@@ -59,10 +59,15 @@ function fail(message) {
   throw new Error(message);
 }
 
-function readText(filePath) {
+function requireFile(filePath, hint = "") {
   if (!existsSync(filePath)) {
-    fail(`Missing required file: ${relative(repoRoot, filePath)}`);
+    const relativePath = relative(repoRoot, filePath);
+    fail(`Missing required file: ${relativePath}${hint ? `\n${hint}` : ""}`);
   }
+}
+
+function readText(filePath, hint = "") {
+  requireFile(filePath, hint);
 
   return readFileSync(filePath, "utf8");
 }
@@ -196,7 +201,10 @@ function validateLocalLinks(filePath, document) {
 
 function checkIndexMarkdown(docsDir) {
   const indexPath = join(docsDir, "index.md");
-  const text = readText(indexPath);
+  const text = readText(
+    indexPath,
+    "Run npm run build before npm run verify:pages.",
+  );
   const label = relative(repoRoot, indexPath);
 
   for (const heading of [
@@ -217,11 +225,39 @@ function checkIndexMarkdown(docsDir) {
   assertContains(text, "public-page-problem-statement.md", label);
 }
 
+function checkIndexHtml(docsDir) {
+  const indexPath = join(docsDir, "index.html");
+  const text = readText(
+    indexPath,
+    "Run npm run build before npm run verify:pages.",
+  );
+  const document = toDocument(indexPath, text);
+  const label = relative(repoRoot, indexPath);
+
+  assertContains(text, '<link rel="stylesheet" href="style.css"', label);
+  for (const slug of requiredChapterSlugs) {
+    assertContains(text, `tag-guides/${slug}.html`, label);
+  }
+
+  const topLink = Array.from(document.querySelectorAll("a[href]")).find(
+    (anchor) => anchor.getAttribute("href") === "domain-glossary.html",
+  );
+  if (!topLink) {
+    fail(`${label} is missing a link to the glossary`);
+  }
+}
+
 function checkChapterFile(docsDir, slug) {
   const mdPath = join(docsDir, "tag-guides", `${slug}.md`);
   const htmlPath = join(docsDir, "tag-guides", `${slug}.html`);
-  const markdown = readText(mdPath);
-  const html = readText(htmlPath);
+  const markdown = readText(
+    mdPath,
+    "Run npm run build before npm run verify:pages.",
+  );
+  const html = readText(
+    htmlPath,
+    "Run npm run build before npm run verify:pages.",
+  );
   const mdDocument = toDocument(mdPath, markdown);
   const htmlDocument = toDocument(htmlPath, html);
   const label = `tag-guides/${slug}`;
@@ -263,6 +299,7 @@ function checkChapterFile(docsDir, slug) {
 
 function checkRequiredFiles(docsDir) {
   const requiredPaths = [
+    join(docsDir, "index.html"),
     join(docsDir, "index.md"),
     join(docsDir, "_config.yml"),
     join(docsDir, "style.css"),
@@ -287,7 +324,9 @@ function checkRequiredFiles(docsDir) {
 
   const tagGuidesDir = join(docsDir, "tag-guides");
   if (!existsSync(tagGuidesDir)) {
-    fail("Missing required directory: docs/tag-guides");
+    fail(
+      "Missing required directory: docs/tag-guides.\nRun npm run build before npm run verify:pages.",
+    );
   }
 }
 
@@ -298,7 +337,9 @@ function checkTagGuidePairs(docsDir) {
     .sort((a, b) => a.localeCompare(b));
 
   if (markdownFiles.length === 0) {
-    fail("No tag guide markdown files were found in docs/tag-guides");
+    fail(
+      "No tag guide markdown files were found in docs/tag-guides.\nRun npm run build before npm run verify:pages.",
+    );
   }
 
   for (const fileName of markdownFiles) {
@@ -323,6 +364,7 @@ function checkLocalLinksInDocs(docsDir) {
 function main() {
   const options = parseArgs(process.argv.slice(2));
   checkRequiredFiles(options.docsDir);
+  checkIndexHtml(options.docsDir);
   checkIndexMarkdown(options.docsDir);
   checkTagGuidePairs(options.docsDir);
   checkLocalLinksInDocs(options.docsDir);

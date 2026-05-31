@@ -17,6 +17,10 @@ GitHub Pages で公開するトップページは、`docs/index.md` を元に生
 - 公開用ファイルの再生成は `npm run build:pages` で行います。
 - 公開前の確認項目は [docs/publishing-checklist.md](./docs/publishing-checklist.md) にまとめています。
 
+## 生成物の扱い
+
+`docs/index.html`、`docs/domain-glossary.html`、`docs/tag-guides/*.html` は生成物です。直接編集せず、対応する Markdown や `workflow/scripts/*` を直してから `npm run build` を実行してください。
+
 公開物は `docs/` 配下にまとめてあり、`docs/index.html` から各章と用語集に辿れます。
 
 GitHub Pages を有効化した後は、次の形式のURLで公開される想定です。
@@ -126,11 +130,11 @@ Settings
 
 ```bash
 npm run build
-npm run verify
 npm run verify:pages
+npm run verify
 ```
 
-`npm run build` は `docs/` 配下の公開物を再生成します。`npm run verify:pages` は `docs/` 配下のファイル存在、章の必須要素、ローカルリンク切れを確認します。
+`npm run build` は `docs/` 配下の公開物を再生成します。`npm run verify:pages` は `docs/` 配下のファイル存在、章の必須要素、ローカルリンク切れを確認します。`npm run verify` は lint, format, test をまとめて確認します。
 
 ## 再生成手順
 
