@@ -150,6 +150,34 @@ test("serve.sh starts with the documented host and port settings", async () => {
   }
 });
 
+test("markdown code block gallery is linked from the home page", async () => {
+  const server = await startServer();
+  try {
+    const home = await fetch(server.url);
+    const homeHtml = await home.text();
+    expect(homeHtml).toContain(
+      "tag-guides/11-markdown-code-block-gallery.html",
+    );
+
+    const page = await fetch(
+      new URL("tag-guides/11-markdown-code-block-gallery.html", server.url),
+    );
+    const pageHtml = await page.text();
+    expect(pageHtml).toContain("11. MarkdownコードブロックHTMLデザイン見本");
+    expect(pageHtml).toContain('class="guideline-list"');
+    expect(pageHtml).toContain('class="risk-box"');
+    expect(pageHtml).toContain('class="takeaway-box"');
+    expect(pageHtml).toContain('class="process-steps"');
+    expect(pageHtml).toContain('class="checklist"');
+    expect(pageHtml).toContain('class="risk-ladder"');
+    expect(pageHtml).toContain('class="definition-box"');
+    expect(pageHtml).toContain('class="structured-list"');
+    expect(pageHtml).toContain('class="code-example-box"');
+  } finally {
+    await server.stop();
+  }
+});
+
 test("tag guide markdown can be regenerated into readable HTML", () => {
   const tempRoot = mkdtempSync(path.join(os.tmpdir(), "tag-guides-build-"));
   const outputDir = path.join(tempRoot, "tag-guides");
@@ -182,7 +210,7 @@ test("tag guide markdown can be regenerated into readable HTML", () => {
       const generatedFiles = readdirSync(outputDir).filter((name) =>
         name.endsWith(".html"),
       );
-      expect(generatedFiles).toHaveLength(10);
+      expect(generatedFiles).toHaveLength(11);
 
       const generated = readFileSync(
         path.join(outputDir, "01-agent-design.html"),
@@ -197,6 +225,21 @@ test("tag guide markdown can be regenerated into readable HTML", () => {
       expect(generated).toContain('class="rating-guide"');
       expect(generated).toContain('class="term"');
       expect(generated).toContain('href="../domain-glossary.html#agent"');
+
+      const gallery = readFileSync(
+        path.join(outputDir, "11-markdown-code-block-gallery.html"),
+        "utf8",
+      );
+      expect(gallery).toContain("11. MarkdownコードブロックHTMLデザイン見本");
+      expect(gallery).toContain('class="guideline-list"');
+      expect(gallery).toContain('class="risk-box"');
+      expect(gallery).toContain('class="takeaway-box"');
+      expect(gallery).toContain('class="process-steps"');
+      expect(gallery).toContain('class="checklist"');
+      expect(gallery).toContain('class="risk-ladder"');
+      expect(gallery).toContain('class="definition-box"');
+      expect(gallery).toContain('class="structured-list"');
+      expect(gallery).toContain('class="code-example-box"');
     })
     .finally(() => {
       rmSync(tempRoot, { recursive: true, force: true });
@@ -244,6 +287,12 @@ test("public docs can be regenerated for GitHub Pages", () => {
       expect(readFileSync(path.join(docsDir, "style.css"), "utf8")).toContain(
         ".publication-note",
       );
+      expect(readdirSync(path.join(docsDir, "tag-guides"))).toContain(
+        "11-markdown-code-block-gallery.md",
+      );
+      expect(readdirSync(path.join(docsDir, "tag-guides"))).toContain(
+        "11-markdown-code-block-gallery.html",
+      );
 
       const docsIndex = readFileSync(path.join(docsDir, "index.html"), "utf8");
       expect(docsIndex).toContain('href="tag-guides/01-agent-design.html"');
@@ -262,6 +311,21 @@ test("public docs can be regenerated for GitHub Pages", () => {
       expect(generated).toContain('href="../style.css?v=');
       expect(generated).toContain('src="../term-popup.js?v=');
       expect(generated).toContain('href="../domain-glossary.html#agent"');
+
+      const gallery = readFileSync(
+        path.join(docsDir, "tag-guides", "11-markdown-code-block-gallery.html"),
+        "utf8",
+      );
+      expect(gallery).toContain("11. MarkdownコードブロックHTMLデザイン見本");
+      expect(gallery).toContain('class="guideline-list"');
+      expect(gallery).toContain('class="risk-box"');
+      expect(gallery).toContain('class="takeaway-box"');
+      expect(gallery).toContain('class="process-steps"');
+      expect(gallery).toContain('class="checklist"');
+      expect(gallery).toContain('class="risk-ladder"');
+      expect(gallery).toContain('class="definition-box"');
+      expect(gallery).toContain('class="structured-list"');
+      expect(gallery).toContain('class="code-example-box"');
 
       const glossary = readFileSync(
         path.join(docsDir, "domain-glossary.html"),

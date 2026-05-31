@@ -8,7 +8,25 @@
   <script src="../term-popup.js?v=20260531-semantic-fences-1" defer></script>
 </head>
 <body>
-<div class="container"><p class="nav"><a href="../index.html">← Index</a><a href="../domain-glossary.html">用語集</a></p><article class="article"><h1 id="04-コンテキスト設計系">04. <a class="term" href="../domain-glossary.html#context-engineering" data-description="エージェントが適切に判断できるように、目的、背景、制約、関連情報、ツール結果、成功条件を設計して渡すこと。単なるプロンプト文面ではなく、利用可能な文脈全体を扱う。">コンテキスト設計</a>系</h1><p class="rating-guide">★は重要度を表します。★★★★★ほど、設計・運用時に優先して確認すべき項目です。</p>
+<div class="container"><p class="nav"><a href="../index.html">← Index</a><a href="../domain-glossary.html">用語集</a></p><article class="article"><h1 id="04-コンテキスト設計系">04. <a class="term" href="../domain-glossary.html#context-engineering" data-description="エージェントが適切に判断できるように、目的、背景、制約、関連情報、ツール結果、成功条件を設計して渡すこと。単なるプロンプト文面ではなく、利用可能な文脈全体を扱う。">コンテキスト設計</a>系</h1><p class="rating-guide">★は重要度を表します。★★★★★ほど、設計・運用時に優先して確認すべき項目です。</p><aside class="publication-note">
+    <p><strong>対象時点:</strong> 2026年5月</p>
+    <p>最新の仕様や推奨事項は、各公式ドキュメントを確認してください。</p>
+    <p>参照元と元記事への導線は、本文末の「対象記事」と「参考文献」を参照してください。</p>
+  </aside>
+<p><a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>に何を渡し、何を渡さないかを考える章です。プロンプト、履歴、メモリ、検索、<a class="term" href="../domain-glossary.html#context-compression" data-description="長くなった会話履歴や作業ログから重要情報を残し、不要情報を削って、短く有用な形にまとめ直すこと。">コンテキスト圧縮</a>を扱います。</p>
+<p>この章を読むことで、必要な情報を必要な形で渡せているか、情報の量と関連性を見直せます。詳細な参照元は章末の<a class="term" href="../domain-glossary.html#citation" data-description="回答や説明の根拠として、どの情報源・箇所に基づいたかを示す表示。ユーザーやレビュアーが根拠を確認できるようにする。">引用</a>リンクを参照してください。</p>
+<blockquote>
+<p><strong>対象時点: 2026年5月</strong><br>この章は、2026年5月時点で公開されている主要な公式ドキュメントをもとに整理しています。最新の仕様や推奨事項は、各公式ドキュメントを確認してください。</p>
+</blockquote>
+<p><a href="../index.html">← トップへ戻る</a> | <a href="../domain-glossary.html">用語集</a></p>
+<h2 id="この章て-見直せること">この章で見直せること</h2>
+<ul>
+<li>何を渡すかと何を渡さないか</li>
+<li>関連性の高い情報だけを渡せているか</li>
+<li>動的情報の取得や更新ができるか</li>
+<li><a class="term" href="../domain-glossary.html#context-compression" data-description="長くなった会話履歴や作業ログから重要情報を残し、不要情報を削って、短く有用な形にまとめ直すこと。">コンテキスト圧縮</a>や要約があるか</li>
+<li>目的・制約・成功条件が明示されているか</li>
+</ul>
 <h2 id="対象タク">対象タグ</h2>
 <p><code>context_engineering</code></p>
 <h2 id="対象記事">対象記事</h2>

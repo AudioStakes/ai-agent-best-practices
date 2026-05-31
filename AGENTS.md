@@ -13,6 +13,23 @@
   targets readable, and fix the source of any broken label instead of adding a
   test exception.
 
+## Regeneration Notes
+
+- Markdown source files for tag guides live in `knowledge_templated/tag-guides/`.
+  `workflow/scripts/build_tag_guides_html.js` turns each `.md` file into a
+  matching `.html` file in `tag-guides/`, and `workflow/scripts/build_public_pages.js`
+  mirrors both into `docs/tag-guides/` for GitHub Pages.
+- The output URL is derived from the file name. For example,
+  `knowledge_templated/tag-guides/11-markdown-code-block-gallery.md` becomes
+  `tag-guides/11-markdown-code-block-gallery.html` locally and
+  `docs/tag-guides/11-markdown-code-block-gallery.html` for Pages.
+- Page names are the numbered filename plus the first `#` heading in the
+  Markdown. The generated HTML `<title>` and page `<h1>` both come from that
+  first heading after Markdown is rendered and annotated.
+- If a page title or URL looks wrong, check the Markdown filename and the first
+  heading first. Those two inputs usually explain the generated title, file
+  path, and navigation label.
+
 ## Useful Commands
 
 - `npm run lint`

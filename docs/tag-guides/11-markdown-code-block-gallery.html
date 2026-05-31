@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>11. MarkdownコードブロックHTMLデザイン見本</title>
+  <link rel="stylesheet" href="../style.css?v=20260531-semantic-fences-1" />
+  <script src="../term-popup.js?v=20260531-semantic-fences-1" defer></script>
+</head>
+<body>
+<div class="container"><p class="nav"><a href="../index.html">← Index</a><a href="../domain-glossary.html">用語集</a></p><article class="article"><h1 id="11-Markdownコート-フ-ロックHTMLテ-サ-イン見本">11. MarkdownコードブロックHTMLデザイン見本</h1><p class="rating-guide">★は重要度を表します。★★★★★ほど、設計・運用時に優先して確認すべき項目です。</p><aside class="publication-note">
+    <p><strong>対象時点:</strong> 2026年5月</p>
+    <p>最新の仕様や推奨事項は、各公式ドキュメントを確認してください。</p>
+    <p>参照元と元記事への導線は、本文末の「対象記事」と「参考文献」を参照してください。</p>
+  </aside>
+<p>このページは、Markdown だけを編集して再生成できる見本です。<br><code>annotate_tag_guides_fences.js</code> でマーカーを整え、<code>build_tag_guides_html.js</code> で HTML に変換すると、どの文章にどのスタイルが当たるかをそのまま確認できます。</p>
+<h2 id="使い分けの早見表">使い分けの早見表</h2>
+<table>
+<thead>
+<tr>
+<th>Markdown の目印</th>
+<th>変換後の HTML</th>
+<th>見た目</th>
+<th>向いている文章</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>tone-good.guideline</code></td>
+<td><code>ul.guideline-list</code></td>
+<td>緑のチェック付きリスト</td>
+<td>PoC、デモ、成功条件、やること</td>
+</tr>
+<tr>
+<td><code>tone-bad.risk</code></td>
+<td><code>ul.risk-box</code></td>
+<td>オレンジの警告リスト</td>
+<td>本番、失敗条件、制御したい項目</td>
+</tr>
+<tr>
+<td><code>tone-neutral.takeaway</code></td>
+<td><code>div.takeaway-box</code></td>
+<td>ひと言の結論ボックス</td>
+<td>一番大事な結論</td>
+</tr>
+<tr>
+<td><code>tone-neutral.process</code></td>
+<td><code>ol.process-steps</code></td>
+<td>連番の手順</td>
+<td>順番が重要な作業</td>
+</tr>
+<tr>
+<td><code>tone-neutral.checklist</code></td>
+<td><code>ul.checklist</code></td>
+<td>チェックボックスの確認項目</td>
+<td>レビュー、確認、抜け漏れ防止</td>
+</tr>
+<tr>
+<td><code>tone-neutral.question-checklist</code></td>
+<td><code>ul.checklist.question-checklist</code></td>
+<td>質問形式のチェックリスト</td>
+<td>何を確認するかを聞きたいとき</td>
+</tr>
+<tr>
+<td><code>tone-neutral.risk-ladder</code></td>
+<td><code>div.risk-ladder</code></td>
+<td>低/中/高の段階表現</td>
+<td>リスクの強さを段階で見せたいとき</td>
+</tr>
+<tr>
+<td><code>markdown.definition</code></td>
+<td><code>div.definition-box</code></td>
+<td>用語と説明の定義枠</td>
+<td>定義、見出し付きの説明</td>
+</tr>
+<tr>
+<td><code>tone-neutral.structured</code></td>
+<td><code>div.structured-list</code></td>
+<td>キーと値の一覧</td>
+<td>項目と説明を対にしたいとき</td>
+</tr>
+<tr>
+<td><code>json.code-example</code></td>
+<td><code>div.code-example-box</code></td>
+<td>ラベル付きコード例</td>
+<td>設定例、データ例、出力例</td>
+</tr>
+<tr>
+<td><code>tone-good</code> / <code>tone-bad</code> / <code>tone-neutral</code></td>
+<td><code>div.term-chip-list[data-tone]</code></td>
+<td>短いチップ列</td>
+<td>短い語句だけを軽く並べたいとき</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>補足: このサイトの通常ビルドでは、<code>tone-*</code> の裸の fence は、内容を見て <code>guideline</code> / <code>risk</code> / <code>takeaway</code> などへ昇格します。<br>そのため、実運用では「どの見た目にしたいか」だけでなく、「どの意味を持たせたいか」まで含めてタグを付けます。</p>
+</blockquote>
+<h2 id="PoCて-は">PoCでは、</h2>
+<p>「1回成功すれば価値が伝わる」文章は、<code>tone-good.guideline</code> が合います。<br>成功条件やデモの見せ方を、チェック付きの緑系ブロックで見せたいときに使います。</p>
+<ul class="guideline-list"><li>1回成功する</li><li>デモで動く</li><li>代表例で便利に見える</li><li>人間が横で見ている</li></ul>
+<p>この形は、PoC の説明や、デモで先に見せたい項目に向いています。<br>「やること」を軽く、でも肯定的に並べたいときの定番です。</p>
+<h2 id="て-も本番て-は">でも本番では、</h2>
+<p>「確認すべきこと」「制御したいこと」「失敗したくないこと」は、<code>tone-bad.risk</code> に寄せます。<br>これは警告色ですが、単なる失敗談ではなく、運用で押さえるべき条件を前に出すための見せ方です。</p>
+<ul class="risk-box"><li>失敗時に検知できる</li><li>何度実行しても安定する</li><li>コストが予測できる</li><li>権限が制御されている</li><li>ログが残る</li><li>人間<a class="term" href="../domain-glossary.html#checkpoint" data-description="ワークフローやエージェントループの途中で、人間レビュー、承認、状態確認、方針変更を行うために設ける停止地点。">確認ポイント</a>がある</li><li>改善前後を比較できる</li></ul>
+<p>この見せ方は、本番運用、権限管理、監視、コスト確認のような内容と相性がよいです。</p>
+<h2 id="共通する大事な点はこれて-す">共通する大事な点はこれです。</h2>
+<p>一番大事な結論は、<code>tone-neutral.takeaway</code> で一文にまとめます。<br>これは「長い説明を読んだあとに、結局何を覚えればよいか」を見せるための箱です。</p>
+<div class="takeaway-box">最終結果だけでなく、途中で何が起きたかを見る</div>
+<p>結論、指針、要点の見出しの直後に置くと、読み手の視線をすっと揃えられます。</p>
+<h2 id="必要なのは">必要なのは、</h2>
+<p>順番が大事なものは、<code>tone-neutral.process</code> にします。<br>これは手順、実行順、レビューの流れのように、「並び順が意味を持つ」内容に向いています。</p>
+<ol class="process-steps"><li>調査する</li><li>修正する</li><li>検証する</li></ol>
+<p>複数のステップを順番に見せたいときは、これがいちばん読みやすいです。</p>
+<h2 id="チェックしたいとき">チェックしたいとき</h2>
+<p>確認項目は <code>tone-neutral.checklist</code> にします。<br>質問形なら <code>tone-neutral.question-checklist</code>、確認の列挙なら <code>tone-neutral.checklist</code> が分かりやすいです。</p>
+<ul class="checklist"><li>誰が監視するか</li><li>失敗時に誰へ渡すか</li><li>どの指標を見るか</li><li>いつ<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>を回すか</li><li>どのログを保存するか</li><li>どの権限を許すか</li><li>どの変更をレビューするか</li></ul>
+<ul class="checklist question-checklist"><li>誰が監視するか?</li><li>失敗時に誰へ渡すか?</li><li>どの指標を見るか?</li><li>いつ<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>を回すか?</li><li>どのログを保存するか?</li><li>どの権限を許すか?</li><li>どの変更をレビューするか?</li></ul>
+<p>同じチェックボックス風の見た目でも、<br>「確認事項の列挙」なのか「質問として洗い出す」のかでタグを分けると、後で読み返しやすくなります。</p>
+<h2 id="リスクを段階て-見せる">リスクを段階で見せる</h2>
+<p><code>tone-neutral.risk-ladder</code> は、低リスク・中リスク・高リスクのように段階で見せたいときに使います。<br>単純な注意書きよりも、「どこから危険度が上がるか」を整理したいときに向いています。</p>
+<div class="risk-ladder"><div class="risk-item risk-low"><strong>低リスク</strong>ファイルを読む</div><div class="risk-item risk-mid"><strong>中リスク</strong>ローカルファイルを編集する</div><div class="risk-item risk-high"><strong>高リスク</strong>削除する</div></div>
+<p>段階ごとに、どこで人間の確認が必要になるかを並べたいときに便利です。</p>
+<h2 id="定義をはっきり見せる">定義をはっきり見せる</h2>
+<p><code>markdown.definition</code> は、用語や見出しと説明を対にしたいときのスタイルです。<br>ここは「文章を読ませる」より「意味を整理する」ことに向いています。</p>
+<div class="definition-box"><dl><dt>Goal</dt><dd><p>AI に任せたときでも、期待した結果にたどり着ける状態</p></dd><dt>Constraints</dt><dd><p>権限、ログ、コスト、再実行性の制約</p></dd></dl></div>
+<p>見出しごとの説明が必要なとき、あるいは用語集の補助として使うと分かりやすくなります。</p>
+<h2 id="項目を並へ-る">項目を並べる</h2>
+<p>キーと値を並べたいときは、<code>tone-neutral.structured</code> が便利です。<br>箇条書きよりも「項目名と説明」をはっきり見せたいときに向いています。</p>
+<div class="structured-list"><div class="structured-item"><strong>目標</strong>1回成功させる</div><div class="structured-item"><strong>確認</strong>デモで動く</div><div class="structured-item"><strong>監視</strong>人間が横で見る</div></div>
+<p>短い属性の一覧や、要素ごとの役割を見せるときに使うと、読み手が流し読みしやすくなります。</p>
+<h2 id="コート-例">コード例</h2>
+<p><code>json.code-example</code> や <code>text.code-example</code> は、コード断片や設定例をそのまま見せたいときに使います。<br>見出し付きのコードブロックとして出るので、本文と区別がつきやすくなります。</p>
+<div class="code-example-box"><div class="code-example-label">JSON</div><pre class="code-example"><code class="language-json">{
+  "status": "ok",
+  "next": "verify"
+}
+</code></pre></div>
+<p>コード例は、設定値、API の返却例、検証用の最小サンプルの見せ方に向いています。</p>
+<h2 id="まとめ">まとめ</h2>
+<ul>
+<li><code>guideline</code> は、やることや成功条件を見せる</li>
+<li><code>risk</code> は、注意点や本番で確認すべきことを見せる</li>
+<li><code>takeaway</code> は、結論を一文で見せる</li>
+<li><code>process</code> は、順番を見せる</li>
+<li><code>checklist</code> は、確認項目を見せる</li>
+<li><code>risk-ladder</code> は、危険度の段階を見せる</li>
+<li><code>definition</code> は、定義や説明を見せる</li>
+<li><code>structured</code> は、項目名と値を見せる</li>
+<li><code>code-example</code> は、コードや設定例を見せる</li>
+</ul>
+<p>Markdown だけを直せば、この見本は何度でも同じ形で再生成できます。</p>
+</article></div>
+</body>
+</html>

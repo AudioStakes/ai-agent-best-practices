@@ -46,6 +46,10 @@ OpenAI / Anthropic / Google / Microsoft / LangChain などの主要な公式ド�
 9. [マルチエージェント系](tag-guides/09-multi-agent.html) - 単一エージェントで足りない場合に役割分担を考える章です。
 10. [ガバナンス系](tag-guides/10-governance.html) - 組織としての利用方針と運用ルールを見直す章です。
 
+## 見本
+
+- [MarkdownコードブロックHTMLデザイン見本](tag-guides/11-markdown-code-block-gallery.html) - Markdownから生成する、コードブロックと意味付きブロックの見本ページです。
+
 ## 公開範囲
 
 - この公開トップは `docs/index.md` です。

@@ -4,8 +4,8 @@
   "type": "module",
   "scripts": {
     "lint": "biome lint AGENTS.md README.md biome.json domain-glossary.md term-popup.js tests workflow/AGENTS.md workflow/README.md workflow/scripts scripts",
-    "format": "biome format --write AGENTS.md README.md README.html biome.json docs/*.md domain-glossary.html domain-glossary.md index.html semantic-overrides.css style.css term-popup.js tests workflow/AGENTS.md workflow/README.md workflow/scripts scripts",
-    "format:check": "biome format AGENTS.md README.md README.html biome.json docs/*.md domain-glossary.html domain-glossary.md index.html semantic-overrides.css style.css term-popup.js tests workflow/AGENTS.md workflow/README.md workflow/scripts scripts",
+    "format": "biome format --write AGENTS.md README.md README.html biome.json docs/*.md domain-glossary.html domain-glossary.md index.html knowledge_templated/tag-guides/*.md semantic-overrides.css style.css term-popup.js tests workflow/AGENTS.md workflow/README.md workflow/scripts scripts",
+    "format:check": "biome format AGENTS.md README.md README.html biome.json docs/*.md domain-glossary.html domain-glossary.md index.html knowledge_templated/tag-guides/*.md semantic-overrides.css style.css term-popup.js tests workflow/AGENTS.md workflow/README.md workflow/scripts scripts",
     "test": "playwright test tests/ui-behavior-checklist.test.mjs",
     "verify": "npm run lint && npm run format:check && npm test",
     "build": "npm run build:pages",
