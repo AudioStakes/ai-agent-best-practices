@@ -23,6 +23,15 @@
   --neutral: #475569;
   --neutral-bg: #f8fafc;
   --neutral-border: #d9e0e7;
+  --tone-good: var(--good);
+  --tone-good-bg: var(--good-bg);
+  --tone-good-border: var(--good-border);
+  --tone-bad: var(--negative);
+  --tone-bad-bg: var(--negative-bg);
+  --tone-bad-border: var(--negative-border);
+  --tone-neutral: var(--neutral);
+  --tone-neutral-bg: var(--neutral-bg);
+  --tone-neutral-border: var(--neutral-border);
 }
 
 * {
@@ -229,9 +238,9 @@ pre.code-example {
   margin: 0 0 0.45rem;
   padding: 0.12rem 0.5rem;
   border-radius: 999px;
-  background: #f8fafc;
-  color: #334155;
-  border: 1px solid #e2e8f0;
+  background: var(--tone-neutral-bg);
+  color: var(--tone-neutral);
+  border: 1px solid var(--tone-neutral-border);
   font-size: 0.84rem;
   font-weight: 800;
   letter-spacing: 0.03em;
@@ -701,11 +710,26 @@ h2#一言でいうと + p + .guideline-list li + li::before {
   display: inline-flex;
   align-items: center;
   padding: 0.42rem 0.72rem;
-  border: 1px solid #bfd5ff;
+  border: 1px solid var(--tone-neutral-border);
   border-radius: 999px;
-  background: #eaf2ff;
-  color: #174ea6;
+  background: var(--tone-neutral-bg);
+  color: var(--tone-neutral);
   font-weight: 750;
+}
+.term-chip-list[data-tone="good"] span {
+  border-color: var(--tone-good-border);
+  background: var(--tone-good-bg);
+  color: var(--tone-good);
+}
+.term-chip-list[data-tone="bad"] span {
+  border-color: var(--tone-bad-border);
+  background: var(--tone-bad-bg);
+  color: var(--tone-bad);
+}
+.term-chip-list[data-tone="neutral"] span {
+  border-color: var(--tone-neutral-border);
+  background: var(--tone-neutral-bg);
+  color: var(--tone-neutral);
 }
 .source-claims {
   margin: 1rem 0;
@@ -831,6 +855,13 @@ h2#一言でいうと + p + .guideline-list li + li::before {
     width: auto !important;
     max-width: none !important;
     padding: 11px 12px 12px;
+    pointer-events: none;
+  }
+  .term-popup[data-open="true"] {
+    pointer-events: none;
+  }
+  .term-popup-close {
+    pointer-events: auto;
   }
   .good-bad-pair,
   .comparison-box,

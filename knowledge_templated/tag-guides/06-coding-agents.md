@@ -30,7 +30,7 @@ AIはコードだけ見ても、プロジェクトの前提を知りません。
 
 必要なのは、たとえばこういう情報です。
 
-```text
+```tone-good.guideline
 - プロジェクトの目的
 - ディレクトリ構成
 - 主要な設計方針
@@ -56,13 +56,13 @@ AIはコードだけ見ても、プロジェクトの前提を知りません。
 
 悪い依頼はこうです。
 
-```text
+```tone-neutral.takeaway
 このバグを直して
 ```
 
 良い依頼はこうです。
 
-```text
+```tone-neutral.guideline
 まず関連ファイルを調査してください。
 原因を特定し、修正方針を説明してください。
 その後、最小変更で修正し、テストを実行してください。
@@ -70,7 +70,7 @@ AIはコードだけ見ても、プロジェクトの前提を知りません。
 
 つまり、流れはこうです。
 
-```text
+```tone-neutral.process
 調査
 ↓
 原因説明
@@ -96,13 +96,13 @@ AIはコードだけ見ても、プロジェクトの前提を知りません。
 
 悪い例：
 
-```text
+```tone-bad.risk
 このアプリをいい感じに改善して
 ```
 
 良い例：
 
-```text
+```tone-good.guideline
 ログイン画面のバリデーションエラー表示を改善してください。
 対象は src/pages/Login.tsx と関連テストのみです。
 既存APIの仕様は変更しないでください。
@@ -110,7 +110,7 @@ AIはコードだけ見ても、プロジェクトの前提を知りません。
 
 タスクを小さくすると、
 
-```text
+```tone-neutral.guideline
 - 影響範囲が読みやすい
 - テストしやすい
 - レビューしやすい
@@ -132,7 +132,7 @@ AIはコードだけ見ても、プロジェクトの前提を知りません。
 
 コードを書かせるだけでは不十分です。
 
-```text
+```tone-bad.risk
 - テストを実行する
 - lint を実行する
 - 型チェックを実行する
@@ -145,7 +145,7 @@ AIはコードだけ見ても、プロジェクトの前提を知りません。
 
 AIに「完了」を判断させるなら、完了条件はこういう形にすべきです。
 
-```text
+```tone-good.guideline
 - npm test が通る
 - npm run lint が通る
 - 対象機能の動作確認手順を説明できる
@@ -164,7 +164,7 @@ AIに「完了」を判断させるなら、完了条件はこういう形にす
 
 たとえば、
 
-```text
+```tone-neutral.guideline
 - APIレスポンス形式は変えない
 - DBスキーマは変えない
 - 既存テストは消さない
@@ -189,7 +189,7 @@ AIに「完了」を判断させるなら、完了条件はこういう形にす
 
 必要なのは、
 
-```text
+```tone-good.guideline
 - 依存関係をインストールできる
 - テストを実行できる
 - ビルドできる
@@ -217,7 +217,7 @@ Anthropicのハーネス系記事はこの観点が強いです。
 
 特に注意すべき操作は、
 
-```text
+```tone-good.risk
 - rm / delete 系
 - git push
 - npm publish
@@ -232,7 +232,7 @@ Anthropicのハーネス系記事はこの観点が強いです。
 
 基本方針はこうです。
 
-```text
+```tone-neutral.risk
 読み取りは広めに許可
 書き込みは作業範囲を限定
 破壊的操作は人間確認
@@ -252,7 +252,7 @@ AIがコードを変えたら、最後に説明させるべきです。
 
 見たいのは、
 
-```text
+```tone-neutral.question-checklist
 - 何を変えたか
 - なぜ変えたか
 - 影響範囲はどこか
@@ -278,7 +278,7 @@ OpenAI Codex系も、Anthropic Claude Code系も、共通して「文脈を渡�
 
 必要なのは、
 
-```text
+```tone-good.guideline
 - タスクの目的
 - 関連ファイル
 - 既存コードの意図
@@ -292,7 +292,7 @@ OpenAI Codex系も、Anthropic Claude Code系も、共通して「文脈を渡�
 
 共通する実務判断はこれです。
 
-```text
+```tone-neutral.guideline
 AIが変なコードを書いたら、
 まず「必要な文脈を渡していたか」を疑う
 ```
@@ -309,7 +309,7 @@ OpenAIとAnthropicの両方に共通する大事な点です。
 
 コーディングエージェントには、コード変更だけでなく、
 
-```text
+```tone-neutral.guideline
 - テストを走らせる
 - 失敗ログを読む
 - 原因を切り分ける
@@ -321,7 +321,7 @@ OpenAIとAnthropicの両方に共通する大事な点です。
 
 これは「エージェントらしさ」の中心です。
 
-```text
+```tone-neutral.process
 書く
 ↓
 実行する
@@ -343,7 +343,7 @@ OpenAIなら `AGENTS.md`、Anthropicなら `CLAUDE.md` のように、リポジ�
 
 ここに書くべきなのは、
 
-```text
+```tone-good.guideline
 - プロジェクト概要
 - セットアップ方法
 - テストコマンド
@@ -369,7 +369,7 @@ OpenAIとAnthropicのどちらも、外部情報やMCP的な接続で、エー�
 
 たとえば、
 
-```text
+```tone-neutral.guideline
 - GitHub issue
 - Linear / Jira
 - design docs
@@ -384,7 +384,7 @@ OpenAIとAnthropicのどちらも、外部情報やMCP的な接続で、エー�
 
 ただし、何でも接続すればよいわけではありません。
 
-```text
+```tone-neutral.risk
 必要な情報源だけ接続する
 読み取り権限を基本にする
 書き込み系は制限する
@@ -402,7 +402,7 @@ OpenAIとAnthropicの共通点として、完全自動化よりも、人間レ�
 
 特に、
 
-```text
+```tone-neutral.risk
 - 大きな設計変更
 - セキュリティ関連
 - 本番影響
@@ -423,7 +423,7 @@ OpenAIとAnthropicの共通点として、完全自動化よりも、人間レ�
 
 OpenAIもAnthropicも、コーディングエージェントには大きすぎる仕事を丸投げしないほうがよい、という方向性です。
 
-```text
+```tone-neutral.guideline
 小さい変更
 明確な完了条件
 限定されたファイル
@@ -436,7 +436,7 @@ OpenAIもAnthropicも、コーディングエージェントには大きすぎ�
 
 大きな機能開発を任せる場合も、
 
-```text
+```tone-neutral.guideline
 調査
 設計案
 小さな実装
@@ -459,7 +459,7 @@ OpenAIのCodexベストプラクティスは、かなり「どう依頼すると
 
 重要なのは、
 
-```text
+```tone-good.guideline
 - 何をしてほしいか
 - どのファイルを見るべきか
 - 期待する挙動
@@ -482,7 +482,7 @@ OpenAI系では、リポジトリ内にエージェント向けの指示ファ�
 
 ここには、
 
-```text
+```tone-neutral.guideline
 - セットアップ
 - テスト
 - スタイル
@@ -505,7 +505,7 @@ OpenAI系では、リポジトリ内にエージェント向けの指示ファ�
 
 OpenAI系の実践では、Codexに渡す仕事は、自然な開発単位に寄せると扱いやすいです。
 
-```text
+```tone-neutral.guideline
 - GitHub issueを解決する
 - バグを修正する
 - テストを追加する
@@ -529,7 +529,7 @@ Codex固有の環境、設定、外部接続、クラウド実行、MCPなどの
 
 考え方として拾うなら、
 
-```text
+```tone-neutral.takeaway
 コーディングエージェントが必要な情報源へアクセスできるようにする
 ```
 
@@ -547,7 +547,7 @@ AnthropicのClaude Code系では、かなり実務的な作業ループが重視
 
 典型的には、
 
-```text
+```tone-neutral.process
 探索する
 ↓
 計画する
@@ -575,7 +575,7 @@ Anthropic系では、`CLAUDE.md` をかなり重要な実践として扱いま�
 
 ここには、
 
-```text
+```tone-neutral.guideline
 - よく使うコマンド
 - コーディング規約
 - テスト方法
@@ -601,7 +601,7 @@ AnthropicのClaude Code系は、日常的な開発作業を型にする発想が
 
 たとえば、
 
-```text
+```tone-neutral.guideline
 - よく使う作業を slash command にする
 - 特定の作業を subagent に分ける
 - 作業後に hooks でテストや整形を走らせる
@@ -624,7 +624,7 @@ Anthropicの `auto mode` や `sandboxing` 系の記事では、エージェン�
 
 ポイントは、
 
-```text
+```tone-good.question-checklist
 - どの操作は自動で許可するか
 - どの操作は確認するか
 - どの操作は禁止するか
@@ -652,7 +652,7 @@ Anthropicのハーネス系記事は、コーディングエージェントを�
 
 でも、長時間の開発タスクでは、
 
-```text
+```tone-neutral.guideline
 - 環境を初期化する
 - タスクを与える
 - 途中状態を観測する
@@ -675,7 +675,7 @@ Anthropicのアプリ開発ハーネス系では、見た目や体験のよう�
 
 たとえば、
 
-```text
+```tone-neutral.question-checklist
 - UIが仕様通りか
 - 操作できるか
 - レイアウトが崩れていないか
@@ -715,7 +715,7 @@ Anthropicのアプリ開発ハーネス系では、見た目や体験のよう�
 
 コーディングエージェント系で一番大事なのは、これです。
 
-```text
+```tone-good.guideline
 AIにコードを書かせるのではなく、
 AIが安全にコードを読み、変更し、実行し、検証し、
 人間がレビューできる形で報告する環境を作ること。
@@ -723,7 +723,7 @@ AIが安全にコードを読み、変更し、実行し、検証し、
 
 実務向けにはこうです。
 
-```text
+```tone-neutral.process
 1. AGENTS.md / CLAUDE.md にプロジェクト作法を書く
 2. タスクを小さく切る
 3. まず調査・計画させる

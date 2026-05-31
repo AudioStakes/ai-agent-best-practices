@@ -1,5 +1,85 @@
 (() => {
   const VERSION = "20260531-mobile-top-close-1";
+  const toneScoring = {
+    bad: [
+      /返却値が長すぎる/,
+      /重要情報が埋もれる/,
+      /エラー理由が分からない/,
+      /エラー理由がわからない/,
+      /次に何をすべきかわからない/,
+      /次に何をすべきか分からない/,
+      /悪い例/,
+      /危険/,
+      /曖昧/,
+      /不明/,
+      /失敗/,
+      /多すぎる/,
+      /少なすぎる/,
+    ],
+    good: [
+      /次の判断に必要な情報だけを/,
+      /分かりやすく/,
+      /わかりやすく/,
+      /構造化して/,
+      /構造化する/,
+      /必要なら根拠も含めて返す/,
+      /良い例/,
+      /良いツール結果/,
+      /安全/,
+      /明確/,
+      /具体的/,
+    ],
+  };
+
+  function normalizeText(value) {
+    return String(value ?? "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function getSiblingText(node, limit = 1) {
+    const texts = [];
+    let current = node.previousElementSibling;
+
+    while (current && texts.length < limit) {
+      const text = normalizeText(current.textContent);
+      if (text) {
+        texts.push(text);
+      }
+      current = current.previousElementSibling;
+    }
+
+    return texts.join(" ");
+  }
+
+  function classifyToneChipList(list) {
+    const chips = Array.from(list.querySelectorAll("span")).map((chip) =>
+      normalizeText(chip.textContent),
+    );
+    const content = chips.join(" ");
+    const context = `${getSiblingText(list)} ${content}`;
+
+    if (toneScoring.bad.some((pattern) => pattern.test(context))) {
+      return "bad";
+    }
+
+    if (toneScoring.good.some((pattern) => pattern.test(context))) {
+      return "good";
+    }
+
+    return "neutral";
+  }
+
+  const chipLists = Array.from(document.querySelectorAll(".term-chip-list"));
+  for (const list of chipLists) {
+    const tone = classifyToneChipList(list);
+    list.dataset.tone = tone;
+
+    for (const chip of list.querySelectorAll("span")) {
+      chip.dataset.tone = tone;
+    }
+  }
+
   const terms = Array.from(
     document.querySelectorAll("a.term[data-description]"),
   );

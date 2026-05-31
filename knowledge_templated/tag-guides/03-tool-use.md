@@ -32,13 +32,13 @@ AIにとって重要なのは、ツール名、説明、入力項目、返却値
 
 たとえば悪いツールはこうです。
 
-```text
+```tone-neutral.code-example
 search(query)
 ```
 
 良いツールはこうです。
 
-```text
+```tone-neutral.code-example
 search_internal_docs(query, max_results)
 説明:
 社内ドキュメントから関連情報を検索する。
@@ -62,7 +62,7 @@ AIはツールの名前と説明を読んで、「いつ使うか」「何を入
 
 悪い例はこうです。
 
-```text
+```tone-bad.risk
 do_everything(input)
 ```
 
@@ -70,7 +70,7 @@ do_everything(input)
 
 良い例はこうです。
 
-```text
+```tone-good.guideline
 search_docs
 read_file
 create_draft
@@ -84,7 +84,7 @@ create_pull_request
 ただし、細かくしすぎても逆に迷います。
 重要なのは、**1つのツールが1つの明確な目的を持つこと**です。
 
-```text
+```tone-good.question-checklist
 何をするツールか
 いつ使うツールか
 何を入力すべきか
@@ -106,13 +106,13 @@ create_pull_request
 
 たとえば、
 
-```text
+```tone-neutral.code-example
 get_user_data
 ```
 
 だけでは足りません。
 
-```text
+```tone-neutral.risk
 get_customer_profile
 指定した customer_id の氏名、契約プラン、利用状況を取得する。
 請求履歴や支払い情報は含まない。
@@ -122,7 +122,7 @@ get_customer_profile
 
 特に重要なのはこの4つです。
 
-```text
+```tone-good.question-checklist
 いつ使うか
 何を入力するか
 何が返るか
@@ -142,7 +142,7 @@ get_customer_profile
 
 悪い返却値はこうです。
 
-```json
+```json.code-example
 {
   "result": "ok"
 }
@@ -152,7 +152,7 @@ get_customer_profile
 
 良い返却値はこうです。
 
-```json
+```json.code-example
 {
   "status": "success",
   "created_draft_id": "123",
@@ -166,7 +166,7 @@ get_customer_profile
 
 特に失敗時は重要です。
 
-```json
+```json.code-example
 {
   "status": "error",
   "error_code": "CUSTOMER_NOT_FOUND",
@@ -187,7 +187,7 @@ AIはエラー文を見て回復しようとするので、エラーも設計対
 
 たとえば、
 
-```text
+```tone-neutral.risk
 メールを送る
 ファイルを削除する
 支払いを実行する
@@ -200,7 +200,7 @@ PRを作る
 
 そのため、ツール利用では必ず以下を考えます。
 
-```text
+```tone-neutral.question-checklist
 読み取り専用か、書き込みありか
 元に戻せる操作か、不可逆操作か
 人間確認が必要か
@@ -221,7 +221,7 @@ PRを作る
 
 似たようなツールが並ぶと、
 
-```text
+```tone-neutral.code-example
 search
 web_search
 doc_search
@@ -233,7 +233,7 @@ find_info
 
 ツール数が増える場合は、
 
-```text
+```tone-neutral.guideline
 名前空間を分ける
 用途別にまとめる
 説明文で使い分けを書く
@@ -255,7 +255,7 @@ find_info
 
 重要なのは、
 
-```text
+```tone-good.question-checklist
 どのツールを呼んだか
 なぜそのツールを選んだか
 どんな引数を渡したか
@@ -269,7 +269,7 @@ find_info
 
 最初から大げさな評価基盤は不要ですが、最低限、
 
-```text
+```tone-neutral.code-example
 tool_name
 input
 output
@@ -294,7 +294,7 @@ Anthropic も、ツール・検索・メモリで拡張されたLLMを基本単�
 
 ここで大事なのは、エージェント設計はプロンプトだけでは終わらないということです。
 
-```text
+```tone-good.question-checklist
 どのツールを使えるか
 どの順番で使うか
 どの権限を与えるか
@@ -316,7 +316,7 @@ Anthropic も、ツール定義の説明、引数、返却値、使い分けを�
 
 共通する大事な点は、
 
-```text
+```tone-neutral.guideline
 AIに「何となく使わせる」のではなく、
 構造化されたツール定義として渡す
 ```
@@ -325,7 +325,7 @@ AIに「何となく使わせる」のではなく、
 
 特に重要なのは、
 
-```text
+```tone-good.guideline
 ツール名
 説明
 引数
@@ -349,7 +349,7 @@ OpenAI も Anthropic も、ツール利用を単発の呼び出しではなく�
 
 たとえば、
 
-```text
+```tone-neutral.process
 情報検索
 ↓
 判断
@@ -365,7 +365,7 @@ OpenAI も Anthropic も、ツール利用を単発の呼び出しではなく�
 
 ツールだけを渡して「適当に使って」ではなく、
 
-```text
+```tone-neutral.question-checklist
 どの段階で使うか
 ツール結果をどう評価するか
 次のステップへどうつなぐか
@@ -386,7 +386,7 @@ Anthropic は、ツール利用時の明確な制約、環境からのフィー�
 
 共通する実務判断はこれです。
 
-```text
+```tone-neutral.risk
 読み取り系ツールは比較的自由に使わせる
 書き込み系ツールは確認を入れる
 不可逆操作は原則人間承認
@@ -406,7 +406,7 @@ OpenAI も Anthropic も、ツール呼び出しの結果をモデルが読み�
 
 たとえば、
 
-```text
+```tone-neutral.process
 検索結果が少ない → クエリを変える
 テストが失敗した → 修正する
 ファイルが存在しない → ユーザーに確認する
@@ -431,7 +431,7 @@ OpenAI の特徴は、ツール利用を built-in tools と function calling に
 
 たとえば、
 
-```text
+```tone-neutral.guideline
 Web search
 File search
 Computer use
@@ -454,7 +454,7 @@ OpenAIでは、function calling により、ツールの引数を構造化して
 
 これは実務上かなり大事です。
 
-```text
+```tone-neutral.code-example
 自然文で「検索して」ではなく、
 search_docs({ query, max_results }) のように呼ぶ
 ```
@@ -463,7 +463,7 @@ search_docs({ query, max_results }) のように呼ぶ
 
 スキーマがあることで、
 
-```text
+```tone-neutral.guideline
 入力漏れ
 型の間違い
 曖昧な引数
@@ -486,7 +486,7 @@ OpenAIで実装するなら便利ですが、概念としては製品依存で�
 
 ただし、考え方としては重要です。
 
-```text
+```tone-neutral.guideline
 ツールを呼べるだけではなく、
 ツール利用を観測し、
 必要なら制御し、
@@ -507,7 +507,7 @@ OpenAI の built-in / hosted tools は、検索、ファイル処理、コード
 
 ただし、AIエージェントのベストプラクティスとしては、
 
-```text
+```tone-neutral.takeaway
 自前で作るか、提供ツールを使うか
 ```
 
@@ -527,7 +527,7 @@ Anthropicのツール利用系で最も重要なのがこれです。
 
 ACIは、ざっくり言うと、
 
-```text
+```tone-neutral.takeaway
 AIがコンピュータやツールを使いやすくするためのインターフェース設計
 ```
 
@@ -537,7 +537,7 @@ AIがコンピュータやツールを使いやすくするためのインター
 
 具体的には、
 
-```text
+```tone-neutral.guideline
 ツール名
 説明
 入力スキーマ
@@ -563,7 +563,7 @@ Anthropic は、ツール定義の説明をかなり重視します。
 
 ただ「このツールは検索します」では不十分です。
 
-```text
+```tone-bad.risk
 どんな時に使うか
 どんな時に使わないか
 入力の例
@@ -587,7 +587,7 @@ Anthropic は、ツールから返す情報が多すぎても少なすぎても�
 
 多すぎると、
 
-```text
+```tone-bad.risk
 コンテキストを圧迫する
 重要情報が埋もれる
 判断が遅くなる
@@ -595,7 +595,7 @@ Anthropic は、ツールから返す情報が多すぎても少なすぎても�
 
 少なすぎると、
 
-```text
+```tone-bad.risk
 次の判断ができない
 再問い合わせが増える
 誤解する
@@ -615,7 +615,7 @@ Anthropicの記事で特に実務的に大事なのがこれです。
 
 たとえば既存APIがこうだとします。
 
-```text
+```tone-neutral.guideline
 GET /customers
 GET /contracts
 GET /billing
@@ -624,13 +624,13 @@ GET /tickets
 
 AIには、より目的単位のツールとして渡したほうがよいことがあります。
 
-```text
+```tone-neutral.code-example
 get_customer_support_context(customer_id)
 ```
 
 返却値：
 
-```text
+```tone-neutral.guideline
 顧客概要
 契約状態
 最近の問い合わせ
@@ -652,7 +652,7 @@ Anthropic は、ツール定義や説明を改善するときに、エージェ�
 
 たとえば、
 
-```text
+```tone-neutral.question-checklist
 このツール説明でAIは正しく使えるか
 似たツールと混同しないか
 返却値は十分か
@@ -688,7 +688,7 @@ Anthropic は、ツール定義や説明を改善するときに、エージェ�
 
 ツール利用系で一番大事なのは、これです。
 
-```text
+```tone-good.guideline
 ツールを増やすことではなく、
 AIが正しく選び、正しく入力し、
 結果を読んで次の行動に移れるようにすること。
@@ -696,7 +696,7 @@ AIが正しく選び、正しく入力し、
 
 実務向けに言い換えると、
 
-```text
+```tone-neutral.process
 1. AIに何の道具を渡すか決める
 2. その道具をいつ使うか説明する
 3. 入力と出力を構造化する

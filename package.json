@@ -12,7 +12,9 @@
     "save:singlefile:dry-run": "node workflow/scripts/save_singlefile.js --dry-run",
     "save:content": "node workflow/scripts/save_content.js",
     "save:content:dry-run": "node workflow/scripts/save_content.js --dry-run",
-    "build:index": "node workflow/scripts/build_singlefile_index.js"
+    "build:index": "node workflow/scripts/build_singlefile_index.js",
+    "annotate:tag-guides": "node workflow/scripts/annotate_tag_guides_fences.js",
+    "build:tag-guides": "npm run annotate:tag-guides && node workflow/scripts/build_tag_guides_html.js"
   },
   "devDependencies": {
     "@biomejs/biome": "latest",
@@ -23,6 +25,7 @@
     "csv-parse": "latest",
     "csv-stringify": "latest",
     "jsdom": "latest",
+    "marked": "^18.0.4",
     "single-file-cli": "latest",
     "turndown": "latest"
   },

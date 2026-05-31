@@ -1,594 +1,340 @@
-<!DOCTYPE html>
-
+<!doctype html>
 <html lang="ja">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>06.
-コーディングエージェント系</title>
-<link href="../style.css?v=20260531-clean-style-1" rel="stylesheet"/>
-<script defer="" src="../term-popup.js?v=20260531-mobile-term-title-1"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>06. コーディングエージェント系</title>
+  <link rel="stylesheet" href="../style.css?v=20260531-semantic-fences-1" />
+  <script src="../term-popup.js?v=20260531-semantic-fences-1" defer></script>
 </head>
 <body>
-<div class="container"><p class="nav"><a href="../index.html">← Index</a><a href="../domain-glossary.html">用語集</a></p><article class="article"><h1 id="06-コーディングエージェント系">06.
-コーディングエージェント系</h1><p class="rating-guide">★は重要度を表します。★★★★★ほど、設計・運用時に優先して確認すべき項目です。</p>
-<h2 id="対象タグ">対象タグ</h2>
-<p data-no-term="true"><code>coding_agents</code></p>
+<div class="container"><p class="nav"><a href="../index.html">← Index</a><a href="../domain-glossary.html">用語集</a></p><article class="article"><h1 id="06-コーテ-ィンク-エーシ-ェント系">06. コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>系</h1><p class="rating-guide">★は重要度を表します。★★★★★ほど、設計・運用時に優先して確認すべき項目です。</p>
+<h2 id="対象タク">対象タグ</h2>
+<p><code>coding_agents</code></p>
 <h2 id="対象記事">対象記事</h2>
-<ul data-no-term="true">
-<li>OpenAI — <a href="https://developers.openai.com/codex/learn/best-practices">Best
-practices – Codex</a></li>
-<li>Anthropic — <a href="https://www.anthropic.com/engineering/claude-code-best-practices">Claude
-Code: Best practices for agentic coding</a></li>
-<li>Anthropic — <a href="https://www.anthropic.com/engineering/harness-design-long-running-apps">Harness
-design for long-running application development</a></li>
-<li>Anthropic — <a href="https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents">Effective
-harnesses for long-running agents</a></li>
-<li>Anthropic — <a href="https://www.anthropic.com/engineering/claude-code-auto-mode">How
-we built Claude Code auto mode: a safer way to skip permissions</a></li>
-<li>Anthropic — <a href="https://www.anthropic.com/engineering/claude-code-sandboxing">Making
-Claude Code more secure and autonomous with sandboxing</a></li>
-<li>Anthropic — <a href="https://www.anthropic.com/engineering/how-we-contain-claude">How
-we contain Claude across products</a></li>
+<ul>
+<li>OpenAI — Best practices – Codex</li>
+<li>Anthropic — Claude Code: Best practices for agentic coding</li>
+<li>Anthropic — Harness design for long-running application development</li>
+<li>Anthropic — Effective harnesses for long-running agents</li>
+<li>Anthropic — How we built Claude Code auto mode</li>
+<li>Anthropic — Making Claude Code more secure and autonomous with sandboxing</li>
+<li>Anthropic — How we contain Claude across products</li>
 </ul>
 <h2 id="結論">結論</h2>
-<p>結論から言うと、コーディング<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>系で一番大事なのは、**「<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>にコードを書かせること」ではなく、「調査・変更・検証・安全確認まで回せる作業環境を作ること」**です。</p>
-<h2 id="どの記事でも共通">どの記事でも共通</h2>
-<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
-<h3 id="1-リポジトリコンテキストを明示的に与える">1. リポジトリ<a class="term" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。" href="../domain-glossary.html#context">コンテキスト</a>を明示的に与える</h3>
-<p>コーディング<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>で最重要です。</p>
-<p><a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>はコードだけ見ても、プロジェクトの前提を知りません。</p>
+<p>結論から言うと、コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>系で一番大事なのは、**「AIにコードを書かせること」ではなく、「調査・変更・検証・安全確認まで回せる作業環境を作ること」**です。</p>
+<h2 id="と-の記事て-も共通">どの記事でも共通</h2>
+<h3 id="1-リホ-シ-トリ文脈を明示的に与える">1. リポジトリ文脈を明示的に与える</h3>
+<p><strong>重要度: 5</strong></p>
+<p>コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>で最重要です。</p>
+<p>AIはコードだけ見ても、プロジェクトの前提を知りません。</p>
 <p>必要なのは、たとえばこういう情報です。</p>
-<ul class="guideline-list">
-<li>プロジェクトの目的</li>
-<li>ディレクトリ構成</li>
-<li>主要な設計方針</li>
-<li>触ってよい範囲</li>
-<li>触ってはいけない範囲</li>
-<li>テストコマンド</li>
-<li>lint / format コマンド</li>
-<li>PRやコミットのルール</li>
-<li>よくある失敗</li>
-</ul>
-<p>ここが弱いと、<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>は「それっぽい修正」はできますが、プロジェクトに合った修正ができません。</p>
-<p>コーディング<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>では、<strong><a class="term" data-description="エージェントが適切に判断できるように、目的、背景、制約、関連情報、ツール結果、成功条件を設計して渡すこと。単なるプロンプト文面ではなく、利用可能な文脈全体を扱う。" href="../domain-glossary.html#context-engineering">コンテキスト設計</a>より先にリポジトリ<a class="term" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。" href="../domain-glossary.html#context">コンテキスト</a></strong>です。</p>
-<hr/>
-<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
-<h3 id="2-いきなり実装させずまず調査計画させる">2.
-いきなり実装させず、まず調査・計画させる</h3>
+<ul class="guideline-list"><li>プロジェクトの目的</li><li>ディレクトリ構成</li><li>主要な設計方針</li><li>触ってよい範囲</li><li>触ってはいけない範囲</li><li>テストコマンド</li><li>lint / format コマンド</li><li>PRやコミットのルール</li><li>よくある失敗</li></ul>
+<p>ここが弱いと、AIは「それっぽい修正」はできますが、プロジェクトに合った修正ができません。</p>
+<p>コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>では、<strong>プロンプトより先にリポジトリ文脈</strong>です。</p>
+<hr>
+<h3 id="2-いきなり実装させす-ます-調査-計画させる">2. いきなり実装させず、まず調査・計画させる</h3>
+<p><strong>重要度: 5</strong></p>
 <p>かなり多くの記事で共通するポイントです。</p>
 <p>悪い依頼はこうです。</p>
 <div class="takeaway-box">このバグを直して</div>
 <p>良い依頼はこうです。</p>
-<ul class="guideline-list">
-<li>まず関連ファイルを調査してください。</li>
-<li>原因を特定し、修正方針を説明してください。</li>
-<li>その後、最小変更で修正し、テストを実行してください。</li>
-</ul>
+<ul class="guideline-list"><li>まず関連ファイルを調査してください。</li><li>原因を特定し、修正方針を説明してください。</li><li>その後、最小変更で修正し、テストを実行してください。</li></ul>
 <p>つまり、流れはこうです。</p>
-<ol class="flow-list">
-<li>調査</li>
-<li>原因説明</li>
-<li>修正方針</li>
-<li>実装</li>
-<li>検証</li>
-</ol>
+<ol class="process-steps"><li>調査</li><li>原因説明</li><li>修正方針</li><li>実装</li><li>検証</li></ol>
 <p>いきなりコードを書かせると、既存設計を無視したり、不要に大きい変更をしがちです。</p>
-<p>コーディング<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>には、まず
-<strong>読む・考える・計画する</strong> をやらせるのが大事です。</p>
-<hr/>
-<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
-<h3 id="3-小さく明確なタスクに分ける">3.
-小さく、明確なタスクに分ける</h3>
-<p>コーディング<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>に大きすぎる依頼をすると失敗しやすいです。</p>
+<p>コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>には、まず <strong>読む・考える・計画する</strong> をやらせるのが大事です。</p>
+<hr>
+<h3 id="3-小さく-明確なタスクに分ける">3. 小さく、明確なタスクに分ける</h3>
+<p><strong>重要度: 5</strong></p>
+<p>コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>に大きすぎる依頼をすると失敗しやすいです。</p>
 <p>悪い例：</p>
-<div class="takeaway-box">このアプリをいい感じに改善して</div>
+<ul class="risk-box"><li>このアプリをいい感じに改善して</li></ul>
 <p>良い例：</p>
-<ul class="guideline-list">
-<li>ログイン画面のバリデーションエラー表示を改善してください。</li>
-<li>対象は src/pages/Login.tsx と関連テストのみです。</li>
-<li>既存APIの仕様は変更しないでください。</li>
-</ul>
+<ul class="guideline-list"><li>ログイン画面のバリデーションエラー表示を改善してください。</li><li>対象は src/pages/Login.tsx と関連テストのみです。</li><li>既存APIの仕様は変更しないでください。</li></ul>
 <p>タスクを小さくすると、</p>
-<div class="term-chip-list">
-<span>影響範囲が読みやすい</span>
-<span>テストしやすい</span>
-<span>レビューしやすい</span>
-<span>ロールバックしやすい</span>
-<span>エージェントが迷いにくい</span>
-</div>
+<ul class="guideline-list"><li>影響範囲が読みやすい</li><li>テストしやすい</li><li>レビューしやすい</li><li>ロールバックしやすい</li><li>AIが迷いにくい</li></ul>
 <p>です。</p>
-<p>コーディング<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>は、広すぎる自由度より、<strong>狭く明確な作業範囲</strong>のほうが強いです。</p>
-<hr/>
-<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
-<h3 id="4-テストlint実行確認まで含める">4.
-テスト・lint・実行確認まで含める</h3>
-<p>コーディング<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>系で、これは絶対に外せません。</p>
+<p>コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>は、広すぎる自由度より、<strong>狭く明確な作業範囲</strong>のほうが強いです。</p>
+<hr>
+<h3 id="4-テスト-lint-実行確認まて-含める">4. テスト・lint・実行確認まで含める</h3>
+<p><strong>重要度: 5</strong></p>
+<p>コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>系で、これは絶対に外せません。</p>
 <p>コードを書かせるだけでは不十分です。</p>
-<ol class="process-steps">
-<li>テストを実行する</li>
-<li>lint を実行する</li>
-<li>型チェックを実行する</li>
-<li>ビルドする</li>
-<li>必要なら手動確認手順を書く</li>
-<li>失敗したら原因を見て修正する</li>
-</ol>
+<ul class="risk-box"><li>テストを実行する</li><li>lint を実行する</li><li>型チェックを実行する</li><li>ビルドする</li><li>必要なら手動確認手順を書く</li><li>失敗したら原因を見て修正する</li></ul>
 <p>までがセットです。</p>
-<p><a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>に「完了」を判断させるなら、完了条件はこういう形にすべきです。</p>
-<ul class="checklist question-checklist"><li><code>npm test</code> が通るか</li><li><code>npm run lint</code> が通るか</li><li>対象機能の動作確認手順を説明できるか</li><li>変更理由を説明できるか</li></ul>
-<p><strong>検証できないコード変更は、<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>に任せるには危ない</strong>です。</p>
-<hr/>
-<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
-<h3 id="5-成功条件禁止事項変更範囲を明示する">5.
-成功条件・禁止事項・変更範囲を明示する</h3>
-<p>コーディング<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>には、何をしてよくて、何をしてはいけないかを明示する必要があります。</p>
+<p>AIに「完了」を判断させるなら、完了条件はこういう形にすべきです。</p>
+<ul class="guideline-list"><li>npm test が通る</li><li>npm run lint が通る</li><li>対象機能の動作確認手順を説明できる</li><li>変更理由を説明できる</li></ul>
+<p><strong>検証できないコード変更は、<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>に任せるには危ない</strong>です。</p>
+<hr>
+<h3 id="5-成功条件-禁止事項-変更範囲を明示する">5. 成功条件・禁止事項・変更範囲を明示する</h3>
+<p><strong>重要度: 5</strong></p>
+<p>コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>には、何をしてよくて、何をしてはいけないかを明示する必要があります。</p>
 <p>たとえば、</p>
-<div class="term-chip-list">
-<span>APIレスポンス形式は変えない</span>
-<span>DBスキーマは変えない</span>
-<span>既存テストは消さない</span>
-<span>依存ライブラリは追加しない</span>
-<span>UI文言は指定されたものだけ変更する</span>
-<span>大きなリファクタリングはしない</span>
-</div>
-<p>こういう制約がないと、<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>は「きれいにする」つもりで余計な変更をします。</p>
-<p>コーディング<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>では、<strong>何をするか</strong>と同じくらい、<strong>何をしないか</strong>が重要です。</p>
-<hr/>
-<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
-<h3 id="6-作業環境ハーネスを整える">6. 作業環境・ハーネスを整える</h3>
-<p>本格的に使うなら重要度★★★★★に近いです。</p>
-<p>コーディング<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>は、環境が整っていないとかなり弱くなります。</p>
+<ul class="guideline-list"><li>APIレスポンス形式は変えない</li><li>DBスキーマは変えない</li><li>既存テストは消さない</li><li>依存ライブラリは追加しない</li><li>UI文言は指定されたものだけ変更する</li><li>大きなリファクタリングはしない</li></ul>
+<p>こういう制約がないと、AIは「きれいにする」つもりで余計な変更をします。</p>
+<p>コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>では、<strong>何をするか</strong>と同じくらい、<strong>何をしないか</strong>が重要です。</p>
+<hr>
+<h3 id="6-作業環境-ハーネスを整える">6. 作業環境・ハーネスを整える</h3>
+<p><strong>重要度: 4</strong></p>
+<p>本格的に使うなら重要度5に近いです。</p>
+<p>コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>は、環境が整っていないとかなり弱くなります。</p>
 <p>必要なのは、</p>
-<ol class="process-steps">
-<li>依存関係をインストールできる</li>
-<li>テストを実行できる</li>
-<li>ビルドできる</li>
-<li>ログを見られる</li>
-<li>失敗を再現できる</li>
-<li>初期状態へ戻せる</li>
-<li>評価用タスクを繰り返し実行できる</li>
-</ol>
+<ul class="guideline-list"><li>依存関係をインストールできる</li><li>テストを実行できる</li><li>ビルドできる</li><li>ログを見られる</li><li>失敗を再現できる</li><li>初期状態へ戻せる</li><li><a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>用タスクを繰り返し実行できる</li></ul>
 <p>という環境です。</p>
 <p>Anthropicのハーネス系記事はこの観点が強いです。</p>
-<p>個人利用なら最初は軽くてよいですが、チームや業務で使うなら、<strong><a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>が検証できる環境</strong>は必須です。</p>
-<hr/>
-<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
-<h3 id="7-ツール権限サンドボックス人間レビューを設計する">7. <a class="term" data-description="ツールごとに許可される読み取り、書き込み、実行、送信、削除などの操作範囲。ガードレールや人間確認と組み合わせて管理する。" href="../domain-glossary.html#tool-permission">ツール権限</a>・サンドボックス・<a class="term" data-description="エージェントの出力、判断、ツール利用、外部送信、高リスク操作などを人間が確認すること。完全自動化せず、人間の判断を挟む安全制御として使う。" href="../domain-glossary.html#human-review">人間レビュー</a>を設計する</h3>
-<p>コーディング<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>は、ファイルを書き換え、コマンドを実行し、外部通信をする可能性があります。</p>
+<p>個人利用なら最初は軽くてよいですが、チームや業務で使うなら、<strong><a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>が検証できる環境</strong>は必須です。</p>
+<hr>
+<h3 id="7-権限-サント-ホ-ックス-人間確認を設計する">7. 権限・サンドボックス・人間確認を設計する</h3>
+<p><strong>重要度: 5</strong></p>
+<p>コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>は、ファイルを書き換え、コマンドを実行し、外部通信をする可能性があります。</p>
 <p>なので、安全設計が必要です。</p>
 <p>特に注意すべき操作は、</p>
-<ul class="risk-box"><li><code>rm</code> / delete 系</li><li><code>git push</code></li><li><code>npm publish</code></li><li>本番環境への操作</li><li>秘密情報へのアクセス</li><li>外部API呼び出し</li><li>パッケージインストール</li><li>権限昇格</li></ul>
+<ul class="risk-box"><li>rm / delete 系</li><li>git push</li><li>npm publish</li><li>本番環境への操作</li><li>秘密情報へのアクセス</li><li>外部API呼び出し</li><li>パッケージインストール</li><li>権限昇格</li></ul>
 <p>です。</p>
 <p>基本方針はこうです。</p>
-<div class="risk-ladder">
-<div class="risk-item risk-low">読み取りは広めに許可</div>
-<div class="risk-item risk-mid">書き込みは作業範囲を限定</div>
-<div class="risk-item risk-mid">破壊的操作は人間レビュー</div>
-<div class="risk-item risk-high">外部送信は人間レビュー</div>
-<div class="risk-item risk-mid">秘密情報には触らせない</div>
-</div>
-<p>コーディング<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>は便利ですが、<strong>実行権限を持った<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a></strong>なので、セキュリティはかなり重要です。</p>
-<hr/>
-<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
+<ul class="risk-box"><li>読み取りは広めに許可</li><li>書き込みは作業範囲を限定</li><li>破壊的操作は人間確認</li><li>外部送信は人間確認</li><li>秘密情報には触らせない</li></ul>
+<p>コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>は便利ですが、<strong>実行権限を持ったAI</strong>なので、セキュリティはかなり重要です。</p>
+<hr>
 <h3 id="8-変更内容を説明させる">8. 変更内容を説明させる</h3>
-<p><a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>がコードを変えたら、最後に説明させるべきです。</p>
+<p><strong>重要度: 4</strong></p>
+<p>AIがコードを変えたら、最後に説明させるべきです。</p>
 <p>見たいのは、</p>
-<div class="term-chip-list">
-<span>何を変えたか</span>
-<span>なぜ変えたか</span>
-<span>影響範囲はどこか</span>
-<span>実行したテストは何か</span>
-<span>残っている懸念は何か</span>
-</div>
+<ul class="checklist question-checklist"><li>何を変えたか</li><li>なぜ変えたか</li><li>影響範囲はどこか</li><li>実行したテストは何か</li><li>残っている懸念は何か</li></ul>
 <p>です。</p>
 <p>これはレビュー効率に効きます。</p>
 <p>単に「完了しました」ではなく、<strong>人間がレビューしやすい報告</strong>までが成果物です。</p>
-<hr/>
-<h2 id="openaiとanthropicで共通">OpenAIとAnthropicで共通</h2>
-<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
-<h3 id="1-良いコーディングには十分なコンテキストが必要">1.
-良いコーディングには十分なコンテキストが必要</h3>
-<p>OpenAI Codex系も、Anthropic Claude
-Code系も、共通して「<a class="term" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。" href="../domain-glossary.html#context">コンテキスト</a>を渡すこと」を重視します。</p>
+<hr>
+<h2 id="OpenAIとAnthropicて-共通">OpenAIとAnthropicで共通</h2>
+<h3 id="1-良いコーテ-ィンク-には十分な文脈か-必要">1. 良いコーディングには十分な文脈が必要</h3>
+<p><strong>重要度: 5</strong></p>
+<p>OpenAI Codex系も、Anthropic Claude Code系も、共通して「文脈を渡すこと」を重視します。</p>
 <p>必要なのは、</p>
-<div class="term-chip-list">
-<span>タスクの目的</span>
-<span>関連ファイル</span>
-<span>既存コードの意図</span>
-<span>テスト方法</span>
-<span>期待する出力</span>
-<span>制約</span>
-<span>完了条件</span>
-</div>
+<ul class="guideline-list"><li>タスクの目的</li><li>関連ファイル</li><li>既存コードの意図</li><li>テスト方法</li><li>期待する出力</li><li>制約</li><li>完了条件</li></ul>
 <p>です。</p>
 <p>共通する実務判断はこれです。</p>
-<div class="term-chip-list">
-<span>エージェントが変なコードを書いたら、</span>
-<span>まず「必要なコンテキストを渡していたか」を疑う</span>
-</div>
-<p>コーディング<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>では、モデル性能よりも
-<strong><a class="term" data-description="エージェントが適切に判断できるように、目的、背景、制約、関連情報、ツール結果、成功条件を設計して渡すこと。単なるプロンプト文面ではなく、利用可能な文脈全体を扱う。" href="../domain-glossary.html#context-engineering">コンテキスト設計</a>の差</strong> がかなり出ます。</p>
-<hr/>
-<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
-<h3 id="2-テスト実行までを作業に含める">2.
-テスト実行までを作業に含める</h3>
+<ul class="guideline-list"><li>AIが変なコードを書いたら、</li><li>まず「必要な文脈を渡していたか」を疑う</li></ul>
+<p>コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>では、モデル性能よりも <strong><a class="term" href="../domain-glossary.html#context-engineering" data-description="エージェントが適切に判断できるように、目的、背景、制約、関連情報、ツール結果、成功条件を設計して渡すこと。単なるプロンプト文面ではなく、利用可能な文脈全体を扱う。">コンテキスト設計</a>の差</strong> がかなり出ます。</p>
+<hr>
+<h3 id="2-テスト実行まて-を作業に含める">2. テスト実行までを作業に含める</h3>
+<p><strong>重要度: 5</strong></p>
 <p>OpenAIとAnthropicの両方に共通する大事な点です。</p>
-<p>コーディング<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>には、コード変更だけでなく、</p>
-<ol class="process-steps">
-<li>テストを走らせる</li>
-<li>失敗ログを読む</li>
-<li>原因を切り分ける</li>
-<li>修正する</li>
-<li>再テストする</li>
-</ol>
+<p>コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>には、コード変更だけでなく、</p>
+<ul class="guideline-list"><li>テストを走らせる</li><li>失敗ログを読む</li><li>原因を切り分ける</li><li>修正する</li><li>再テストする</li></ul>
 <p>までやらせます。</p>
-<p>これは「<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>らしさ」の中心です。</p>
-<ol class="flow-list">
-<li>書く</li>
-<li>実行する</li>
-<li>結果を見る</li>
-<li>直す</li>
-</ol>
+<p>これは「<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>らしさ」の中心です。</p>
+<ol class="process-steps"><li>書く</li><li>実行する</li><li>結果を見る</li><li>直す</li></ol>
 <p>のループが作れるからです。</p>
-<hr/>
-<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
-<h3 id="3-リポジトリ内の指示ファイルを活用する">3.
-リポジトリ内の指示ファイルを活用する</h3>
-<p>OpenAIなら <code>AGENTS.md</code>、Anthropicなら
-<code>CLAUDE.md</code>
-のように、リポジトリ内に恒久的な作業指示を置く発想があります。</p>
+<hr>
+<h3 id="3-リホ-シ-トリ内の指示ファイルを活用する">3. リポジトリ内の指示ファイルを活用する</h3>
+<p><strong>重要度: 5</strong></p>
+<p>OpenAIなら <code>AGENTS.md</code>、Anthropicなら <code>CLAUDE.md</code> のように、リポジトリ内に恒久的な作業指示を置く発想があります。</p>
 <p>ここに書くべきなのは、</p>
-<div class="term-chip-list">
-<span>プロジェクト概要</span>
-<span>セットアップ方法</span>
-<span>テストコマンド</span>
-<span>コーディング規約</span>
-<span>注意すべきファイル</span>
-<span>禁止事項</span>
-<span>PR前チェック</span>
-</div>
+<ul class="guideline-list"><li>プロジェクト概要</li><li>セットアップ方法</li><li>テストコマンド</li><li>コーディング規約</li><li>注意すべきファイル</li><li>禁止事項</li><li>PR前チェック</li></ul>
 <p>です。</p>
 <p>これはかなり重要です。</p>
-<p>毎回の指示に長く書くより、<strong>リポジトリ側に作業ルールを置く</strong>ほうが安定します。</p>
-<hr/>
-<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
-<h3 id="4-外部情報やmcpで必要なコンテキストを補う">4.
-外部情報やMCPで必要なコンテキストを補う</h3>
-<p>OpenAIとAnthropicのどちらも、外部情報や<a class="term" data-description="LLMアプリケーションが外部ツールやデータソースと接続するための標準プロトコル。略称は MCP。用語集では初出のみ正式名を使い、以後は MCP として扱う。" href="../domain-glossary.html#model-context-protocol">Model Context
-Protocol（MCP）</a>による接続で、<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>の<a class="term" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。" href="../domain-glossary.html#context">コンテキスト</a>を補う考え方があります。</p>
+<p>毎回プロンプトに長く書くより、<strong>リポジトリ側に作業ルールを置く</strong>ほうが安定します。</p>
+<hr>
+<h3 id="4-外部情報やMCPて-必要な文脈を補う">4. 外部情報やMCPで必要な文脈を補う</h3>
+<p><strong>重要度: 4</strong></p>
+<p>OpenAIとAnthropicのどちらも、外部情報やMCP的な接続で、<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>の文脈を補う考え方があります。</p>
 <p>たとえば、</p>
-<div class="term-chip-list">
-<span>GitHub issue</span>
-<span>Linear / Jira</span>
-<span>design docs</span>
-<span>API docs</span>
-<span>logs</span>
-<span>analytics</span>
-<span>database schema</span>
-<span>internal docs</span>
-</div>
+<ul class="guideline-list"><li>GitHub issue</li><li>Linear / Jira</li><li>design docs</li><li>API docs</li><li>logs</li><li>analytics</li><li>database schema</li><li>internal docs</li></ul>
 <p>を参照できるようにする。</p>
 <p>ただし、何でも接続すればよいわけではありません。</p>
-<div class="risk-ladder">
-<div class="risk-item risk-mid">必要な情報源だけ接続する</div>
-<div class="risk-item risk-low">読み取り権限を基本にする</div>
-<div class="risk-item risk-mid">書き込み系は制限する</div>
-</div>
+<ul class="risk-box"><li>必要な情報源だけ接続する</li><li>読み取り権限を基本にする</li><li>書き込み系は制限する</li></ul>
 <p>が大事です。</p>
-<hr/>
-<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
-<h3 id="5-人間レビュー承認を残す">5. 人間レビュー・<a class="term" data-description="エージェントが特定の操作を実行する前に、人間や管理者が明示的に許可すること。特に送信、削除、購入、公開、本番操作などで使う。" href="../domain-glossary.html#approval">承認</a>を残す</h3>
-<p>OpenAIとAnthropicの共通点として、完全自動化よりも、<a class="term" data-description="エージェントの出力、判断、ツール利用、外部送信、高リスク操作などを人間が確認すること。完全自動化せず、人間の判断を挟む安全制御として使う。" href="../domain-glossary.html#human-review">人間レビュー</a>を組み込む発想が重要です。</p>
+<hr>
+<h3 id="5-人間レヒ-ュー-承認を残す">5. <a class="term" href="../domain-glossary.html#human-review" data-description="エージェントの出力、判断、ツール利用、外部送信、高リスク操作などを人間が確認すること。完全自動化せず、人間の判断を挟む安全制御として使う。">人間レビュー</a>・<a class="term" href="../domain-glossary.html#approval" data-description="エージェントが特定の操作を実行する前に、人間や管理者が明示的に許可すること。特に送信、削除、購入、公開、本番操作などで使う。">承認</a>を残す</h3>
+<p><strong>重要度: 5</strong></p>
+<p>OpenAIとAnthropicの共通点として、完全自動化よりも、<a class="term" href="../domain-glossary.html#human-review" data-description="エージェントの出力、判断、ツール利用、外部送信、高リスク操作などを人間が確認すること。完全自動化せず、人間の判断を挟む安全制御として使う。">人間レビュー</a>を組み込む発想が重要です。</p>
 <p>特に、</p>
-<div class="risk-ladder">
-<div class="risk-item risk-mid">大きな設計変更</div>
-<div class="risk-item risk-mid">セキュリティ関連</div>
-<div class="risk-item risk-high">本番影響</div>
-<div class="risk-item risk-mid">依存関係追加</div>
-<div class="risk-item risk-high">削除・破壊的操作</div>
-<div class="risk-item risk-mid">外部公開</div>
-</div>
-<p>は<a class="term" data-description="エージェントの出力、判断、ツール利用、外部送信、高リスク操作などを人間が確認すること。完全自動化せず、人間の判断を挟む安全制御として使う。" href="../domain-glossary.html#human-review">人間レビュー</a>を入れるべきです。</p>
-<p>コーディング<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>では、<strong>PRを作るところまで自動化しても、mergeは人間が確認する</strong>くらいが現実的です。</p>
-<hr/>
-<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<ul class="risk-box"><li>大きな設計変更</li><li>セキュリティ関連</li><li>本番影響</li><li>依存関係追加</li><li>削除・破壊的操作</li><li>外部公開</li></ul>
+<p>は人間確認を入れるべきです。</p>
+<p>コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>では、<strong>PRを作るところまで自動化しても、mergeは人間が確認する</strong>くらいが現実的です。</p>
+<hr>
 <h3 id="6-変更を小さく保つ">6. 変更を小さく保つ</h3>
-<p>OpenAIもAnthropicも、コーディング<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>には大きすぎる仕事を丸投げしないほうがよい、という方向性です。</p>
-<div class="term-chip-list">
-<span>小さい変更</span>
-<span>明確な完了条件</span>
-<span>限定されたファイル</span>
-<span>具体的なテスト</span>
-</div>
+<p><strong>重要度: 5</strong></p>
+<p>OpenAIもAnthropicも、コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>には大きすぎる仕事を丸投げしないほうがよい、という方向性です。</p>
+<ul class="guideline-list"><li>小さい変更</li><li>明確な完了条件</li><li>限定されたファイル</li><li>具体的なテスト</li></ul>
 <p>のほうが成功しやすい。</p>
 <p>これはかなり重要です。</p>
 <p>大きな機能開発を任せる場合も、</p>
-<div class="term-chip-list">
-<span>調査</span>
-<span>設計案</span>
-<span>小さな実装</span>
-<span>テスト追加</span>
-<span>レビュー</span>
-<span>次の変更</span>
-</div>
+<ul class="guideline-list"><li>調査</li><li>設計案</li><li>小さな実装</li><li>テスト追加</li><li>レビュー</li><li>次の変更</li></ul>
 <p>に分けるべきです。</p>
-<hr/>
-<h2 id="openaiのみ">OpenAIのみ</h2>
-<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
-<h3 id="1-codex向けにタスク指示を明確化する">1.
-Codex向けにタスク指示を明確化する</h3>
+<hr>
+<h2 id="OpenAIのみ">OpenAIのみ</h2>
+<h3 id="1-Codex向けにタスク指示を明確化する">1. Codex向けにタスク指示を明確化する</h3>
+<p><strong>重要度: 5</strong></p>
 <p>OpenAIのCodexベストプラクティスは、かなり「どう依頼するとCodexがうまく動くか」に寄っています。</p>
 <p>重要なのは、</p>
-<div class="term-chip-list">
-<span>何をしてほしいか</span>
-<span>どのファイルを見るべきか</span>
-<span>期待する挙動</span>
-<span>テスト方法</span>
-<span>変更してよい範囲</span>
-<span>追加で調べるべき情報</span>
-</div>
+<ul class="guideline-list"><li>何をしてほしいか</li><li>どのファイルを見るべきか</li><li>期待する挙動</li><li>テスト方法</li><li>変更してよい範囲</li><li>追加で調べるべき情報</li></ul>
 <p>を明確にすることです。</p>
-<p>これは、Codexだけでなくコーディング<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>全般に効きます。</p>
-<hr/>
-<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
-<h3 id="2-agentsmd-的な永続指示を置く">2. <code>AGENTS.md</code>
-的な永続指示を置く</h3>
-<p>OpenAI系では、リポジトリ内に<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>向けの指示ファイルを置く発想が重要です。</p>
+<p>これは、Codexだけでなくコーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>全般に効きます。</p>
+<hr>
+<h3 id="2-AGENTS-md-的な永続指示を置く">2. <code>AGENTS.md</code> 的な永続指示を置く</h3>
+<p><strong>重要度: 5</strong></p>
+<p>OpenAI系では、リポジトリ内に<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>向けの指示ファイルを置く発想が重要です。</p>
 <p>ここには、</p>
-<div class="term-chip-list">
-<span>セットアップ</span>
-<span>テスト</span>
-<span>スタイル</span>
-<span>ディレクトリ構造</span>
-<span>変更時の注意</span>
-<span>PR前チェック</span>
-</div>
+<ul class="guideline-list"><li>セットアップ</li><li>テスト</li><li>スタイル</li><li>ディレクトリ構造</li><li>変更時の注意</li><li>PR前チェック</li></ul>
 <p>を書きます。</p>
 <p>これは実務上かなり強いです。</p>
-<p>毎回の指示で説明しなくても、<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>がリポジトリの作法を理解しやすくなります。</p>
-<hr/>
-<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
-<h3 id="3-codexの作業単位はissue--pr--タスクに寄せる">3.
-Codexの作業単位は「Issue / PR / タスク」に寄せる</h3>
+<p>毎回のプロンプトで説明しなくても、<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>がリポジトリの作法を理解しやすくなります。</p>
+<hr>
+<h3 id="3-Codexの作業単位は-Issue-PR-タスク-に寄せる">3. Codexの作業単位は「Issue / PR / タスク」に寄せる</h3>
+<p><strong>重要度: 4</strong></p>
 <p>OpenAI系の実践では、Codexに渡す仕事は、自然な開発単位に寄せると扱いやすいです。</p>
-<ol class="process-steps">
-<li>GitHub issueを解決する</li>
-<li>バグを修正する</li>
-<li>テストを追加する</li>
-<li>小さな機能を実装する</li>
-<li>PRを作る</li>
-</ol>
+<ul class="guideline-list"><li>GitHub issueを解決する</li><li>バグを修正する</li><li>テストを追加する</li><li>小さな機能を実装する</li><li>PRを作る</li></ul>
 <p>のような単位です。</p>
-<p>これは実務的に重要ですが、設計原則としては「タスクを小さくする」の具体形なので重要度★★★★☆です。</p>
-<hr/>
-<p aria-label="重要度 3 / 5" class="stars">★★★☆☆</p>
-<h3 id="4-openaiの実装運用機能に寄ったベストプラクティス">4.
-OpenAIの実装・運用機能に寄ったベストプラクティス</h3>
+<p>これは実務的に重要ですが、設計原則としては「タスクを小さくする」の具体形なので重要度4です。</p>
+<hr>
+<h3 id="4-OpenAIの実装-運用機能に寄ったヘ-ストフ-ラクティス">4. OpenAIの実装・運用機能に寄ったベストプラクティス</h3>
+<p><strong>重要度: 3</strong></p>
 <p>Codex固有の環境、設定、外部接続、クラウド実行、MCPなどの話は、OpenAIスタックを使うなら重要です。</p>
 <p>ただし、汎用的なベストプラクティスとしては製品依存です。</p>
 <p>考え方として拾うなら、</p>
-<div class="takeaway-box">コーディングエージェントが必要な情報源へアクセスできるようにする</div>
+<div class="takeaway-box">コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>が必要な情報源へアクセスできるようにする</div>
 <p>という点です。</p>
-<hr/>
-<h2 id="anthropicのみ">Anthropicのみ</h2>
-<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
-<h3 id="1-claude-codeのエージェントループを明確にしている">1. Claude
-Codeの<a class="term" data-description="エージェントが観察、判断、ツール利用、結果確認、次の行動選択を繰り返す実行サイクル。長い作業や不確実な作業で重要になる。" href="../domain-glossary.html#agent-loop">エージェントループ</a>を明確にしている</h3>
-<p>AnthropicのClaude
-Code系では、かなり実務的な<a class="term" data-description="エージェントが観察、判断、ツール利用、結果確認、次の行動選択を繰り返す実行サイクル。長い作業や不確実な作業で重要になる。" href="../domain-glossary.html#agent-loop">エージェントループ</a>が重視されています。</p>
+<hr>
+<h2 id="Anthropicのみ">Anthropicのみ</h2>
+<h3 id="1-Claude-Codeの作業ルーフ-を明確にしている">1. Claude Codeの作業ループを明確にしている</h3>
+<p><strong>重要度: 5</strong></p>
+<p>AnthropicのClaude Code系では、かなり実務的な作業ループが重視されています。</p>
 <p>典型的には、</p>
-<ol class="flow-box"><li>探索する</li><li>計画する</li><li>実装する</li><li>検証する</li><li>コミット/PR向けに説明する</li></ol>
+<ol class="process-steps"><li>探索する</li><li>計画する</li><li>実装する</li><li>検証する</li><li>コミット/PR向けに説明する</li></ol>
 <p>です。</p>
 <p>特に重要なのは、<strong>最初に探索させること</strong>です。</p>
 <p>コードベースを読まずに修正させると、局所最適なコードを書きがちです。</p>
-<hr/>
-<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
-<h3 id="2-claudemd-を育てる">2. <code>CLAUDE.md</code> を育てる</h3>
-<p>Anthropic系では、<code>CLAUDE.md</code>
-をかなり重要な実践として扱います。</p>
+<hr>
+<h3 id="2-CLAUDE-md-を育てる">2. <code>CLAUDE.md</code> を育てる</h3>
+<p><strong>重要度: 5</strong></p>
+<p>Anthropic系では、<code>CLAUDE.md</code> をかなり重要な実践として扱います。</p>
 <p>ここには、</p>
-<div class="term-chip-list">
-<span>よく使うコマンド</span>
-<span>コーディング規約</span>
-<span>テスト方法</span>
-<span>プロジェクト固有の注意点</span>
-<span>よくある落とし穴</span>
-<span>ファイル構成</span>
-<span>チームの好み</span>
-</div>
+<ul class="guideline-list"><li>よく使うコマンド</li><li>コーディング規約</li><li>テスト方法</li><li>プロジェクト固有の注意点</li><li>よくある落とし穴</li><li>ファイル構成</li><li>チームの好み</li></ul>
 <p>を書きます。</p>
 <p>ポイントは、一度書いて終わりではなく、使いながら育てることです。</p>
-<p><a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>が何度も同じ失敗をするなら、それは <code>CLAUDE.md</code>
-に追記するサインです。</p>
-<hr/>
-<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
-<h3 id="3-サブエージェントhooksslash-commands-などで作業を型化する">3.
-<a class="term" data-description="あるエージェントやオーケストレーターから呼び出される下位エージェント。専門性を持つ場合もあるが、階層上の位置を表す語として使う。" href="../domain-glossary.html#sub-agent">サブエージェント</a>、hooks、slash
-commands などで作業を型化する</h3>
-<p>AnthropicのClaude
-Code系は、日常的な開発作業を型にする発想が強いです。</p>
+<p>AIが何度も同じ失敗をするなら、それは <code>CLAUDE.md</code> に追記するサインです。</p>
+<hr>
+<h3 id="3-サフ-エーシ-ェント-hooks-slash-commands-なと-て-作業を型化する">3. <a class="term" href="../domain-glossary.html#sub-agent" data-description="あるエージェントやオーケストレーターから呼び出される下位エージェント。専門性を持つ場合もあるが、階層上の位置を表す語として使う。">サブエージェント</a>、hooks、slash commands などで作業を型化する</h3>
+<p><strong>重要度: 4</strong></p>
+<p>AnthropicのClaude Code系は、日常的な開発作業を型にする発想が強いです。</p>
 <p>たとえば、</p>
-<ol class="process-steps">
-<li>よく使う作業を slash command にする</li>
-<li>特定の作業を subagent に分ける</li>
-<li>作業後に hooks でテストや整形を走らせる</li>
-<li>ルール違反を検出する</li>
-</ol>
+<ul class="guideline-list"><li>よく使う作業を slash command にする</li><li>特定の作業を subagent に分ける</li><li>作業後に hooks でテストや整形を走らせる</li><li>ルール違反を検出する</li></ul>
 <p>です。</p>
 <p>これはかなり実務的です。</p>
 <p>ただし、最初から作り込むより、繰り返し出てくる作業を見つけてから型化するのがよいです。</p>
-<hr/>
-<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
-<h3 id="4-ツール権限スキップと安全性を両立させる設計が深い">4.
-ツール権限スキップと安全性を両立させる設計が深い</h3>
-<p>Anthropicの <code>auto mode</code> や <code>sandboxing</code>
-系の記事では、<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>にもっと自律的に動いてもらうための安全設計が深掘りされています。</p>
+<hr>
+<h3 id="4-権限スキッフ-と安全性を両立させる設計か-深い">4. 権限スキップと安全性を両立させる設計が深い</h3>
+<p><strong>重要度: 5</strong></p>
+<p>Anthropicの <code>auto mode</code> や <code>sandboxing</code> 系の記事では、<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>にもっと自律的に動いてもらうための安全設計が深掘りされています。</p>
 <p>ポイントは、</p>
-<div class="term-chip-list">
-<span>どの操作は自動で許可するか</span>
-<span>どの操作は確認するか</span>
-<span>どの操作は禁止するか</span>
-<span>サンドボックス内だけで実行するか</span>
-<span>ネットワークアクセスをどう制御するか</span>
-<span>ファイルアクセスをどう制御するか</span>
-</div>
+<ul class="checklist question-checklist"><li>どの操作は自動で許可するか</li><li>どの操作は確認するか</li><li>どの操作は禁止するか</li><li>サンドボックス内だけで実行するか</li><li>ネットワークアクセスをどう制御するか</li><li>ファイルアクセスをどう制御するか</li></ul>
 <p>です。</p>
 <p>これはかなり重要です。</p>
-<p>コーディング<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>は、<a class="term" data-description="ツールごとに許可される読み取り、書き込み、実行、送信、削除などの操作範囲。ガードレールや人間確認と組み合わせて管理する。" href="../domain-glossary.html#tool-permission">ツール権限</a>を広げるほど便利になりますが、その分危険になります。
-なので、<strong><a class="term" data-description="エージェントにどこまで自律的な判断・操作を任せるかの段階。読み取りのみ、提案のみ、承認付き実行、自律実行などで定義する。" href="../domain-glossary.html#automation-level">自律性</a>を上げるなら、同時に封じ込めも強くする</strong>必要があります。</p>
-<hr/>
-<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
-<h3 id="5-長時間実行エージェントには評価ハーネスが必要">5.
-長時間実行エージェントには<a class="term" data-description="評価対象の実行、データセットの投入、採点器の適用、結果集計、トレース保存をまとめて行う評価実行基盤。評価の再現性と継続運用を支える。" href="../domain-glossary.html#evaluation-harness">評価ハーネス</a>が必要</h3>
-<p>Anthropicのハーネス系記事は、コーディング<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>を長く動かす場合に重要です。</p>
+<p>コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>は、権限を広げるほど便利になりますが、その分危険になります。
+なので、<strong>自律性を上げるなら、同時に封じ込めも強くする</strong>必要があります。</p>
+<hr>
+<h3 id="5-長時間実行エーシ-ェントには評価ハーネスか-必要">5. 長時間実行<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>には<a class="term" href="../domain-glossary.html#evaluation-harness" data-description="評価対象の実行、データセットの投入、採点器の適用、結果集計、トレース保存をまとめて行う評価実行基盤。評価の再現性と継続運用を支える。">評価ハーネス</a>が必要</h3>
+<p><strong>重要度: 5</strong></p>
+<p>Anthropicのハーネス系記事は、コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>を長く動かす場合に重要です。</p>
 <p>短い修正なら、人間が見れば済みます。</p>
 <p>でも、長時間の開発タスクでは、</p>
-<ol class="process-steps">
-<li>環境を初期化する</li>
-<li>タスクを与える</li>
-<li>途中状態を観測する</li>
-<li>テストを実行する</li>
-<li>生成物を評価する</li>
-<li>失敗時に再現できる</li>
-</ol>
+<ul class="guideline-list"><li>環境を初期化する</li><li>タスクを与える</li><li>途中状態を観測する</li><li>テストを実行する</li><li>生成物を<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>する</li><li>失敗時に再現できる</li></ul>
 <p>仕組みが必要になります。</p>
-<p>これは高度ですが、本格的に使うなら重要度★★★★★です。</p>
-<hr/>
-<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
-<h3 id="6-フロントエンドなど主観評価が難しい領域も評価対象にする">6.
-フロントエンドなど主観<a class="term" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。" href="../domain-glossary.html#evaluation">評価</a>が難しい領域も評価対象にする</h3>
+<p>これは高度ですが、本格的に使うなら重要度5です。</p>
+<hr>
+<h3 id="6-フロントエント-なと-主観評価か-難しい領域も評価対象にする">6. フロントエンドなど主観<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>が難しい領域も<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>対象にする</h3>
+<p><strong>重要度: 4</strong></p>
 <p>Anthropicのアプリ開発ハーネス系では、見た目や体験のような、テストだけでは測りづらい品質も扱います。</p>
 <p>たとえば、</p>
-<div class="term-chip-list">
-<span>UIが仕様通りか</span>
-<span>操作できるか</span>
-<span>レイアウトが崩れていないか</span>
-<span>エラー状態が自然か</span>
-<span>ユーザー体験が意図に合うか</span>
-</div>
+<ul class="checklist question-checklist"><li>UIが仕様通りか</li><li>操作できるか</li><li>レイアウトが崩れていないか</li><li>エラー状態が自然か</li><li>ユーザー体験が意図に合うか</li></ul>
 <p>です。</p>
-<p>これはコーディング<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>にフロントエンド開発を任せるなら重要です。</p>
+<p>これはコーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>にフロントエンド開発を任せるなら重要です。</p>
 <p>ただし、バックエンドや小さな修正だけなら優先度は少し下がります。</p>
-<hr/>
-<h2 id="実務で重要な順">実務で重要な順</h2>
-<p>コーディング<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>系で押さえるべき順番はこうです。</p>
+<hr>
+<h2 id="実務て-重要な順">実務で重要な順</h2>
+<p>コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>系で押さえるべき順番はこうです。</p>
 <table>
 <thead>
-<tr class="header">
-<th style="text-align: right;">重要度</th>
+<tr>
+<th align="right">重要度</th>
 <th>ポイント</th>
 <th>判断への使い方</th>
 </tr>
 </thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: right;">5</td>
-<td>リポジトリ<a class="term" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。" href="../domain-glossary.html#context">コンテキスト</a>を渡す</td>
+<tbody><tr>
+<td align="right">5</td>
+<td>リポジトリ文脈を渡す</td>
 <td>AGENTS.md / CLAUDE.md に作法を書く</td>
 </tr>
-<tr class="even">
-<td style="text-align: right;">5</td>
+<tr>
+<td align="right">5</td>
 <td>まず調査・計画させる</td>
 <td>いきなり実装させない</td>
 </tr>
-<tr class="odd">
-<td style="text-align: right;">5</td>
+<tr>
+<td align="right">5</td>
 <td>小さく明確なタスクにする</td>
 <td>変更範囲と完了条件を絞る</td>
 </tr>
-<tr class="even">
-<td style="text-align: right;">5</td>
+<tr>
+<td align="right">5</td>
 <td>テスト・lint・ビルドまで含める</td>
 <td>書いたコードを検証させる</td>
 </tr>
-<tr class="odd">
-<td style="text-align: right;">5</td>
+<tr>
+<td align="right">5</td>
 <td>成功条件・禁止事項を明示する</td>
 <td>余計な変更を防ぐ</td>
 </tr>
-<tr class="even">
-<td style="text-align: right;">5</td>
-<td><a class="term" data-description="エージェントの出力、判断、ツール利用、外部送信、高リスク操作などを人間が確認すること。完全自動化せず、人間の判断を挟む安全制御として使う。" href="../domain-glossary.html#human-review">人間レビュー</a>を残す</td>
+<tr>
+<td align="right">5</td>
+<td><a class="term" href="../domain-glossary.html#human-review" data-description="エージェントの出力、判断、ツール利用、外部送信、高リスク操作などを人間が確認すること。完全自動化せず、人間の判断を挟む安全制御として使う。">人間レビュー</a>を残す</td>
 <td>merge / deploy / 外部公開は確認する</td>
 </tr>
-<tr class="odd">
-<td style="text-align: right;">5</td>
-<td><a class="term" data-description="ツールごとに許可される読み取り、書き込み、実行、送信、削除などの操作範囲。ガードレールや人間確認と組み合わせて管理する。" href="../domain-glossary.html#tool-permission">ツール権限</a>・サンドボックスを設計する</td>
+<tr>
+<td align="right">5</td>
+<td>権限・サンドボックスを設計する</td>
 <td>自律性を上げるほど重要</td>
 </tr>
-<tr class="even">
-<td style="text-align: right;">5</td>
+<tr>
+<td align="right">5</td>
 <td>長時間タスクにはハーネスを用意する</td>
-<td>本格運用では環境ごと<a class="term" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。" href="../domain-glossary.html#evaluation">評価</a>する</td>
+<td>本格運用では環境ごと<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>する</td>
 </tr>
-<tr class="odd">
-<td style="text-align: right;">4</td>
-<td>外部情報やMCPで<a class="term" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。" href="../domain-glossary.html#context">コンテキスト</a>を補う</td>
+<tr>
+<td align="right">4</td>
+<td>外部情報やMCPで文脈を補う</td>
 <td>Issue、設計書、ログ、API docsへ接続する</td>
 </tr>
-<tr class="even">
-<td style="text-align: right;">4</td>
+<tr>
+<td align="right">4</td>
 <td>変更内容を説明させる</td>
 <td>レビューしやすくする</td>
 </tr>
-<tr class="odd">
-<td style="text-align: right;">4</td>
-<td>hooks / slash commands / <a class="term" data-description="あるエージェントやオーケストレーターから呼び出される下位エージェント。専門性を持つ場合もあるが、階層上の位置を表す語として使う。" href="../domain-glossary.html#sub-agent">サブエージェント</a>sで型化する</td>
+<tr>
+<td align="right">4</td>
+<td>hooks / slash commands / subagentsで型化する</td>
 <td>繰り返し作業を安定化する</td>
 </tr>
-<tr class="even">
-<td style="text-align: right;">4</td>
-<td>UIなど主観品質も<a class="term" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。" href="../domain-glossary.html#evaluation">評価</a>する</td>
+<tr>
+<td align="right">4</td>
+<td>UIなど主観品質も<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>する</td>
 <td>フロントエンド開発では重要</td>
 </tr>
-<tr class="odd">
-<td style="text-align: right;">3</td>
+<tr>
+<td align="right">3</td>
 <td>製品固有機能を活用する</td>
 <td>Codex / Claude Codeごとの便利機能を使う</td>
 </tr>
-</tbody>
-</table>
-<h2 id="一言でいうと">一言でいうと</h2>
-<p>コーディング<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>系で一番大事なのは、これです。</p>
-<ul class="guideline-list">
-<li>エージェントにコードを書かせるのではなく、</li>
-<li>エージェントが安全にコードを読み、変更し、実行し、検証し、</li>
-<li>人間がレビューできる形で報告する環境を作ること。</li>
-</ul>
+</tbody></table>
+<h2 id="一言て-いうと">一言でいうと</h2>
+<p>コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>系で一番大事なのは、これです。</p>
+<ul class="guideline-list"><li>AIにコードを書かせるのではなく、</li><li>AIが安全にコードを読み、変更し、実行し、検証し、</li><li>人間がレビューできる形で報告する環境を作ること。</li></ul>
 <p>実務向けにはこうです。</p>
-<ol class="process-steps">
-<li>AGENTS.md / CLAUDE.md にプロジェクト作法を書く</li>
-<li>タスクを小さく切る</li>
-<li>まず調査・計画させる</li>
-<li>実装範囲と禁止事項を明示する</li>
-<li>テスト・lint・ビルドを走らせる</li>
-<li>失敗したらログを読ませて修正させる</li>
-<li>危険操作は人間承認にする</li>
-<li>最後に変更内容・検証結果・懸念点を報告させる</li>
-</ol>
-<p>コーディング<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>は、雑に使ってもそれなりに動きます。
-でも業務で安定して使うなら、**<a class="term" data-description="エージェントが適切に判断できるように、目的、背景、制約、関連情報、ツール結果、成功条件を設計して渡すこと。単なるプロンプト文面ではなく、利用可能な文脈全体を扱う。" href="../domain-glossary.html#context-engineering">コンテキスト設計</a>よりも「リポジトリ<a class="term" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。" href="../domain-glossary.html#context">コンテキスト</a>・検証環境・<a class="term" data-description="ツールごとに許可される読み取り、書き込み、実行、送信、削除などの操作範囲。ガードレールや人間確認と組み合わせて管理する。" href="../domain-glossary.html#tool-permission">ツール権限</a>管理」**が効いてきます。</p>
+<ol class="process-steps"><li>AGENTS.md / CLAUDE.md にプロジェクト作法を書く</li><li>タスクを小さく切る</li><li>まず調査・計画させる</li><li>実装範囲と禁止事項を明示する</li><li>テスト・lint・ビルドを走らせる</li><li>失敗したらログを読ませて修正させる</li><li>危険操作は人間<a class="term" href="../domain-glossary.html#approval" data-description="エージェントが特定の操作を実行する前に、人間や管理者が明示的に許可すること。特に送信、削除、購入、公開、本番操作などで使う。">承認</a>にする</li><li>最後に変更内容・検証結果・懸念点を報告させる</li></ol>
+<p>コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>は、雑に使ってもそれなりに動きます。
+でも業務で安定して使うなら、**プロンプト術よりも「リポジトリ文脈・検証環境・権限管理」**が効いてきます。</p>
 </article></div>
-<script>
-(function () {
-  function closeTerms(except) {
-    document.querySelectorAll('.term[data-open="true"]').forEach(function (el) {
-      if (el !== except) el.removeAttribute('data-open');
-    });
-  }
-  document.addEventListener('click', function (event) {
-    var term = event.target.closest('.term');
-    if (!term) { closeTerms(); return; }
-    event.preventDefault();
-    var isOpen = term.getAttribute('data-open') === 'true';
-    closeTerms(term);
-    if (isOpen) term.removeAttribute('data-open');
-    else term.setAttribute('data-open', 'true');
-  });
-  document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape') closeTerms();
-  });
-})();
-</script>
 </body>
 </html>

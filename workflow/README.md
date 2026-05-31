@@ -122,6 +122,24 @@ node workflow/scripts/save_singlefile.js --all --refresh-days 30
 node workflow/scripts/save_singlefile.js --all --overwrite
 ```
 
+## Tag Guides HTML を再生成する
+
+`knowledge_templated/tag-guides/*.md` を元に、`tag-guides/*.html` を再生成できます。
+
+```bash
+npm run build:tag-guides
+```
+
+このコマンドは、先に Markdown の fence に semantic marker を付け直してから HTML を生成します。`tone-*` は色のヒント、`.process` や `.definition` などの suffix は構造のヒントとして扱われます。
+
+必要なら出力先を変えて、別ディレクトリに書き出すこともできます。
+
+```bash
+node workflow/scripts/build_tag_guides_html.js --output-dir /tmp/tag-guides
+```
+
+このスクリプトは、各 Markdown を共通の HTML シェルに載せ、`domain-glossary.md` の用語説明を使って本文中の用語リンクも付け直します。
+
 ## 再生成の入口
 
 `workflow/scripts/` にある 3 つのスクリプトが、記事保存と一覧生成の中心です。

@@ -27,7 +27,7 @@
 
 たとえば、
 
-```text
+```tone-neutral.guideline
 調査する
 分類する
 判断する
@@ -46,7 +46,7 @@ OpenAI も orchestration の文脈で、複数ステップ、ツール利用、�
 
 なので、ワークフロー設計の第一歩はこれです。
 
-```text
+```tone-neutral.takeaway
 AIに任せる仕事を、処理単位に分解する
 ```
 
@@ -62,7 +62,7 @@ AIに任せる仕事を、処理単位に分解する
 
 たとえば、
 
-```text
+```tone-neutral.guideline
 このステップは分類だけする
 このステップは情報収集だけする
 このステップはツールを呼ぶ
@@ -79,7 +79,7 @@ OpenAI も、モデル、ツール、オーケストレーション、ガード�
 
 ここで大事なのは、**AIに何でもやらせるステップを作らないこと**です。
 
-```text
+```tone-good.takeaway
 曖昧な巨大ステップを作らず、責務を分ける
 ```
 
@@ -95,7 +95,7 @@ AIが自由に判断する必要がない部分は、AIに任せず固定しま�
 
 たとえば、
 
-```text
+```tone-neutral.guideline
 必ず最初に入力チェックする
 必ず最後に形式チェックする
 金額が一定以上なら必ず人間確認に回す
@@ -111,7 +111,7 @@ OpenAI も、ガードレールやツール呼び出し、ハンドオフをオ�
 
 つまり、重要なのはこれです。
 
-```text
+```tone-good.takeaway
 AIが考えるべきところと、システムが制御すべきところを分ける
 ```
 
@@ -128,7 +128,7 @@ AIが考えるべきところと、システムが制御すべきところを分
 
 たとえば、
 
-```text
+```tone-neutral.guideline
 問い合わせ内容によって担当エージェントを変える
 コード修正ならコーディング用フローへ進む
 請求書なら会計処理フローへ進む
@@ -144,7 +144,7 @@ OpenAI も multi-agent collaboration や handoff の文脈で、どのエージ�
 
 ポイントは、**分岐条件を曖昧にしないこと**です。
 
-```text
+```tone-good.takeaway
 何を見て、どのルートへ進むかを決める
 ```
 
@@ -158,7 +158,7 @@ OpenAI も multi-agent collaboration や handoff の文脈で、どのエージ�
 
 よく出てくる形は、
 
-```text
+```tone-neutral.guideline
 生成する
 評価する
 修正する
@@ -176,7 +176,7 @@ OpenAI も出力検証、ガードレール、tracing などの文脈で、結�
 理由は、すべての軽いタスクで必須ではないからです。
 ただし、業務利用ではかなり重要です。
 
-```text
+```tone-neutral.takeaway
 重要な出力ほど、生成ステップと確認ステップを分ける
 ```
 
@@ -190,7 +190,7 @@ OpenAI も出力検証、ガードレール、tracing などの文脈で、結�
 
 たとえば、
 
-```text
+```tone-neutral.guideline
 複数観点で同時にレビューする
 複数の情報源を並列に調べる
 複数案を生成して比較する
@@ -203,7 +203,7 @@ OpenAI でも複数ツールや複数エージェントの協調に近い話が�
 
 まずは、
 
-```text
+```tone-neutral.guideline
 順番に処理する
 分岐する
 レビューする
@@ -224,7 +224,7 @@ OpenAI と Anthropic で共通している重要点は、ワークフロー設�
 
 OpenAI は orchestration という言葉で、
 
-```text
+```tone-neutral.guideline
 複数ステップ
 ツール利用
 エージェント間ハンドオフ
@@ -238,7 +238,7 @@ Anthropic は workflows と agents を分け、prompt chaining、routing、paral
 
 つまり共通点はこれです。
 
-```text
+```tone-neutral.takeaway
 プロンプト単体ではなく、処理全体の流れを設計する
 ```
 
@@ -258,7 +258,7 @@ Anthropic は augmented LLM、つまりツール・検索・メモリで拡張�
 
 共通する重要点はこれです。
 
-```text
+```tone-neutral.takeaway
 どのステップで、どのツールを、何のために使うかを決める
 ```
 
@@ -277,13 +277,13 @@ Anthropic でも、エージェントが途中で人間に判断を求めたり�
 
 重要なのは、
 
-```text
+```tone-good.takeaway
 全部自動化するか、人間確認するか
 ```
 
 ではなく、
 
-```text
+```tone-neutral.takeaway
 どの地点で人間確認を入れるか
 ```
 
@@ -291,7 +291,7 @@ Anthropic でも、エージェントが途中で人間に判断を求めたり�
 
 たとえば、
 
-```text
+```tone-neutral.risk
 実行前
 外部送信前
 高額処理前
@@ -314,7 +314,7 @@ Anthropic も、ワークフローやエージェントは測定しながら改�
 
 共通するのは、
 
-```text
+```tone-neutral.question-checklist
 AIがなぜその判断をしたか
 どのツールを呼んだか
 どこで失敗したか
@@ -338,7 +338,7 @@ OpenAI も、まず core logic を作り、必要に応じて tools や orchestr
 
 共通する実務判断はこれです。
 
-```text
+```tone-neutral.guideline
 最初は単純な固定フローで作る
 足りないところだけ分岐・ツール・エージェント化する
 ```
@@ -357,7 +357,7 @@ OpenAI の特徴は、ワークフロー設計をかなり実装プリミティ�
 
 たとえば、
 
-```text
+```tone-neutral.guideline
 Agent
 Handoff
 Guardrail
@@ -381,7 +381,7 @@ OpenAI は、どのステップにどのモデルを使うかをかなり重視�
 
 たとえば、
 
-```text
+```tone-neutral.process
 複雑な計画・判断 → reasoning model
 低遅延な会話応答 → lighter model
 ツール利用・コード生成 → 能力の高いモデル
@@ -404,7 +404,7 @@ OpenAI は、ユーザー入力やモデル出力をどう扱うかをベスト�
 
 たとえば、
 
-```text
+```tone-neutral.risk
 ユーザー入力を制限する
 危険な入力を検出する
 出力形式を制御する
@@ -415,7 +415,7 @@ OpenAI は、ユーザー入力やモデル出力をどう扱うかをベスト�
 
 ワークフロー設計でいうと、これは **前処理・後処理ステップ** です。
 
-```text
+```tone-neutral.process
 入力チェック → 実行 → 出力検証
 ```
 
@@ -431,7 +431,7 @@ OpenAI は、multi-agent collaboration や handoff を設計要素として扱�
 
 たとえば、
 
-```text
+```tone-neutral.guideline
 受付エージェント
 専門エージェント
 確認エージェント
@@ -456,7 +456,7 @@ Anthropic の強みは、ワークフローの基本パターンをかなりき�
 
 代表的には、
 
-```text
+```tone-neutral.guideline
 Prompt chaining
 Routing
 Parallelization
@@ -471,7 +471,7 @@ Evaluator-optimizer
 
 特に重要なのは、**どの型をいつ使うか**です。
 
-```text
+```tone-good.process
 段階的に処理したい → prompt chaining
 入力ごとに処理を変えたい → routing
 独立した処理を同時に進めたい → parallelization
@@ -489,7 +489,7 @@ Evaluator-optimizer
 
 Anthropic は、ワークフローとエージェントをかなりはっきり分けています。
 
-```text
+```tone-neutral.definition
 ワークフロー:
 事前に定義されたコードパスに沿ってLLMやツールを動かす
 
@@ -501,7 +501,7 @@ LLMが自分でプロセスやツール利用を動的に決める
 
 なぜなら、多くの業務では「エージェント」と呼んでいても、実際にはワークフローで十分だからです。
 
-```text
+```tone-neutral.guideline
 まずワークフローで済むか考える
 必要な部分だけエージェント化する
 ```
@@ -518,7 +518,7 @@ Anthropic は、複雑なエージェントや多段ワークフローには、�
 
 これはワークフロー設計でも重要です。
 
-```text
+```tone-good.guideline
 ステップを増やす
 分岐を増やす
 ツールを増やす
@@ -529,7 +529,7 @@ Anthropic は、複雑なエージェントや多段ワークフローには、�
 
 したがって、Anthropic 的には、
 
-```text
+```tone-neutral.process
 単純なプロンプト
 ↓
 単純なワークフロー
@@ -551,7 +551,7 @@ Anthropic は、ワークフローやエージェントは一度作って終わ�
 
 特に evaluator-optimizer は、その考え方そのものです。
 
-```text
+```tone-neutral.guideline
 出力する
 評価する
 改善する
@@ -588,7 +588,7 @@ Anthropic は、ワークフローやエージェントは一度作って終わ�
 
 ワークフロー設計系で一番大事なのは、これです。
 
-```text
+```tone-good.guideline
 AIに自由にやらせる前に、
 仕事の流れを分解し、
 固定できるところは固定し、
@@ -597,7 +597,7 @@ AIが判断すべきところだけ判断させる。
 
 もう少し実務的に言うと、
 
-```text
+```tone-neutral.process
 1. まず作業手順を書く
 2. 各ステップの役割を決める
 3. 分岐条件を決める

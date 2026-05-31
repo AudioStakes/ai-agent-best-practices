@@ -1,6 +1,15 @@
 import { spawn } from "node:child_process";
 import { once } from "node:events";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { readFile } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test, expect } from "@playwright/test";
@@ -9,6 +18,14 @@ const testDir = path.dirname(fileURLToPath(import.meta.url));
 const siteDir = path.resolve(testDir, "..");
 const checklistPath = path.join(testDir, "ui-behavior-checklist.json");
 const serveScript = path.join(siteDir, "serve.sh");
+const buildTagGuidesScript = path.join(
+  siteDir,
+  "workflow/scripts/build_tag_guides_html.js",
+);
+const annotateTagGuidesScript = path.join(
+  siteDir,
+  "workflow/scripts/annotate_tag_guides_fences.js",
+);
 
 const checklist = JSON.parse(await readFile(checklistPath, "utf8"));
 
@@ -21,7 +38,7 @@ const articlePages = [
   ["06-coding-agents", "06. コーディングエージェント系"],
   ["07-production-operations", "07. 本番運用系"],
   ["08-security-sandboxing", "08. セキュリティ・サンドボックス系"],
-  ["09-multi-agent", "09. マルチエージェントシステム系"],
+  ["09-multi-agent", "09. マルチエージェント系"],
   ["10-governance", "10. ガバナンス系"],
 ];
 
@@ -129,6 +146,337 @@ test("serve.sh starts with the documented host and port settings", async () => {
   }
 });
 
+test("tag guide markdown can be regenerated into readable HTML", () => {
+  const tempRoot = mkdtempSync(path.join(os.tmpdir(), "tag-guides-build-"));
+  const outputDir = path.join(tempRoot, "tag-guides");
+  const result = spawn(
+    "node",
+    [buildTagGuidesScript, "--output-dir", outputDir],
+    {
+      cwd: siteDir,
+      stdio: ["ignore", "pipe", "pipe"],
+    },
+  );
+
+  const stdout = [];
+  const stderr = [];
+  result.stdout.on("data", (chunk) => {
+    stdout.push(chunk.toString("utf8"));
+  });
+  result.stderr.on("data", (chunk) => {
+    stderr.push(chunk.toString("utf8"));
+  });
+
+  return once(result, "close")
+    .then(([code]) => {
+      if (code !== 0) {
+        throw new Error(
+          `tag guide build failed with exit code ${code}\nstdout:\n${stdout.join("")}\nstderr:\n${stderr.join("")}`,
+        );
+      }
+
+      const generatedFiles = readdirSync(outputDir).filter((name) =>
+        name.endsWith(".html"),
+      );
+      expect(generatedFiles).toHaveLength(10);
+
+      const generated = readFileSync(
+        path.join(outputDir, "01-agent-design.html"),
+        "utf8",
+      );
+      expect(generated).toContain("<title>01. エージェント設計系</title>");
+      expect(generated).toContain(
+        '<p class="nav"><a href="../index.html">← Index</a><a href="../domain-glossary.html">用語集</a></p>',
+      );
+      expect(generated).toContain('class="rating-guide"');
+      expect(generated).toContain('class="term"');
+      expect(generated).toContain('href="../domain-glossary.html#agent"');
+    })
+    .finally(() => {
+      rmSync(tempRoot, { recursive: true, force: true });
+    });
+});
+
+test("tone-marked markdown fences become semantic chip lists", () => {
+  const tempRoot = mkdtempSync(path.join(os.tmpdir(), "tone-fence-build-"));
+  const inputDir = path.join(tempRoot, "input");
+  const outputDir = path.join(tempRoot, "output");
+  const markdownPath = path.join(inputDir, "sample.md");
+
+  mkdirSync(inputDir, { recursive: true });
+  writeFileSync(
+    markdownPath,
+    [
+      "# Sample",
+      "",
+      "```tone-good",
+      "必要な情報だけを",
+      "分かりやすく",
+      "```",
+      "",
+      "```tone-bad",
+      "返却値が長すぎる",
+      "```",
+      "",
+      "```tone-neutral",
+      "プロジェクト概要",
+      "```",
+      "",
+    ].join("\n"),
+  );
+
+  const result = spawn(
+    "node",
+    [buildTagGuidesScript, "--input-dir", inputDir, "--output-dir", outputDir],
+    {
+      cwd: siteDir,
+      stdio: ["ignore", "pipe", "pipe"],
+    },
+  );
+
+  const stdout = [];
+  const stderr = [];
+  result.stdout.on("data", (chunk) => {
+    stdout.push(chunk.toString("utf8"));
+  });
+  result.stderr.on("data", (chunk) => {
+    stderr.push(chunk.toString("utf8"));
+  });
+
+  return once(result, "close")
+    .then(([code]) => {
+      if (code !== 0) {
+        throw new Error(
+          `tone-marked build failed with exit code ${code}\nstdout:\n${stdout.join("")}\nstderr:\n${stderr.join("")}`,
+        );
+      }
+
+      const generated = readFileSync(
+        path.join(outputDir, "sample.html"),
+        "utf8",
+      );
+      expect(generated).toContain(
+        '<div class="term-chip-list" data-tone="good">',
+      );
+      expect(generated).toContain("<span>必要な情報だけを</span>");
+      expect(generated).toContain(
+        '<div class="term-chip-list" data-tone="bad">',
+      );
+      expect(generated).toContain(
+        '<div class="term-chip-list" data-tone="neutral">',
+      );
+      expect(generated).not.toContain('<pre><code class="language-tone-good">');
+    })
+    .finally(() => {
+      rmSync(tempRoot, { recursive: true, force: true });
+    });
+});
+
+test("tag guide markdown fences can be annotated with semantic markers", () => {
+  const tempRoot = mkdtempSync(path.join(os.tmpdir(), "tag-guides-annotate-"));
+  const inputDir = path.join(tempRoot, "input");
+  const markdownPath = path.join(inputDir, "sample.md");
+
+  mkdirSync(inputDir, { recursive: true });
+  writeFileSync(
+    markdownPath,
+    [
+      "# Sample",
+      "",
+      "```tone-good",
+      "AIに任せる仕事を、処理単位に分解する",
+      "```",
+      "",
+      "```tone-neutral",
+      "1. 調査する",
+      "2. 修正する",
+      "3. 検証する",
+      "```",
+      "",
+      "```tone-neutral",
+      "低リスク:",
+      "- ファイルを読む",
+      "中リスク:",
+      "- ローカルファイルを編集する",
+      "高リスク:",
+      "- 削除する",
+      "```",
+      "",
+      "```json",
+      '{"status":"ok"}',
+      "```",
+      "",
+      "```markdown",
+      "## Goal",
+      "...",
+      "## Constraints",
+      "...",
+      "```",
+      "",
+    ].join("\n"),
+  );
+
+  const result = spawn(
+    "node",
+    [annotateTagGuidesScript, "--input-dir", inputDir],
+    {
+      cwd: siteDir,
+      stdio: ["ignore", "pipe", "pipe"],
+    },
+  );
+
+  const stdout = [];
+  const stderr = [];
+  result.stdout.on("data", (chunk) => {
+    stdout.push(chunk.toString("utf8"));
+  });
+  result.stderr.on("data", (chunk) => {
+    stderr.push(chunk.toString("utf8"));
+  });
+
+  return once(result, "close")
+    .then(([code]) => {
+      if (code !== 0) {
+        throw new Error(
+          `annotation build failed with exit code ${code}\nstdout:\n${stdout.join("")}\nstderr:\n${stderr.join("")}`,
+        );
+      }
+
+      const annotated = readFileSync(markdownPath, "utf8");
+      expect(annotated).toContain("```tone-good.takeaway");
+      expect(annotated).toContain("```tone-neutral.process");
+      expect(annotated).toContain("```tone-neutral.risk-ladder");
+      expect(annotated).toContain("```json.code-example");
+      expect(annotated).toContain("```markdown.definition");
+    })
+    .finally(() => {
+      rmSync(tempRoot, { recursive: true, force: true });
+    });
+});
+
+test("semantic markers become semantic HTML blocks", () => {
+  const tempRoot = mkdtempSync(
+    path.join(os.tmpdir(), "semantic-blocks-build-"),
+  );
+  const inputDir = path.join(tempRoot, "input");
+  const outputDir = path.join(tempRoot, "output");
+  const markdownPath = path.join(inputDir, "sample.md");
+
+  mkdirSync(inputDir, { recursive: true });
+  writeFileSync(
+    markdownPath,
+    [
+      "# Sample",
+      "",
+      "```tone-good.takeaway",
+      "AIに任せる仕事を、処理単位に分解する",
+      "```",
+      "",
+      "```tone-neutral.process",
+      "1. 調査する",
+      "2. 修正する",
+      "3. 検証する",
+      "```",
+      "",
+      "```tone-neutral.risk-ladder",
+      "低リスク:",
+      "- ファイルを読む",
+      "中リスク:",
+      "- ローカルファイルを編集する",
+      "高リスク:",
+      "- 削除する",
+      "```",
+      "",
+      "```json.code-example",
+      '{"status":"ok"}',
+      "```",
+      "",
+      "```markdown.definition",
+      "## Goal",
+      "...",
+      "## Constraints",
+      "...",
+      "```",
+      "",
+    ].join("\n"),
+  );
+
+  const result = spawn(
+    "node",
+    [buildTagGuidesScript, "--input-dir", inputDir, "--output-dir", outputDir],
+    {
+      cwd: siteDir,
+      stdio: ["ignore", "pipe", "pipe"],
+    },
+  );
+
+  const stdout = [];
+  const stderr = [];
+  result.stdout.on("data", (chunk) => {
+    stdout.push(chunk.toString("utf8"));
+  });
+  result.stderr.on("data", (chunk) => {
+    stderr.push(chunk.toString("utf8"));
+  });
+
+  return once(result, "close")
+    .then(([code]) => {
+      if (code !== 0) {
+        throw new Error(
+          `semantic build failed with exit code ${code}\nstdout:\n${stdout.join("")}\nstderr:\n${stderr.join("")}`,
+        );
+      }
+
+      const generated = readFileSync(
+        path.join(outputDir, "sample.html"),
+        "utf8",
+      );
+      expect(generated).toContain('class="takeaway-box"');
+      expect(generated).toContain('class="process-steps"');
+      expect(generated).toContain('class="risk-ladder"');
+      expect(generated).toContain('class="code-example-box"');
+      expect(generated).toContain('class="definition-box"');
+    })
+    .finally(() => {
+      rmSync(tempRoot, { recursive: true, force: true });
+    });
+});
+
+test("semantic blocks render as good, bad, or neutral colors", async ({
+  page,
+}) => {
+  const server = await startServer();
+  try {
+    await page.goto(`${server.url}tag-guides/04-context-engineering.html`);
+
+    const badBlock = page
+      .locator("ul.risk-box")
+      .filter({ hasText: "この機能を改善してください" });
+    await expect(badBlock).toHaveCSS("background-color", "rgb(255, 247, 237)");
+    await expect(badBlock).toHaveCSS("border-top-color", "rgb(254, 215, 170)");
+
+    const goodBlock = page
+      .locator("ul.guideline-list")
+      .filter({ hasText: "必要な粒度で" });
+    await expect(goodBlock).toHaveCSS("background-color", "rgb(236, 253, 245)");
+    await expect(goodBlock).toHaveCSS("border-top-color", "rgb(167, 243, 208)");
+
+    const neutralBlock = page
+      .locator("div.takeaway-box")
+      .filter({ hasText: "AIが次の判断に使える情報を返す" });
+    await expect(neutralBlock).toHaveCSS(
+      "background-color",
+      "rgb(241, 245, 249)",
+    );
+    await expect(neutralBlock).toHaveCSS(
+      "border-top-color",
+      "rgb(217, 224, 231)",
+    );
+  } finally {
+    await server.stop();
+  }
+});
+
 test("index links to every article and the glossary", async ({ page }) => {
   const server = await startServer();
   try {
@@ -152,7 +500,7 @@ test("index links to every article and the glossary", async ({ page }) => {
       page.locator(".article-list > li .badges a[href$='.html']"),
     ).toHaveCount(10);
     await expect(
-      page.getByRole("link", { name: "09. マルチエージェントシステム系" }),
+      page.getByRole("link", { name: "09. マルチエージェント系" }),
     ).toHaveAttribute("href", "tag-guides/09-multi-agent.html");
 
     const title = await page.title();

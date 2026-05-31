@@ -27,7 +27,7 @@
 複数エージェントにすると、たしかに役割分担や並列探索ができます。
 しかし同時に、
 
-```text
+```tone-neutral.guideline
 - 設計が複雑になる
 - デバッグが難しくなる
 - コストが増える
@@ -40,7 +40,7 @@
 
 なので、最初の判断はこれです。
 
-```text
+```tone-neutral.question-checklist
 単一プロンプトで足りるか
 固定ワークフローで足りるか
 単一エージェントで足りるか
@@ -60,7 +60,7 @@
 
 悪い例：
 
-```text
+```tone-bad.risk
 調査エージェントA
 調査エージェントB
 調査エージェントC
@@ -70,7 +70,7 @@
 
 良い例：
 
-```text
+```tone-good.definition
 Planner: 調査計画を立てる
 Researcher: 情報を集める
 Critic: 根拠や抜け漏れを確認する
@@ -80,7 +80,7 @@ Tool executor: ツール実行だけ担当する
 
 重要なのは、
 
-```text
+```tone-good.question-checklist
 誰が何をするか
 誰が何をしないか
 誰が最終判断するか
@@ -102,7 +102,7 @@ Tool executor: ツール実行だけ担当する
 単一エージェントなら、同じ会話履歴やコンテキストを見ています。
 しかしマルチエージェントでは、
 
-```text
+```tone-neutral.question-checklist
 - 全員が全部の情報を見るのか
 - 必要な情報だけ渡すのか
 - 中間結果をどう共有するのか
@@ -116,7 +116,7 @@ Tool executor: ツール実行だけ担当する
 
 共有しすぎると、
 
-```text
+```tone-neutral.guideline
 コンテキストが肥大化する
 重要情報が埋もれる
 各エージェントの役割がぼやける
@@ -124,7 +124,7 @@ Tool executor: ツール実行だけ担当する
 
 共有しなさすぎると、
 
-```text
+```tone-neutral.guideline
 重複作業する
 前提がズレる
 最終統合で矛盾する
@@ -142,7 +142,7 @@ Tool executor: ツール実行だけ担当する
 
 代表的にはこの2つです。
 
-```text
+```tone-neutral.definition
 中央集権型:
 オーケストレーターがタスクを分解し、各エージェントへ指示し、結果を統合する
 
@@ -152,7 +152,7 @@ Tool executor: ツール実行だけ担当する
 
 実務では、まず中央集権型のほうが扱いやすいです。
 
-```text
+```tone-neutral.process
 Planner / Manager
 ↓
 Worker agents
@@ -166,7 +166,7 @@ Synthesizer / Reviewer
 
 なので最初は、
 
-```text
+```tone-neutral.takeaway
 全体の責任を持つエージェントを置く
 ```
 
@@ -183,7 +183,7 @@ Synthesizer / Reviewer
 
 たとえば調査タスクでは、
 
-```text
+```tone-neutral.risk
 Researcher A: 技術情報を調べる
 Researcher B: 事例を調べる
 Researcher C: リスクを調べる
@@ -193,7 +193,7 @@ Researcher C: リスクを調べる
 
 最後に、
 
-```text
+```tone-neutral.question-checklist
 - どの情報を採用するか
 - 矛盾する情報をどう扱うか
 - 根拠が弱い情報を除外するか
@@ -218,7 +218,7 @@ Researcher C: リスクを調べる
 
 たとえば、
 
-```text
+```tone-neutral.guideline
 - 複数の情報源を同時に調べる
 - 複数の仮説を同時に検証する
 - 複数の観点でレビューする
@@ -229,7 +229,7 @@ Researcher C: リスクを調べる
 
 ただし、並列化にはコストがあります。
 
-```text
+```tone-neutral.guideline
 - APIコストが増える
 - 実行時間が読みにくい
 - 同じ情報を何度も調べる
@@ -238,7 +238,7 @@ Researcher C: リスクを調べる
 
 なので、並列化は「速くしたいから」だけではなく、
 
-```text
+```tone-neutral.question-checklist
 独立した観点で調べる価値があるか
 複数案を比較する価値があるか
 ```
@@ -253,7 +253,7 @@ Researcher C: リスクを調べる
 
 マルチエージェントは失敗箇所が増えます。
 
-```text
+```tone-neutral.guideline
 - タスク分解が悪い
 - 役割分担が悪い
 - 情報共有が悪い
@@ -266,7 +266,7 @@ Researcher C: リスクを調べる
 
 そのため、
 
-```text
+```tone-neutral.question-checklist
 - どのエージェントが何をしたか
 - どんな入力を受け取ったか
 - どんな出力を返したか
@@ -293,7 +293,7 @@ Anthropic では、multi-agent research system で、調査・探索・統合な
 
 共通する大事な点はこれです。
 
-```text
+```tone-neutral.takeaway
 複数にするなら、役割が違う必要がある
 ```
 
@@ -309,7 +309,7 @@ OpenAI も Anthropic も、マルチエージェントではオーケストレ�
 
 つまり、
 
-```text
+```tone-neutral.question-checklist
 どのエージェントを呼ぶか
 どの順番で呼ぶか
 何を渡すか
@@ -333,7 +333,7 @@ OpenAI では handoff、Anthropic では各エージェント間の情報共有�
 
 あるエージェントから別のエージェントへ渡すとき、
 
-```text
+```tone-neutral.guideline
 全部の会話履歴を渡す
 必要な要約だけ渡す
 成果物だけ渡す
@@ -345,7 +345,7 @@ OpenAI では handoff、Anthropic では各エージェント間の情報共有�
 
 ここで重要なのは、
 
-```text
+```tone-good.takeaway
 次のエージェントが仕事をするために必要な情報だけ渡す
 ```
 
@@ -364,7 +364,7 @@ OpenAIもAnthropicも、複数エージェントが動く場合でも、危険�
 
 特に、
 
-```text
+```tone-neutral.risk
 - 外部送信
 - コード実行
 - ファイル変更
@@ -377,7 +377,7 @@ OpenAIもAnthropicも、複数エージェントが動く場合でも、危険�
 
 マルチエージェントになると、どのエージェントがどの権限を持つかも重要になります。
 
-```text
+```tone-neutral.risk
 全エージェントに同じ権限を渡さない
 ```
 
@@ -395,7 +395,7 @@ OpenAI の特徴は、エージェント間の引き継ぎ、つまり handoff �
 
 たとえば、
 
-```text
+```tone-neutral.process
 受付エージェント
 ↓
 専門エージェント
@@ -407,7 +407,7 @@ OpenAI の特徴は、エージェント間の引き継ぎ、つまり handoff �
 
 ここで大事なのは、
 
-```text
+```tone-good.question-checklist
 どの条件でハンドオフするか
 何を渡すか
 ハンドオフ先は何を担当するか
@@ -431,7 +431,7 @@ OpenAIでは、Agents SDKで Agent、Handoff、Guardrail、Session、Tracing な
 
 ただし、ベストプラクティスとして本質的なのはSDK機能ではなく、
 
-```text
+```tone-neutral.guideline
 役割分担
 情報共有
 責任範囲
@@ -455,7 +455,7 @@ OpenAIのマルチエージェント文脈では、専門性ごとにエージ�
 
 たとえば、
 
-```text
+```tone-neutral.guideline
 triage agent
 refund agent
 technical support agent
@@ -468,7 +468,7 @@ sales agent
 
 ただし、分ける理由が必要です。
 
-```text
+```tone-neutral.risk
 入力の種類が違う
 必要なツールが違う
 権限が違う
@@ -490,7 +490,7 @@ OpenAIでは、Session や tracing などを通じて、エージェントの状
 
 本質は、
 
-```text
+```tone-neutral.question-checklist
 各エージェントがどの状態を見ているか
 会話履歴や中間結果をどう保持するか
 状態の不整合をどう防ぐか
@@ -512,7 +512,7 @@ Anthropic の `How we built our multi-agent research system` で特に重要な�
 
 向いているのは、
 
-```text
+```tone-neutral.guideline
 - 調査範囲が広い
 - 複数の情報源を探索する必要がある
 - 複数の観点から検討したい
@@ -536,7 +536,7 @@ Anthropicのマルチエージェント研究システムでは、中心とな�
 
 イメージはこうです。
 
-```text
+```tone-neutral.definition
 Lead agent:
 調査計画、タスク分解、サブエージェント起動、統合を担当
 
@@ -548,7 +548,7 @@ Subagents:
 
 分散型の自由会話より、まずはこのような階層型が安定します。
 
-```text
+```tone-neutral.takeaway
 司令塔を置き、作業担当を分ける
 ```
 
@@ -564,7 +564,7 @@ Anthropicの重要ポイントとして、サブエージェントが独立し�
 
 メリットは、
 
-```text
+```tone-neutral.guideline
 - 並列探索しやすい
 - 各エージェントが特定観点に集中できる
 - メインコンテキストを圧迫しにくい
@@ -575,7 +575,7 @@ Anthropicの重要ポイントとして、サブエージェントが独立し�
 
 ただし、独立コンテキストには注意も必要です。
 
-```text
+```tone-neutral.guideline
 - 前提がズレる
 - 重複調査する
 - 統合時に矛盾する
@@ -593,7 +593,7 @@ Anthropicのマルチエージェントリサーチで非常に重要なのが�
 
 複数のサブエージェントが調べた情報を集めたあと、
 
-```text
+```tone-neutral.question-checklist
 - 根拠があるか
 - 情報源が信頼できるか
 - 矛盾がないか
@@ -618,7 +618,7 @@ Anthropicは、マルチエージェントが効果的な一方で、コスト�
 
 複数エージェントを使うと、
 
-```text
+```tone-neutral.guideline
 - 同時に複数モデル呼び出しが発生する
 - 各エージェントが独自にコンテキストを使う
 - 統合にも追加コストがかかる
@@ -629,7 +629,7 @@ Anthropicは、マルチエージェントが効果的な一方で、コスト�
 
 そのため、重要なのは、
 
-```text
+```tone-good.takeaway
 マルチエージェントで得られる品質向上が、コストに見合うか
 ```
 
@@ -647,7 +647,7 @@ Anthropicのマルチエージェント記事では、システムを作って�
 
 見るべきなのは、
 
-```text
+```tone-good.question-checklist
 - サブエージェントの分担は適切か
 - 何度も同じ情報を調べていないか
 - 重要な観点が抜けていないか
@@ -686,7 +686,7 @@ Anthropicのマルチエージェント記事では、システムを作って�
 
 マルチエージェント系で一番大事なのは、これです。
 
-```text
+```tone-good.guideline
 複数に分けることではなく、
 単一エージェントでは難しい探索・分担・統合を、
 役割と情報共有を設計して安全に行うこと。
@@ -694,7 +694,7 @@ Anthropicのマルチエージェント記事では、システムを作って�
 
 実務向けにはこうです。
 
-```text
+```tone-neutral.process
 1. まず単一エージェントで足りるか確認する
 2. 複数にする理由を明確にする
 3. 役割を分ける

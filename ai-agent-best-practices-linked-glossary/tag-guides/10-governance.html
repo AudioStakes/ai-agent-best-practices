@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>10. ガバナンス系</title>
+  <link rel="stylesheet" href="../style.css?v=20260531-clean-style-1" />
+  <script src="../term-popup.js?v=20260531-mobile-term-title-1" defer></script>
+</head>
+<body>
+<div class="container"><p class="nav"><a href="../index.html">← Index</a><a href="../domain-glossary.html">用語集</a></p><article class="article"><h1 id="10-ガバナンス系">10. ガバナンス系</h1><p class="rating-guide">★は重要度を表します。★★★★★ほど、設計・運用時に優先して確認すべき項目です。</p>
+
+<h2 id="対象タグ">対象タグ</h2>
+<p data-no-term="true"><code>governance</code></p>
+<h2 id="対象記事">対象記事</h2>
+<ul data-no-term="true">
+<li>Microsoft — <a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ai-agents/governance-security-across-organization">Governance
+and security for AI agents across the organization</a></li>
+<li>Microsoft — <a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ai-agents/">AI
+Agent Adoption Guidance for Organizations</a></li>
+<li>Google Cloud — <a href="https://cloud.google.com/blog/products/ai-machine-learning/a-devs-guide-to-production-ready-ai-agents/">A
+dev’s guide to production-ready AI agents</a></li>
+<li>Google Cloud — <a href="https://docs.cloud.google.com/customer-engagement-ai/conversational-agents/ps/best-practices">Best
+practices and patterns</a></li>
+<li>OpenAI — <a href="https://developers.openai.com/tracks/building-agents">Building
+agents</a></li>
+<li>OpenAI — <a href="https://developers.openai.com/api/docs/guides/agents/guardrails-approvals">Safety
+in building agents</a></li>
+<li>Anthropic — <a href="https://www.anthropic.com/engineering/how-we-contain-claude">How
+we contain Claude across products</a></li>
+<li>Anthropic — <a href="https://www.anthropic.com/engineering/building-effective-agents">Building
+effective agents</a></li>
+<li>Anthropic — <a href="https://www.anthropic.com/engineering/claude-code-auto-mode">How
+we built Claude Code auto mode: a safer way to skip permissions</a></li>
+</ul>
+<h2 id="結論">結論</h2>
+<p>結論から言うと、ガバナンス系で一番大事なのは、<strong>「<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>を禁止する/自由に使わせる」の二択ではなく、誰が・何を・どの<a class="term" data-description="ツールごとに許可される読み取り、書き込み、実行、送信、削除などの操作範囲。ガードレールや人間確認と組み合わせて管理する。" href="../domain-glossary.html#tool-permission">ツール権限</a>で・どの範囲まで任せてよいかを組織として決めること</strong>です。</p>
+<h2 id="どの記事でも共通">どの記事でも共通</h2>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="1-エージェントの利用範囲と責任者を明確にする">1. <a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>の利用範囲と責任者を明確にする</h3>
+<p>ガバナンス系で最重要です。</p>
+<p><a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>は、ただのチャット<a class="term" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。" href="../domain-glossary.html#tool">ツール</a>ではなく、<a class="term" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。" href="../domain-glossary.html#tool">ツール</a>を使い、情報を読み、場合によっては外部へ影響を与えます。</p>
+<p>だから組織として、</p>
+<div class="risk-ladder">
+  <div class="risk-item risk-mid">どの業務で使ってよいか</div>
+  <div class="risk-item risk-mid">どの業務では使ってはいけないか</div>
+  <div class="risk-item risk-high">誰が利用を承認するか</div>
+  <div class="risk-item risk-mid">誰が設定を管理するか</div>
+  <div class="risk-item risk-mid">誰が結果に責任を持つか</div>
+  <div class="risk-item risk-mid">問題発生時に誰へエスカレーションするか</div>
+</div>
+<p>を決める必要があります。</p>
+<p>特に重要なのは、<strong><a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>がやったことでも、最終責任は人間・組織側に残る</strong>という前提です。</p>
+<hr/>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="2-データ機密情報個人情報の扱いを決める">2. データ・<a class="term" data-description="漏洩・不正利用・不適切な共有によって個人、顧客、組織、事業に損害を与え得る情報。個人情報、認証情報、契約情報、社内機密などを含む。" href="../domain-glossary.html#sensitive-information">機密情報</a>・個人情報の扱いを決める</h3>
+<p>ガバナンスで外せないのがデータ管理です。</p>
+<p><a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>に渡してよい情報と、渡してはいけない情報を分ける必要があります。</p>
+<div class="structured-list">
+  <div class="structured-item"><strong>渡してよい可能性がある</strong><ul><li>公開情報</li><li>社内で共有済みの一般資料</li><li>匿名化されたデータ</li><li>テストデータ</li></ul></div>
+  <div class="structured-item"><strong>慎重に扱う</strong><ul><li>顧客情報</li><li>個人情報</li><li>契約情報</li><li>売上・財務情報</li><li>社内の未公開戦略</li><li>ソースコード</li><li>APIキーやトークンなどの認証情報</li></ul></div>
+</div>
+<p>特に、<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>は複数<a class="term" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。" href="../domain-glossary.html#tool">ツール</a>や外部サービスに接続するため、<strong>どの情報がどこへ流れるか</strong>を管理する必要があります。</p>
+<p>これは重要度★★★★★です。</p>
+<hr/>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="3-ツール権限管理を組織ルールにする">3. <a class="term" data-description="ツールごとに許可される読み取り、書き込み、実行、送信、削除などの操作範囲。ガードレールや人間確認と組み合わせて管理する。" href="../domain-glossary.html#tool-permission">ツール権限</a>管理を組織ルールにする</h3>
+<p>個人が自由に<a class="term" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。" href="../domain-glossary.html#tool">ツール</a>接続を増やすと危険です。</p>
+<p>組織では、</p>
+<div class="risk-ladder">
+  <div class="risk-item risk-low">読み取り権限</div>
+  <div class="risk-item risk-mid">書き込み権限</div>
+  <div class="risk-item risk-high">外部送信のツール権限</div>
+  <div class="risk-item risk-high">本番環境操作のツール権限</div>
+  <div class="risk-item risk-mid">顧客情報アクセスのツール権限</div>
+  <div class="risk-item risk-mid">管理者のツール権限</div>
+</div>
+<p>を分けて管理する必要があります。</p>
+<p>基本は、セキュリティ系と同じで <strong>最小権限</strong> です。</p>
+<div class="risk-ladder">
+  <div class="risk-item risk-mid">必要な人に</div>
+  <div class="risk-item risk-mid">必要な業務で</div>
+  <div class="risk-item risk-mid">必要な期間だけ</div>
+  <div class="risk-item risk-mid">必要なツール権限を与える</div>
+</div>
+<p><a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>は便利なので、つい<a class="term" data-description="ツールごとに許可される読み取り、書き込み、実行、送信、削除などの操作範囲。ガードレールや人間確認と組み合わせて管理する。" href="../domain-glossary.html#tool-permission">ツール権限</a>を広げたくなります。
+でもガバナンスでは、<strong>便利さより事故時の影響範囲を狭めること</strong>が重要です。</p>
+<hr/>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="4-人間の承認ポイントを制度として決める">4. 人間の<a class="term" data-description="エージェントが特定の操作を実行する前に、人間や管理者が明示的に許可すること。特に送信、削除、購入、公開、本番操作などで使う。" href="../domain-glossary.html#approval">承認</a>ポイントを制度として決める</h3>
+<p><a class="term" data-description="エージェントの出力、判断、ツール利用、外部送信、高リスク操作などを人間が確認すること。完全自動化せず、人間の判断を挟む安全制御として使う。" href="../domain-glossary.html#human-review">人間レビュー</a>は、個人の気分で入れるものではなく、組織ルールとして定義するべきです。</p>
+<p>たとえば、</p>
+<div class="structured-list">
+  <div class="structured-item"><strong>必ず承認が必要</strong><ul><li>外部顧客への送信</li><li>契約・請求・支払い</li><li>本番環境への変更</li><li>個人情報の利用</li><li>法務・医療・金融など高リスク判断</li><li>削除・公開・承認など不可逆操作</li></ul></div>
+</div>
+<p><a class="term" data-description="エージェントが特定の操作を実行する前に、人間や管理者が明示的に許可すること。特に送信、削除、購入、公開、本番操作などで使う。" href="../domain-glossary.html#approval">承認</a>不要にできるもの：</p>
+<div class="risk-ladder">
+  <div class="risk-item risk-low">下書き作成</div>
+  <div class="risk-item risk-low">社内向け要約</div>
+  <div class="risk-item risk-mid">調査メモ作成</div>
+  <div class="risk-item risk-mid">テスト環境での実験</div>
+  <div class="risk-item risk-low">読み取り専用の検索</div>
+</div>
+<p>大事なのは、<strong><a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>に任せる範囲と、<a class="term" data-description="エージェントの出力、判断、ツール利用、外部送信、高リスク操作などを人間が確認すること。完全自動化せず、人間の判断を挟む安全制御として使う。" href="../domain-glossary.html#human-review">人間レビュー</a>で最終判断する範囲を明確に分けること</strong>です。</p>
+<hr/>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="5-トレース監査証跡を残す">5. <a class="term" data-description="1回のエージェント実行で起きたモデル呼び出し、ツール利用、ハンドオフ、ガードレール、カスタムイベントなどの時系列記録。" href="../domain-glossary.html#trace">トレース</a>・監査証跡を残す</h3>
+<p>ガバナンスでは、あとから説明できることが重要です。</p>
+<p>残すべきものは、</p>
+<div class="risk-ladder">
+  <div class="risk-item risk-mid">誰が使ったか</div>
+  <div class="risk-item risk-mid">いつ使ったか</div>
+  <div class="risk-item risk-mid">どのエージェントを使ったか</div>
+  <div class="risk-item risk-mid">どのデータにアクセスしたか</div>
+  <div class="risk-item risk-mid">どのツールを呼んだか</div>
+  <div class="risk-item risk-mid">どんな出力をしたか</div>
+  <div class="risk-item risk-high">誰が承認したか</div>
+  <div class="risk-item risk-mid">どこで失敗したか</div>
+</div>
+<p>です。</p>
+<p>これは単なるデバッグではありません。</p>
+<div class="term-chip-list">
+  <span>監査</span>
+  <span>コンプライアンス</span>
+  <span>セキュリティ調査</span>
+  <span>品質改善</span>
+  <span>責任分界</span>
+  <span>再発防止</span>
+</div>
+<p>に必要です。</p>
+<p><a class="term" data-description="1回のエージェント実行で起きたモデル呼び出し、ツール利用、ハンドオフ、ガードレール、カスタムイベントなどの時系列記録。" href="../domain-glossary.html#trace">トレース</a>やログがないと、「<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>が何をしたのか」が説明できません。
+組織利用ではかなり致命的です。</p>
+<hr/>
+<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
+<h3 id="6-評価品質基準を組織で持つ">6. <a class="term" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。" href="../domain-glossary.html#evaluation">評価</a>・品質基準を組織で持つ</h3>
+<p><a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>の良し悪しを、利用者の感覚だけで判断すると危険です。</p>
+<p>組織として、</p>
+<ul class="guideline-list">
+  <li>正確性</li>
+  <li>安全性</li>
+  <li>完了率</li>
+  <li>人間レビュー率</li>
+  <li>失敗率</li>
+  <li>コスト</li>
+  <li>処理時間</li>
+  <li>顧客影響</li>
+  <li>コンプライアンス違反の有無</li>
+</ul>
+<p>などを見る必要があります。</p>
+<p>特に、業務に組み込むなら、</p>
+<div class="risk-ladder">
+  <div class="risk-item risk-high">このエージェントは本番利用してよい品質か</div>
+  <div class="risk-item risk-mid">変更後も壊れていないか</div>
+  <div class="risk-item risk-mid">特定業務で使ってよいか</div>
+</div>
+<p>を判断する基準が必要です。</p>
+<hr/>
+<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
+<h3 id="7-導入利用廃止のライフサイクルを管理する">7.
+導入・利用・廃止のライフサイクルを管理する</h3>
+<p>ガバナンスでは、作って終わりではありません。</p>
+<p><a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>ごとに、</p>
+<div class="risk-ladder">
+  <div class="risk-item risk-mid">申請</div>
+  <div class="risk-item risk-mid">審査</div>
+  <div class="risk-item risk-mid">試験運用</div>
+  <div class="risk-item risk-high">本番化</div>
+  <div class="risk-item risk-mid">監視</div>
+  <div class="risk-item risk-mid">改善</div>
+  <div class="risk-item risk-mid">権限見直し</div>
+  <div class="risk-item risk-mid">廃止</div>
+</div>
+<p>の流れを持つのが理想です。</p>
+<p>放置された<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>は危険です。</p>
+<div class="risk-ladder">
+  <div class="risk-item risk-mid">古いプロンプト</div>
+  <div class="risk-item risk-mid">古いツール説明</div>
+  <div class="risk-item risk-mid">古いツール権限</div>
+  <div class="risk-item risk-mid">管理者不明</div>
+  <div class="risk-item risk-mid">使われていない外部接続</div>
+</div>
+<p>が残ると、セキュリティリスクになります。</p>
+<hr/>
+<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
+<h3 id="8-利用者教育と共通ルールが必要">8.
+利用者教育と共通ルールが必要</h3>
+<p><a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>は、使う人の理解によってリスクが大きく変わります。</p>
+<p>組織では、利用者に最低限これを共有する必要があります。</p>
+<div class="risk-ladder">
+  <div class="risk-item risk-mid">入れてよい情報 / 入れてはいけない情報</div>
+  <div class="risk-item risk-mid">エージェント出力をそのまま信用しない</div>
+  <div class="risk-item risk-high">外部送信前に確認する</div>
+  <div class="risk-item risk-high">機密情報を貼らない</div>
+  <div class="risk-item risk-high">危険な操作は承認を取る</div>
+  <div class="risk-item risk-mid">出力の責任は人間側にある</div>
+  <div class="risk-item risk-mid">プロンプトインジェクションに注意する</div>
+</div>
+<p><a class="term" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。" href="../domain-glossary.html#tool">ツール</a>だけ導入して教育しないと、現場で危ない使われ方をします。</p>
+<hr/>
+<h2 id="openaiとanthropicで共通">OpenAIとAnthropicで共通</h2>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="1-エージェントにはガードレールと人間レビューが必要">1. <a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>には<a class="term" data-description="入力、出力、ツール利用、権限操作などを検査・制御し、エージェントの危険な振る舞いを防ぐための安全制御。" href="../domain-glossary.html#guardrail">ガードレール</a>と<a class="term" data-description="エージェントの出力、判断、ツール利用、外部送信、高リスク操作などを人間が確認すること。完全自動化せず、人間の判断を挟む安全制御として使う。" href="../domain-glossary.html#human-review">人間レビュー</a>が必要</h3>
+<p>OpenAI と Anthropic で共通している重要点は、<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>を完全自由に動かさず、制御を入れることです。</p>
+<p>OpenAI は <a class="term" data-description="入力、出力、ツール利用、権限操作などを検査・制御し、エージェントの危険な振る舞いを防ぐための安全制御。" href="../domain-glossary.html#guardrail">ガードレール</a>、<a class="term" data-description="エージェントの出力、判断、ツール利用、外部送信、高リスク操作などを人間が確認すること。完全自動化せず、人間の判断を挟む安全制御として使う。" href="../domain-glossary.html#human-review">人間レビュー</a>、入力・出力制御、<a class="term" data-description="エージェントが目的達成のためにツールを選び、入力を作り、結果を解釈して次の行動に反映すること。単なる関数呼び出しではなく、判断を含む行為を指す。" href="../domain-glossary.html#tool-use">ツール利用</a>制御を扱います。
+Anthropic は封じ込め、サンドボックス、権限確認、<a class="term" data-description="エージェントにどこまで自律的な判断・操作を任せるかの段階。読み取りのみ、提案のみ、承認付き実行、自律実行などで定義する。" href="../domain-glossary.html#automation-level">自動化レベル</a>の設計を重視します。</p>
+<p>共通する判断はこれです。</p>
+<div class="takeaway-box">危険な判断や操作は、AIだけで完了させない</div>
+<p>これはガバナンスでも最重要です。
+個別プロンプトではなく、組織の運用ルールとして決める必要があります。</p>
+<hr/>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="2-ツールや権限を管理対象にする">2.
+ツールや権限を管理対象にする</h3>
+<p>OpenAI も Anthropic も、<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>は<a class="term" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。" href="../domain-glossary.html#tool">ツール</a>を使って行動する存在として扱います。</p>
+<p>そのため、組織では、</p>
+<div class="risk-ladder">
+  <div class="risk-item risk-mid">どのツールを許可するか</div>
+  <div class="risk-item risk-mid">誰がツール接続を追加できるか</div>
+  <div class="risk-item risk-mid">どのデータソースへ接続してよいか</div>
+  <div class="risk-item risk-low">どの操作は読み取り専用にするか</div>
+  <div class="risk-item risk-high">どの操作は承認制にするか</div>
+</div>
+<p>を管理する必要があります。</p>
+<p>これはかなり重要です。</p>
+<p><a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>のリスクは、モデルそのものより
+<strong>接続先と権限</strong> で大きく変わります。</p>
+<hr/>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="3-監査トレースログが必要">3. 監査・<a class="term" data-description="1回のエージェント実行で起きたモデル呼び出し、ツール利用、ハンドオフ、ガードレール、カスタムイベントなどの時系列記録。" href="../domain-glossary.html#trace">トレース</a>・ログが必要</h3>
+<p>OpenAI は <a class="term" data-description="1回のエージェント実行で起きたモデル呼び出し、ツール利用、ハンドオフ、ガードレール、カスタムイベントなどの時系列記録。" href="../domain-glossary.html#trace">トレース</a>、Anthropic は
+containment / long-running agents / sandboxing の文脈で、<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>の挙動を追えることを重視しています。</p>
+<p>ガバナンスでは、これは必須です。</p>
+<div class="term-chip-list">
+  <span>誰が</span>
+  <span>どのエージェントに</span>
+  <span>何をさせ</span>
+  <span>どの情報を使い</span>
+  <span>どのツールを呼び</span>
+  <span>何を出力したか</span>
+</div>
+<p>を説明できる必要があります。</p>
+<p>これはセキュリティだけでなく、社内説明責任にも関わります。</p>
+<hr/>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="4-プロンプトやモデルだけではなく運用設計が必要">4.
+プロンプトやモデルだけではなく、運用設計が必要</h3>
+<p>OpenAI と Anthropic の共通点として、<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>はプロンプトだけで安全になるものではありません。</p>
+<p>必要なのは、</p>
+<div class="risk-ladder">
+  <div class="risk-item risk-mid">権限</div>
+  <div class="risk-item risk-mid">ツール</div>
+  <div class="risk-item risk-mid">ガードレール</div>
+  <div class="risk-item risk-mid">人間レビュー</div>
+  <div class="risk-item risk-mid">ログ</div>
+  <div class="risk-item risk-mid">評価</div>
+  <div class="risk-item risk-mid">サンドボックス</div>
+  <div class="risk-item risk-mid">利用ルール</div>
+</div>
+<p>です。</p>
+<p>ガバナンスの視点では、<strong>良いプロンプトを書くことより、良い運用境界を作ること</strong>が重要です。</p>
+<hr/>
+<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
+<h3 id="5-高リスク領域では段階的に自動化する">5.
+高リスク領域では段階的に自動化する</h3>
+<p>OpenAI も Anthropic も、最初から<a class="term" data-description="事前に定めた権限、ガードレール、停止条件、監視の範囲内で、エージェントが人間承認なしに操作を実行する方式。" href="../domain-glossary.html#autonomous-execution">自律実行</a>するより、段階的に進める考え方と相性が良いです。</p>
+<p>ガバナンスとしては、</p>
+<div class="definition-box">
+<dl>
+  <dt>Level 1</dt>
+  <dd>エージェントが下書き・候補を作る</dd>
+  <dt>Level 2</dt>
+  <dd>エージェントが内部処理を行い、人間レビューする</dd>
+  <dt>Level 3</dt>
+  <dd>低リスク処理は自動化する</dd>
+  <dt>Level 4</dt>
+  <dd>高リスク処理のみ承認制にする</dd>
+  <dt>Level 5</dt>
+  <dd>一部業務を自律実行する</dd>
+</dl>
+</div>
+<p>のように考えるとよいです。</p>
+<p>いきなり<a class="term" data-description="事前に定めた権限、ガードレール、停止条件、監視の範囲内で、エージェントが人間承認なしに操作を実行する方式。" href="../domain-glossary.html#autonomous-execution">自律実行</a>にしない。
+<strong><a class="term" data-description="エージェントにどこまで自律的な判断・操作を任せるかの段階。読み取りのみ、提案のみ、承認付き実行、自律実行などで定義する。" href="../domain-glossary.html#automation-level">自動化レベル</a>は、安全性・<a class="term" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。" href="../domain-glossary.html#evaluation">評価</a>・監査が整ってから上げる</strong>のが現実的です。</p>
+<hr/>
+<h2 id="openエージェントのみ">Open<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>のみ</h2>
+<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
+<h3 id="1-ガードレール--トレース--agents-sdk-を統制部品として使える">1.
+<a class="term" data-description="入力、出力、ツール利用、権限操作などを検査・制御し、エージェントの危険な振る舞いを防ぐための安全制御。" href="../domain-glossary.html#guardrail">ガードレール</a> / <a class="term" data-description="1回のエージェント実行で起きたモデル呼び出し、ツール利用、ハンドオフ、ガードレール、カスタムイベントなどの時系列記録。" href="../domain-glossary.html#trace">トレース</a> / Agents SDK
+を統制部品として使える</h3>
+<p>OpenAI の特徴は、<a class="term" data-description="入力、出力、ツール利用、権限操作などを検査・制御し、エージェントの危険な振る舞いを防ぐための安全制御。" href="../domain-glossary.html#guardrail">ガードレール</a>、<a class="term" data-description="1回のエージェント実行で起きたモデル呼び出し、ツール利用、ハンドオフ、ガードレール、カスタムイベントなどの時系列記録。" href="../domain-glossary.html#trace">トレース</a>、<a class="term" data-description="あるエージェントや処理ステップから、別の専門エージェントや担当処理へ作業を引き渡すこと。責任の移動と、渡す情報の設計が重要になる。" href="../domain-glossary.html#handoff">ハンドオフ</a>、セッションなどを<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>実装の部品として扱いやすいことです。</p>
+<p>組織で使う場合は、</p>
+<ol class="process-steps">
+  <li>ガードレール で入力・出力を制御する</li>
+  <li>トレース で挙動を追う</li>
+  <li>ハンドオフ で専門エージェントへ渡す</li>
+  <li>セッションメモリ で状態を管理する</li>
+</ol>
+<p>といった設計ができます。</p>
+<p>ただし、これはOpenAIスタックに寄った話です。
+ガバナンス原則としては、製品機能よりも <strong>制御・記録・<a class="term" data-description="エージェントが特定の操作を実行する前に、人間や管理者が明示的に許可すること。特に送信、削除、購入、公開、本番操作などで使う。" href="../domain-glossary.html#approval">承認</a>を仕組みにすること</strong>が本質です。</p>
+<hr/>
+<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
+<h3 id="2-ワークフロー単位で管理する発想がある">2. <a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>単位で管理する発想がある</h3>
+<p>OpenAIは、<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>を単体ではなく <a class="term" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。" href="../domain-glossary.html#workflow">ワークフロー</a>
+として扱う見方が強いです。</p>
+<p>ガバナンス上もこれは有効です。</p>
+<div class="takeaway-box">このエージェントが安全か</div>
+<p>ではなく、</p>
+<div class="term-chip-list">
+  <span>この業務フローでエージェントをどこに入れるか</span>
+  <span>どこで人間レビューするか</span>
+  <span>どのツールを使うか</span>
+  <span>どのログを残すか</span>
+</div>
+<p>を見るべきです。</p>
+<p><a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>単体の許可ではなく、<strong>業務フロー単位で許可・監査する</strong>のが実務的です。</p>
+<hr/>
+<p aria-label="重要度 3 / 5" class="stars">★★★☆☆</p>
+<h3 id="3-モデルツール選定を統制対象にできる">3.
+モデル・ツール選定を統制対象にできる</h3>
+<p>OpenAIでは、モデルや<a class="term" data-description="モデル提供側やプラットフォーム側でホストされる検索、ファイル検索、コード実行などの組み込みツール。自前実装の負担を下げられるが、提供環境への依存がある。" href="../domain-glossary.html#hosted-tool">Hosted
+Tool</a>の選択肢が多いため、組織として選定ルールを持つ価値があります。</p>
+<p>たとえば、</p>
+<div class="risk-ladder">
+  <div class="risk-item risk-high">高リスク業務では推論モデルを使う</div>
+  <div class="risk-item risk-low">低リスク処理では軽量モデルを使う</div>
+  <div class="risk-item risk-low">Web検索利用時は引用を必須にする</div>
+  <div class="risk-item risk-low">ファイル検索は許可されたデータソースだけにする</div>
+  <div class="risk-item risk-mid">コード実行は検証環境だけにする</div>
+</div>
+<p>です。</p>
+<p>重要ですが、OpenAI固有の運用設計に近いので重要度は★★★☆☆〜★★★★☆です。</p>
+<hr/>
+<h2 id="anthropicのみ">Anthropicのみ</h2>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="1-封じ込めcontainment-を組織設計として考える">1.
+封じ込め、containment を組織設計として考える</h3>
+<p>Anthropic の強みは、<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>をどう封じ込めるかの発想が非常に強いことです。</p>
+<p>ガバナンスではこれがかなり重要です。</p>
+<div class="risk-ladder">
+  <div class="risk-item risk-mid">エージェントが触れるファイル範囲</div>
+  <div class="risk-item risk-mid">エージェントが実行できるコマンド</div>
+  <div class="risk-item risk-mid">エージェントがアクセスできるネットワーク</div>
+  <div class="risk-item risk-high">エージェントが読める機密情報</div>
+  <div class="risk-item risk-high">エージェントが外部送信できる内容</div>
+  <div class="risk-item risk-mid">エージェントが書き込める環境</div>
+</div>
+<p>を組織として決める必要があります。</p>
+<p>これは、単なるセキュリティ設定ではなく、<strong>AI活用の運用境界</strong>です。</p>
+<hr/>
+<p aria-label="重要度 5 / 5" class="stars">★★★★★</p>
+<h3 id="2-自律性と安全性をセットで管理する">2.
+自律性と安全性をセットで管理する</h3>
+<p>Anthropic の auto mode / sandboxing 系から重要なのは、<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>の<a class="term" data-description="エージェントにどこまで自律的な判断・操作を任せるかの段階。読み取りのみ、提案のみ、承認付き実行、自律実行などで定義する。" href="../domain-glossary.html#automation-level">自動化レベル</a>を上げるなら、安全境界も強化するという発想です。</p>
+<p>たとえば、</p>
+<div class="structured-list">
+  <div class="structured-item"><strong>自動化レベル低</strong><ul><li>毎回人間レビュー。サンドボックスは軽めでもよい。</li></ul></div>
+  <div class="structured-item"><strong>自動化レベル中</strong><ul><li>一部操作は自動。危険操作は確認。権限を限定。</li></ul></div>
+  <div class="structured-item"><strong>自動化レベル高</strong><ul><li>サンドボックス必須。ネットワーク制限。認証情報遮断。トレース必須。</li></ul></div>
+</div>
+<p>です。</p>
+<p>ガバナンス上は、<strong><a class="term" data-description="エージェントにどこまで自律的な判断・操作を任せるかの段階。読み取りのみ、提案のみ、承認付き実行、自律実行などで定義する。" href="../domain-glossary.html#automation-level">自動化レベル</a>ごとに必要な安全対策を定義する</strong>のがよいです。</p>
+<hr/>
+<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
+<h3 id="3-開発者pcローカル環境をリスク領域として扱う">3.
+開発者PC・ローカル環境をリスク領域として扱う</h3>
+<p>Anthropic のClaude Code系では、ローカル環境で動く<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>のリスクが重要です。</p>
+<p>開発者PCには、</p>
+<div class="risk-ladder">
+  <div class="risk-item risk-mid">SSH鍵</div>
+  <div class="risk-item risk-high">APIトークンなどの認証情報</div>
+  <div class="risk-item risk-mid">.env</div>
+  <div class="risk-item risk-mid">private repository</div>
+  <div class="risk-item risk-mid">顧客データ</div>
+  <div class="risk-item risk-mid">社内資料</div>
+  <div class="risk-item risk-high">本番アクセス情報</div>
+</div>
+<p>がある可能性があります。</p>
+<p>組織としては、</p>
+<div class="risk-ladder">
+  <div class="risk-item risk-mid">ローカルでエージェントを使うルール</div>
+  <div class="risk-item risk-high">認証情報を置かない運用</div>
+  <div class="risk-item risk-mid">sandbox利用</div>
+  <div class="risk-item risk-mid">許可コマンド</div>
+  <div class="risk-item risk-high">外部送信制限</div>
+  <div class="risk-item risk-mid">会社支給端末での利用方針</div>
+</div>
+<p>を決める必要があります。</p>
+<p>これはコーディング<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>導入時にかなり重要です。</p>
+<hr/>
+<p aria-label="重要度 4 / 5" class="stars">★★★★☆</p>
+<h3 id="4-許可ルールを運用で育てる">4. 許可ルールを運用で育てる</h3>
+<p>AnthropicのClaude
+Code系では、どの操作を許可し、どの操作を確認し、どの操作を禁止するかを実運用で調整していく発想があります。</p>
+<p>ガバナンスでも同じです。</p>
+<p>最初から完璧なルールは作れません。</p>
+<div class="risk-ladder">
+  <div class="risk-item risk-low">よく使う安全な操作は自動化する</div>
+  <div class="risk-item risk-high">危険だった操作は確認対象にする</div>
+  <div class="risk-item risk-mid">事故りそうな操作は禁止する</div>
+  <div class="risk-item risk-mid">失敗例をルールに反映する</div>
+</div>
+<p>という改善が必要です。</p>
+<p>これは重要度★★★★☆です。
+最初は控えめに始め、実績を見ながら広げるのが良いです。</p>
+<hr/>
+<h2 id="実務で重要な順">実務で重要な順</h2>
+<p>ガバナンス系で押さえるべき順番はこうです。</p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: right;">重要度</th>
+<th>ポイント</th>
+<th>判断への使い方</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td>利用範囲と責任者を明確にする</td>
+<td>誰が何に使ってよいか決める</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td>データ・<a class="term" data-description="漏洩・不正利用・不適切な共有によって個人、顧客、組織、事業に損害を与え得る情報。個人情報、認証情報、契約情報、社内機密などを含む。" href="../domain-glossary.html#sensitive-information">機密情報</a>の扱いを決める</td>
+<td>入れてよい情報とダメな情報を分ける</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td><a class="term" data-description="ツールごとに許可される読み取り、書き込み、実行、送信、削除などの操作範囲。ガードレールや人間確認と組み合わせて管理する。" href="../domain-glossary.html#tool-permission">ツール権限</a>管理を組織ルールにする</td>
+<td><a class="term" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。" href="../domain-glossary.html#tool">ツール</a>・データ・操作ごとに権限を分ける</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td><a class="term" data-description="エージェントが特定の操作を実行する前に、人間や管理者が明示的に許可すること。特に送信、削除、購入、公開、本番操作などで使う。" href="../domain-glossary.html#approval">承認</a>ポイントを制度化する</td>
+<td>外部送信・本番変更・支払いなどは<a class="term" data-description="エージェントが特定の操作を実行する前に、人間や管理者が明示的に許可すること。特に送信、削除、購入、公開、本番操作などで使う。" href="../domain-glossary.html#approval">承認</a>制</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td><a class="term" data-description="1回のエージェント実行で起きたモデル呼び出し、ツール利用、ハンドオフ、ガードレール、カスタムイベントなどの時系列記録。" href="../domain-glossary.html#trace">トレース</a>・監査証跡を残す</td>
+<td>誰が何をしたか説明できるようにする</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td><a class="term" data-description="入力、出力、ツール利用、権限操作などを検査・制御し、エージェントの危険な振る舞いを防ぐための安全制御。" href="../domain-glossary.html#guardrail">ガードレール</a>を設計に入れる</td>
+<td>入力・出力・<a class="term" data-description="エージェントが目的達成のためにツールを選び、入力を作り、結果を解釈して次の行動に反映すること。単なる関数呼び出しではなく、判断を含む行為を指す。" href="../domain-glossary.html#tool-use">ツール利用</a>を制御する</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td>自律性と安全性をセットで管理する</td>
+<td><a class="term" data-description="エージェントにどこまで自律的な判断・操作を任せるかの段階。読み取りのみ、提案のみ、承認付き実行、自律実行などで定義する。" href="../domain-glossary.html#automation-level">自動化レベル</a>ごとに必要な対策を決める</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td>封じ込めを運用境界として考える</td>
+<td><a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>が触れる範囲を限定する</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4</td>
+<td><a class="term" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。" href="../domain-glossary.html#evaluation">評価</a>・品質基準を持つ</td>
+<td>本番利用してよい品質か判断する</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td>導入から廃止まで管理する</td>
+<td>放置された<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>を作らない</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4</td>
+<td>利用者教育を行う</td>
+<td>現場の危ない使い方を防ぐ</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td>ローカル環境の利用ルールを決める</td>
+<td>開発者PCの秘密情報を守る</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4</td>
+<td>許可ルールを改善する</td>
+<td>失敗例をルールに反映する</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">3</td>
+<td>製品機能を統制に使う</td>
+<td>便利だが本質は運用設計</td>
+</tr>
+</tbody>
+</table>
+<h2 id="一言でいうと">一言でいうと</h2>
+<p>ガバナンス系で一番大事なのは、これです。</p>
+<div class="takeaway-box">エージェントを誰が、どの業務で、どのデータ・権限・承認のもとで使ってよいかを決めること。</div>
+<p>実務向けにはこうです。</p>
+<ol class="process-steps">
+  <li>利用してよい業務を決める</li>
+  <li>入れてよいデータを決める</li>
+  <li>使ってよいツールと権限を決める</li>
+  <li>承認が必要な操作を決める</li>
+  <li>トレースと監査証跡を残す</li>
+  <li>品質・安全性の評価基準を持つ</li>
+  <li>自動化レベルごとに安全対策を決める</li>
+  <li>利用者にルールを教育する</li>
+  <li>使われなくなったエージェントやツール権限を廃止する</li>
+</ol>
+<p>ガバナンスは、現場のスピードを止めるためのものではありません。
+むしろ、<strong>安心して<a class="term" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。" href="../domain-glossary.html#agent">エージェント</a>を広げるための交通ルール</strong>です。</p>
+</article></div>
+<script>
+(function () {
+  function closeTerms(except) {
+    document.querySelectorAll('.term[data-open="true"]').forEach(function (el) {
+      if (el !== except) el.removeAttribute('data-open');
+    });
+  }
+  document.addEventListener('click', function (event) {
+    var term = event.target.closest('.term');
+    if (!term) { closeTerms(); return; }
+    event.preventDefault();
+    var isOpen = term.getAttribute('data-open') === 'true';
+    closeTerms(term);
+    if (isOpen) term.removeAttribute('data-open');
+    else term.setAttribute('data-open', 'true');
+  });
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') closeTerms();
+  });
+})();
+</script>
+</body>
+</html>
