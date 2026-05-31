@@ -13,6 +13,20 @@
     <p>最新の仕様や推奨事項は、各公式ドキュメントを確認してください。</p>
     <p>参照元と元記事への導線は、本文末の「対象記事」と「参考文献」を参照してください。</p>
   </aside>
+<p><a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>を役割分担させて協調させる設計を考える章です。探索、<a class="term" href="../domain-glossary.html#delegation" data-description="あるエージェントやオーケストレーターが、特定の作業や判断を別のエージェントへ任せること。Handoff より一般的な作業割り当てとして使う。">委譲</a>、統合、レビュー、複数<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>の責任分担を扱います。</p>
+<p>この章を読むことで、単一<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>で足りるか、分担の価値があるか、情報共有をどう設計するかを見直せます。詳細な参照元は章末の<a class="term" href="../domain-glossary.html#citation" data-description="回答や説明の根拠として、どの情報源・箇所に基づいたかを示す表示。ユーザーやレビュアーが根拠を確認できるようにする。">引用</a>リンクを参照してください。</p>
+<blockquote>
+<p><strong>対象時点: 2026年5月</strong><br>この章は、2026年5月時点で公開されている主要な公式ドキュメントをもとに整理しています。最新の仕様や推奨事項は、各公式ドキュメントを確認してください。</p>
+</blockquote>
+<p><a href="../index.html">← トップへ戻る</a> | <a href="../domain-glossary.html">用語集</a></p>
+<h2 id="この章て-見直せること">この章で見直せること</h2>
+<ul>
+<li>単一<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>で足りない理由があるか</li>
+<li>役割分担が明確か</li>
+<li>情報共有と統合の設計があるか</li>
+<li><a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>やログで重複や抜け漏れを追えるか</li>
+<li>コスト増に見合う価値があるか</li>
+</ul>
 <h2 id="対象タク">対象タグ</h2>
 <p><code>multi_agent</code></p>
 <h2 id="対象記事">対象記事</h2>

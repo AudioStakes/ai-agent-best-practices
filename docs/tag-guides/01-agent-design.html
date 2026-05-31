@@ -13,6 +13,20 @@
     <p>最新の仕様や推奨事項は、各公式ドキュメントを確認してください。</p>
     <p>参照元と元記事への導線は、本文末の「対象記事」と「参考文献」を参照してください。</p>
   </aside>
+<p>AIに何を任せ、どこまで自律させるかを見極める章です。役割設計、<a class="term" href="../domain-glossary.html#task-decomposition" data-description="大きな目的や曖昧な依頼を、実行可能な小さな作業単位に分けること。ワークフロー設計やマルチエージェント設計の前提になる。">タスク分解</a>、人間の関与ポイントを整理します。</p>
+<p>この章を読むことで、<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>化の要否、自律度、<a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a>の持たせ方、<a class="term" href="../domain-glossary.html#checkpoint" data-description="ワークフローやエージェントループの途中で、人間レビュー、承認、状態確認、方針変更を行うために設ける停止地点。">確認ポイント</a>を見直せます。詳細な参照元は章末の<a class="term" href="../domain-glossary.html#citation" data-description="回答や説明の根拠として、どの情報源・箇所に基づいたかを示す表示。ユーザーやレビュアーが根拠を確認できるようにする。">引用</a>リンクを参照してください。</p>
+<blockquote>
+<p><strong>対象時点: 2026年5月</strong><br>この章は、2026年5月時点で公開されている主要な公式ドキュメントをもとに整理しています。最新の仕様や推奨事項は、各公式ドキュメントを確認してください。</p>
+</blockquote>
+<p><a href="../index.html">← トップへ戻る</a> | <a href="../domain-glossary.html">用語集</a></p>
+<h2 id="この章て-見直せること">この章で見直せること</h2>
+<ul>
+<li><a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>化が本当に必要か</li>
+<li>単一<a class="term" href="../domain-glossary.html#workflow" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。">ワークフロー</a>で足りるか</li>
+<li>どこまで自律化するか</li>
+<li>人間が確認すべきポイントはどこか</li>
+<li><a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a>と<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>の責任分担は明確か</li>
+</ul>
 <h2 id="対象タク">対象タグ</h2>
 <p><code>agent_design</code></p>
 <h2 id="対象記事">対象記事</h2>

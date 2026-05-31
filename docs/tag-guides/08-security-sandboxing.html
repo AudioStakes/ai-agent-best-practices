@@ -13,6 +13,20 @@
     <p>最新の仕様や推奨事項は、各公式ドキュメントを確認してください。</p>
     <p>参照元と元記事への導線は、本文末の「対象記事」と「参考文献」を参照してください。</p>
   </aside>
+<p><a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>に安全に作業させるための章です。権限分離、サンドボックス、秘密情報、外部実行、<a class="term" href="../domain-glossary.html#prompt-injection" data-description="ユーザー入力、外部文書、Webページ、ツール結果などに紛れた悪意ある指示によって、エージェントの判断や出力、ツール利用を意図しない方向へ操作する攻撃。">プロンプトインジェクション</a>対策を扱います。</p>
+<p>この章を読むことで、最小権限、隔離、<a class="term" href="../domain-glossary.html#approval" data-description="エージェントが特定の操作を実行する前に、人間や管理者が明示的に許可すること。特に送信、削除、購入、公開、本番操作などで使う。">承認</a>、<a class="term" href="../domain-glossary.html#sensitive-information" data-description="漏洩・不正利用・不適切な共有によって個人、顧客、組織、事業に損害を与え得る情報。個人情報、認証情報、契約情報、社内機密などを含む。">機密情報</a>の扱いを見直せます。詳細な参照元は章末の<a class="term" href="../domain-glossary.html#citation" data-description="回答や説明の根拠として、どの情報源・箇所に基づいたかを示す表示。ユーザーやレビュアーが根拠を確認できるようにする。">引用</a>リンクを参照してください。</p>
+<blockquote>
+<p><strong>対象時点: 2026年5月</strong><br>この章は、2026年5月時点で公開されている主要な公式ドキュメントをもとに整理しています。最新の仕様や推奨事項は、各公式ドキュメントを確認してください。</p>
+</blockquote>
+<p><a href="../index.html">← トップへ戻る</a> | <a href="../domain-glossary.html">用語集</a></p>
+<h2 id="この章て-見直せること">この章で見直せること</h2>
+<ul>
+<li>最小権限になっているか</li>
+<li>読み取り、書き込み、実行が分かれているか</li>
+<li>高リスク操作に人間確認があるか</li>
+<li>サンドボックスや隔離があるか</li>
+<li>secrets や個人情報を守れているか</li>
+</ul>
 <h2 id="対象タク">対象タグ</h2>
 <p><code>security_sandboxing</code></p>
 <h2 id="対象記事">対象記事</h2>

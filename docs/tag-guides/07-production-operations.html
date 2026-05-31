@@ -13,6 +13,20 @@
     <p>最新の仕様や推奨事項は、各公式ドキュメントを確認してください。</p>
     <p>参照元と元記事への導線は、本文末の「対象記事」と「参考文献」を参照してください。</p>
   </aside>
+<p><a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>を実験ではなく、継続的に運用するための章です。監視、ログ、権限管理、障害対応、改善サイクルを扱います。</p>
+<p>この章を読むことで、PoCと本番の差、<a class="term" href="../domain-glossary.html#observability" data-description="エージェントやLLMアプリケーションの内部動作を、トレース、ログ、メトリクス、評価結果などから理解・調査できる状態や仕組み。">観測可能性</a>、<a class="term" href="../domain-glossary.html#stop-condition" data-description="エージェント実行を続けず、停止・拒否・エスカレーション・人間確認に移るべき条件。危険操作、権限不足、不確実性、失敗回数などで定義する。">停止条件</a>、改善の回し方を見直せます。詳細な参照元は章末の<a class="term" href="../domain-glossary.html#citation" data-description="回答や説明の根拠として、どの情報源・箇所に基づいたかを示す表示。ユーザーやレビュアーが根拠を確認できるようにする。">引用</a>リンクを参照してください。</p>
+<blockquote>
+<p><strong>対象時点: 2026年5月</strong><br>この章は、2026年5月時点で公開されている主要な公式ドキュメントをもとに整理しています。最新の仕様や推奨事項は、各公式ドキュメントを確認してください。</p>
+</blockquote>
+<p><a href="../index.html">← トップへ戻る</a> | <a href="../domain-glossary.html">用語集</a></p>
+<h2 id="この章て-見直せること">この章で見直せること</h2>
+<ul>
+<li>PoCと本番を分けているか</li>
+<li>ログ、<a class="term" href="../domain-glossary.html#trace" data-description="1回のエージェント実行で起きたモデル呼び出し、ツール利用、ハンドオフ、ガードレール、カスタムイベントなどの時系列記録。">トレース</a>、監視があるか</li>
+<li>失敗時の停止や再試行が決まっているか</li>
+<li>コスト、レイテンシ、品質のバランスを見ているか</li>
+<li>改善サイクルに戻せているか</li>
+</ul>
 <h2 id="対象タク">対象タグ</h2>
 <p><code>production_operations</code></p>
 <h2 id="対象記事">対象記事</h2>

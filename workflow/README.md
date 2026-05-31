@@ -152,10 +152,11 @@ npm run build:pages
 
 - タグガイドの fence 注釈を更新する
 - `docs/tag-guides/*.html` を再生成する
+- `docs/index.html` を `docs/index.md` から生成する
 - `docs/tag-guides/*.md` を同期する
 - `docs/style.css` / `docs/term-popup.js` / `docs/domain-glossary.html` / `docs/domain-glossary.md` を同期する
 
-公開トップは `docs/index.md` なので、公開前にそこから各章と用語集へ辿れるかを確認してください。
+公開トップは `docs/index.html` なので、公開前にそこから各章と用語集へ辿れるかを確認してください。
 
 ## 再生成の入口
 

@@ -5,11 +5,11 @@
 
 AIエージェントを使った開発経験がある人向けに、OpenAI / Anthropic / Google / Microsoft / LangChain などの主要な公式ドキュメントを横断整理したナレッジベースです。
 
-単なるリンク集ではなく、エージェントの設計・評価・運用・コーディング活用に関するベストプラクティスをテーマ別に整理し、自分の開発フローを見直すための観点を提供します。
+単なるリンク集ではなく、エージェントの設計・評価・運用・コーディング活用をテーマ別に整理し、自分の開発フローを見直すための観点を提供します。
 
 ## これは何か
 
-このサイトは、AIエージェントをすでに使っている人が、公式ドキュメントを横断しながら設計判断を見直すための読み物です。
+AIエージェントをすでに使っている人が、公式ドキュメントを横断しながら設計判断を見直すための読み物です。
 
 ## 誰向けか
 
@@ -17,20 +17,23 @@ AIエージェントを使った開発経験があり、自己流の使い方か
 
 ## 30秒で選ぶ章
 
-1. [エージェント設計系](tag-guides/01-agent-design.html) - まずエージェントが必要か、どこまで自律化すべきかを見極める章です。([Markdown原文](tag-guides/01-agent-design.md))
-2. [ワークフロー設計系](tag-guides/02-workflow-design.html) - 直列・分岐・反復・レビューを組み合わせて、予測可能な流れを作る観点をまとめています。([Markdown原文](tag-guides/02-workflow-design.md))
-3. [ツール利用系](tag-guides/03-tool-use.html) - ツール定義、引数設計、失敗時の返し方など、エージェントが外部世界を扱う土台を整理しています。([Markdown原文](tag-guides/03-tool-use.md))
-4. [コンテキスト設計系](tag-guides/04-context-engineering.html) - 何を渡し、何を省き、どう状態を持たせるかを考える章です。([Markdown原文](tag-guides/04-context-engineering.md))
-5. [評価系](tag-guides/05-evals.html) - 正しさ・再現性・安全性をどう測るかをまとめ、改善サイクルを作るための視点を提供します。([Markdown原文](tag-guides/05-evals.md))
-6. [コーディングエージェント系](tag-guides/06-coding-agents.html) - コード生成やリポジトリ操作を任せるときの判断軸と、壊しにくい使い方を整理しています。([Markdown原文](tag-guides/06-coding-agents.md))
-7. [本番運用系](tag-guides/07-production-operations.html) - 実運用に入れる前提で、監視・回復・人間確認・責任分界を考える章です。([Markdown原文](tag-guides/07-production-operations.md))
-8. [セキュリティ・サンドボックス系](tag-guides/08-security-sandboxing.html) - 権限、隔離、秘密情報、危険操作の扱いを中心に、事故を防ぐ観点を整理しています。([Markdown原文](tag-guides/08-security-sandboxing.md))
-9. [マルチエージェント系](tag-guides/09-multi-agent.html) - 役割分担や委譲が本当に必要な場面だけ、複数エージェント化を検討するための章です。([Markdown原文](tag-guides/09-multi-agent.md))
-10. [ガバナンス系](tag-guides/10-governance.html) - 組織利用で必要になる方針、責任、ルール、運用設計を横断的に見直す章です。([Markdown原文](tag-guides/10-governance.md))
+1. [エージェント設計系](tag-guides/01-agent-design.html) - エージェントに何を任せ、どこまで自律させるかを見直す章です。役割設計、人間の関与ポイント、自律度の判断を扱います。
+2. [ワークフロー設計系](tag-guides/02-workflow-design.html) - 単発応答ではなく、継続的な作業の流れとして組み立てる章です。ステップ分解、承認ポイント、失敗時の戻し方を扱います。
+3. [ツール利用系](tag-guides/03-tool-use.html) - エージェントが外部ツールやAPIを使う設計を考える章です。ツール選定、呼び出し方、権限、エラー処理を扱います。
+4. [コンテキスト設計系](tag-guides/04-context-engineering.html) - 何を渡し、何を渡さないかを見直す章です。プロンプト、履歴、検索、圧縮、状態管理を扱います。
+5. [評価系](tag-guides/05-evals.html) - 出力や行動をどう評価するかを考える章です。自動評価、人間評価、回帰テスト、失敗例の収集を扱います。
+6. [コーディングエージェント系](tag-guides/06-coding-agents.html) - エージェントと一緒にソフトウェア開発を進める章です。コード生成、レビュー、テスト、リファクタリングを扱います。
+7. [本番運用系](tag-guides/07-production-operations.html) - 実験ではなく、継続運用に入れるための章です。監視、ログ、権限管理、障害対応、改善サイクルを扱います。
+8. [セキュリティ・サンドボックス系](tag-guides/08-security-sandboxing.html) - 安全に作業させるための章です。権限分離、隔離、秘密情報、外部実行、インジェクション対策を扱います。
+
+## 横断して読むなら
+
+9. [マルチエージェント系](tag-guides/09-multi-agent.html) - 単一エージェントで足りない場合にだけ、役割分担や委譲を考える章です。
+10. [ガバナンス系](tag-guides/10-governance.html) - 組織としての利用方針、責任分界、データ管理、運用ルールを見直す章です。
 
 ## 何を読めばよいか
 
-最初の一冊を選ぶなら、設計の入口として [エージェント設計系](tag-guides/01-agent-design.html) から読むのが最も取りかかりやすいです。
+最初の一章を選ぶなら、設計の入口として [エージェント設計系](tag-guides/01-agent-design.html) から読むのが最も取りかかりやすいです。
 
 その後は、自分の課題に合わせて [ツール利用系](tag-guides/03-tool-use.html) や [評価系](tag-guides/05-evals.html) に進むと、実装と検証の往復がしやすくなります。
 
@@ -38,7 +41,8 @@ AIエージェントを使った開発経験があり、自己流の使い方か
 
 - この公開トップは `docs/index.md` です。
 - 各章は `docs/tag-guides/*.html` と `docs/tag-guides/*.md` から読めます。
-- 用語集は `docs/domain-glossary.html` と `docs/domain-glossary.md` で参照できます。
+- 用語集は [docs/domain-glossary.html](domain-glossary.html) と `docs/domain-glossary.md` で参照できます。
+- 各章ページにはトップページへ戻るリンクと用語集への導線があります。
 
 ## 対象外
 

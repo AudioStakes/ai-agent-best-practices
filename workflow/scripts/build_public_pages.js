@@ -11,11 +11,13 @@ import {
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
+import { marked } from "marked";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
 const defaultDocsDir = join(repoRoot, "docs");
 const tagGuidesSourceDir = join(repoRoot, "knowledge_templated/tag-guides");
+const docsIndexSourcePath = join(repoRoot, "docs/index.md");
 const buildTagGuidesScript = join(
   repoRoot,
   "workflow/scripts/build_tag_guides_html.js",
@@ -78,6 +80,34 @@ function copyTextFile(sourcePath, destinationPath) {
   writeFileSync(destinationPath, readFileSync(sourcePath, "utf8"), "utf8");
 }
 
+function buildDocsIndexHtml(docsDir) {
+  if (!existsSync(docsIndexSourcePath)) {
+    throw new Error(`Source file not found: ${docsIndexSourcePath}`);
+  }
+
+  const markdown = readFileSync(docsIndexSourcePath, "utf8");
+  const body = marked.parse(markdown);
+  const html = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Agent Best Practices Knowledge Base</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <article class="article">
+      ${body}
+    </article>
+  </div>
+</body>
+</html>
+`;
+
+  writeFileSync(join(docsDir, "index.html"), html, "utf8");
+}
+
 function syncTagGuideMarkdownFiles(docsTagGuidesDir) {
   const entries = readdirSync(tagGuidesSourceDir, { withFileTypes: true });
   const markdownFiles = entries
@@ -118,9 +148,12 @@ function main() {
 
   runScript(annotateTagGuidesScript);
   runScript(buildTagGuidesScript, ["--output-dir", docsTagGuidesDir]);
+  copyTextFile(docsIndexSourcePath, join(options.docsDir, "index.md"));
+  buildDocsIndexHtml(options.docsDir);
   syncTagGuideMarkdownFiles(docsTagGuidesDir);
   syncPublicAssets(options.docsDir);
 
+  console.log(`generated: ${join(options.docsDir, "index.html")}`);
   console.log(`generated: ${join(options.docsDir, "tag-guides")}`);
   console.log(`generated: ${join(options.docsDir, "domain-glossary.html")}`);
 }

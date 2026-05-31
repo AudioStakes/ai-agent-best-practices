@@ -235,9 +235,18 @@ test("public docs can be regenerated for GitHub Pages", () => {
       const generatedFiles = readdirSync(path.join(docsDir, "tag-guides"));
       expect(generatedFiles).toContain("01-agent-design.html");
       expect(generatedFiles).toContain("01-agent-design.md");
+      expect(readdirSync(docsDir)).toContain("index.html");
       expect(readFileSync(path.join(docsDir, "style.css"), "utf8")).toContain(
         ".publication-note",
       );
+
+      const docsIndex = readFileSync(path.join(docsDir, "index.html"), "utf8");
+      expect(docsIndex).toContain('href="tag-guides/01-agent-design.html"');
+      expect(docsIndex).toContain(
+        'href="tag-guides/08-security-sandboxing.html"',
+      );
+      expect(docsIndex).toContain('href="domain-glossary.html"');
+      expect(docsIndex).toContain("AI Agent Best Practices Knowledge Base");
 
       const generated = readFileSync(
         path.join(docsDir, "tag-guides", "01-agent-design.html"),

@@ -9,11 +9,14 @@ AIエージェントを使った開発経験がある人向けに、OpenAI / Ant
 
 ## 公開ページ
 
-GitHub Pages で公開するトップページは、次のファイルです。
+GitHub Pages で公開するトップページは、`docs/index.md` を元に生成される `docs/index.html` です。
 
 - [docs/index.md](./docs/index.md)
+- [docs/index.html](./docs/index.html)
+- 公開対象は `docs/` 配下です。
+- 公開用ファイルの再生成は `npm run build:pages` で行います。
 
-公開物は `docs/` 配下にまとめてあり、`docs/index.md` から各章と用語集に辿れます。
+公開物は `docs/` 配下にまとめてあり、`docs/index.html` から各章と用語集に辿れます。
 
 GitHub Pages を有効化した後は、次の形式のURLで公開される想定です。
 
@@ -96,8 +99,10 @@ OpenAI / Anthropic / Google / Microsoft / LangChain などの主要な公式ド�
 ブラウザで次を開きます。
 
 ```text
-http://localhost:8000/
+http://localhost:8000/docs/
 ```
+
+公開用ファイルを再生成したあとは、`http://localhost:8000/docs/` か `http://localhost:8000/docs/index.html` を開いて、章の冒頭説明と相互リンクを確認できます。
 
 ## GitHub Pages で公開する
 
@@ -112,7 +117,7 @@ Settings
 → Folder: /docs
 ```
 
-この設定により、`docs/index.md` が公開トップになります。
+この設定により、`docs/index.html` が公開トップになります。
 
 ## 品質確認
 
@@ -120,6 +125,12 @@ Settings
 
 ```bash
 npm run verify
+```
+
+公開用ファイルの生成結果を含めて確認したい場合は、先に次を実行します。
+
+```bash
+npm run build:pages
 ```
 
 ## 再生成手順
