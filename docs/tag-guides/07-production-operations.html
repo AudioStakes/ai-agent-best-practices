@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>07. 本番運用系</title>
+  <link rel="stylesheet" href="../style.css?v=20260531-semantic-fences-1" />
+  <script src="../term-popup.js?v=20260531-semantic-fences-1" defer></script>
+</head>
+<body>
+<div class="container"><p class="nav"><a href="../index.html">← Index</a><a href="../domain-glossary.html">用語集</a></p><article class="article"><h1 id="07-本番運用系">07. 本番運用系</h1><p class="rating-guide">★は重要度を表します。★★★★★ほど、設計・運用時に優先して確認すべき項目です。</p><aside class="publication-note">
+    <p><strong>対象時点:</strong> 2026年5月</p>
+    <p>最新の仕様や推奨事項は、各公式ドキュメントを確認してください。</p>
+    <p>参照元と元記事への導線は、本文末の「対象記事」と「参考文献」を参照してください。</p>
+  </aside>
+<h2 id="対象タク">対象タグ</h2>
+<p><code>production_operations</code></p>
+<h2 id="対象記事">対象記事</h2>
+<ul>
+<li>Google Cloud — A dev’s guide to production-ready AI agents</li>
+<li>Google Cloud — Best practices and patterns</li>
+<li>Anthropic — Effective harnesses for long-running agents</li>
+<li>Anthropic — Harness design for long-running application development</li>
+<li>Anthropic — How we contain Claude across products</li>
+<li>Anthropic — How we built Claude Code auto mode</li>
+<li>Anthropic — Making Claude Code more secure and autonomous with sandboxing</li>
+<li>LangChain — Evaluate a complex agent</li>
+<li>LangChain — How to evaluate a graph</li>
+<li>Microsoft — Governance and security for AI agents across the organization</li>
+<li>OpenAI — Building agents</li>
+<li>OpenAI — Evaluate agent workflows</li>
+</ul>
+<h2 id="結論">結論</h2>
+<p>結論から言うと、本番運用系で一番大事なのは、**「動く<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>を作ること」ではなく、「壊れたときに検知でき、安全に止められ、改善し続けられる状態にすること」**です。</p>
+<h2 id="と-の記事て-も共通">どの記事でも共通</h2>
+<h3 id="1-PoCと本番運用は別物として扱う">1. PoCと本番運用は別物として扱う</h3>
+<p><strong>重要度: 5</strong></p>
+<p>本番運用系で最初に大事なのは、<strong>「一回うまく動いた」ことと「継続的に任せられる」ことを分ける</strong>ことです。</p>
+<p>PoCでは、</p>
+<ul class="guideline-list"><li>1回成功する</li><li>デモで動く</li><li>代表例で便利に見える</li><li>人間が横で見ている</li></ul>
+<p>でもよいです。</p>
+<p>でも本番では、</p>
+<ul class="risk-box"><li>失敗時に検知できる</li><li>何度実行しても安定する</li><li>コストが予測できる</li><li>権限が制御されている</li><li>ログが残る</li><li>人間<a class="term" href="../domain-glossary.html#checkpoint" data-description="ワークフローやエージェントループの途中で、人間レビュー、承認、状態確認、方針変更を行うために設ける停止地点。">確認ポイント</a>がある</li><li>改善前後を比較できる</li></ul>
+<p>必要があります。</p>
+<p>これは最重要です。
+AI<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>はデモ映えしやすいぶん、<strong>本番化の地味な要件を後回しにしがち</strong>です。</p>
+<hr>
+<h3 id="2-評価-テスト-回帰確認を運用に組み込む">2. <a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>・テスト・回帰確認を運用に組み込む</h3>
+<p><strong>重要度: 5</strong></p>
+<p>本番運用では、<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>は「開発時だけのもの」ではありません。</p>
+<p><a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>は、次の変更で簡単に挙動が変わります。</p>
+<ul class="risk-box"><li>モデル変更</li><li>プロンプト変更</li><li><a class="term" href="../domain-glossary.html#tool-description" data-description="ツールの目的、使うべき場面、使ってはいけない場面、入力の意味、返却値の読み方をエージェント向けに説明する文章。">ツール説明</a>変更</li><li>API仕様変更</li><li>データ更新</li><li>権限変更</li><li><a class="term" href="../domain-glossary.html#workflow" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。">ワークフロー</a>変更</li></ul>
+<p>そのたびに、以前できていたことが壊れる可能性があります。</p>
+<p>なので、本番運用では、</p>
+<ul class="guideline-list"><li><a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>データセット</li><li><a class="term" href="../domain-glossary.html#regression-testing" data-description="プロンプト、モデル、ツール、ワークフロー変更後に、以前できていた振る舞いが壊れていないか確認する評価。">回帰テスト</a></li><li>代表ケース</li><li>失敗ケース</li><li>安全性チェック</li><li><a class="term" href="../domain-glossary.html#tool-use" data-description="エージェントが目的達成のためにツールを選び、入力を作り、結果を解釈して次の行動に反映すること。単なる関数呼び出しではなく、判断を含む行為を指す。">ツール利用</a>チェック</li></ul>
+<p>を継続的に回す必要があります。</p>
+<p>これは重要度5です。
+<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>なしで本番<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>を運用するのは、テストなしで本番コードを出すのに近いです。</p>
+<hr>
+<h3 id="3-ロク-トレース-監視を残す">3. ログ・<a class="term" href="../domain-glossary.html#trace" data-description="1回のエージェント実行で起きたモデル呼び出し、ツール利用、ハンドオフ、ガードレール、カスタムイベントなどの時系列記録。">トレース</a>・監視を残す</h3>
+<p><strong>重要度: 5</strong></p>
+<p>本番運用では、<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>が何をしたかを追えることが必須です。</p>
+<p>最低限見たいのは、</p>
+<ul class="guideline-list"><li>入力</li><li>出力</li><li>使用したモデル</li><li>呼び出した<a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a></li><li><a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a>引数</li><li><a class="term" href="../domain-glossary.html#tool-result" data-description="ツール実行後にエージェントへ返す結果。成功/失敗だけでなく、次の判断に必要な情報、エラー理由、推奨アクションを含める。">ツール結果</a></li><li>エラー</li><li>実行時間</li><li>コスト</li><li>人間確認の有無</li><li>最終状態</li></ul>
+<p>です。</p>
+<p>最終回答だけ見ても、なぜ失敗したか分かりません。</p>
+<p>たとえば、</p>
+<ul class="risk-box"><li>回答は正しいが、不要な<a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a>を大量に呼んでいた</li><li>回答は正しいが、危険な操作をしようとしていた</li><li>回答は間違っているが、検索結果の時点で間違っていた</li><li>途中で権限エラーが出ていた</li></ul>
+<p>のようなことがあります。</p>
+<p>本番運用では、<strong>観測できない<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>は改善できない</strong>です。</p>
+<hr>
+<h3 id="4-人間確認-承認-エスカレーションを設計する">4. 人間確認・<a class="term" href="../domain-glossary.html#approval" data-description="エージェントが特定の操作を実行する前に、人間や管理者が明示的に許可すること。特に送信、削除、購入、公開、本番操作などで使う。">承認</a>・<a class="term" href="../domain-glossary.html#escalation" data-description="エージェントが自力で判断・処理すべきでない状況を、人間、管理者、専門担当、別システムに引き上げること。">エスカレーション</a>を設計する</h3>
+<p><strong>重要度: 5</strong></p>
+<p>本番運用では、全部自動化するより、<strong>どこで人間に渡すか</strong>を設計するほうが重要です。</p>
+<p>人間確認が必要になりやすいのは、</p>
+<ul class="risk-box"><li>外部送信</li><li>課金・支払い</li><li>削除</li><li>本番環境への変更</li><li>法務・医療・金融など高リスク判断</li><li>個人情報や<a class="term" href="../domain-glossary.html#sensitive-information" data-description="漏洩・不正利用・不適切な共有によって個人、顧客、組織、事業に損害を与え得る情報。個人情報、認証情報、契約情報、社内機密などを含む。">機密情報</a>の扱い</li><li>低信頼度の回答</li><li>ユーザーへの不利益が大きい処理</li></ul>
+<p>です。</p>
+<p>大事なのは、</p>
+<div class="takeaway-box">AIが全部やるか、人間が全部やるか</div>
+<p>ではなく、</p>
+<ul class="risk-box"><li>AIが下書き・調査・候補作成をする</li><li>人間が高リスク部分だけ<a class="term" href="../domain-glossary.html#approval" data-description="エージェントが特定の操作を実行する前に、人間や管理者が明示的に許可すること。特に送信、削除、購入、公開、本番操作などで使う。">承認</a>する</li></ul>
+<p>という分担です。</p>
+<p>これは本番運用では最重要です。</p>
+<hr>
+<h3 id="5-権限を最小化する">5. 権限を最小化する</h3>
+<p><strong>重要度: 5</strong></p>
+<p><a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>は<a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a>を使うほど便利になりますが、同時に危険になります。</p>
+<p>本番運用では、原則として、</p>
+<ul class="risk-box"><li>必要な権限だけ渡す</li><li>読み取りと書き込みを分ける</li><li>不可逆操作は制限する</li><li>環境ごとに権限を分ける</li><li>秘密情報へのアクセスを制御する</li><li>外部送信を制御する</li></ul>
+<p>必要があります。</p>
+<p>特に危険なのは、</p>
+<ul class="risk-box"><li>delete</li><li>send</li><li>purchase</li><li>deploy</li><li>publish</li><li>approve</li><li>write to production database</li><li>access secrets</li></ul>
+<p>のような操作です。</p>
+<p>便利だから全部許可する、はかなり危ないです。
+<strong>自律性を上げるほど、権限制御も強くする</strong>のが基本です。</p>
+<hr>
+<h3 id="6-失敗時の扱いを決める">6. 失敗時の扱いを決める</h3>
+<p><strong>重要度: 5</strong></p>
+<p>本番運用では、<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>は失敗します。
+大事なのは失敗しないことではなく、<strong>失敗したときにどう振る舞うか</strong>です。</p>
+<p>決めるべきことは、</p>
+<ul class="checklist question-checklist"><li>何回まで再試行するか</li><li>いつ人間に渡すか</li><li>どのエラーなら停止するか</li><li>部分的に成功した場合どうするか</li><li>ユーザーにどう説明するか</li><li>ロールバックできるか</li><li>失敗ログをどう残すか</li></ul>
+<p>です。</p>
+<p>悪い本番運用は、失敗したときにAIがその場で適当に続けることです。</p>
+<p>良い本番運用は、</p>
+<ul class="guideline-list"><li>失敗を検知する</li><li>原因を分類する</li><li>安全に止める</li><li>必要なら人間へ渡す</li><li>記録して改善につなげる</li></ul>
+<p>です。</p>
+<hr>
+<h3 id="7-コスト-レイテンシ-品質のハ-ランスを見る">7. コスト・レイテンシ・品質のバランスを見る</h3>
+<p><strong>重要度: 4</strong></p>
+<p>本番では、精度だけでなくコストと速度も重要です。</p>
+<p>たとえば、</p>
+<ul class="guideline-list"><li>毎回高性能モデルを使うとコストが高い</li><li><a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a>を呼びすぎると遅い</li><li>長い<a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>を入れすぎると高い</li><li><a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>ループを何度も回すと遅い</li><li><a class="term" href="../domain-glossary.html#parallelization" data-description="複数の処理、LLM呼び出し、ツール実行、エージェント作業を並列に走らせ、速度向上や多面的な検討を行うワークフローパターン。">並列化</a>すると速いがコストが増える</li></ul>
+<p>というトレードオフがあります。</p>
+<p>本番では、タスクごとに、</p>
+<ul class="checklist question-checklist"><li>品質重視か</li><li>速度重視か</li><li>コスト重視か</li><li>安全性重視か</li></ul>
+<p>を決める必要があります。</p>
+<p>重要ですが、まずは安全性・<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>・ログのほうが優先なので、重要度は4です。</p>
+<hr>
+<h3 id="8-テ-フ-ロイ後も改善し続ける">8. デプロイ後も改善し続ける</h3>
+<p><strong>重要度: 4</strong></p>
+<p><a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>はリリースして終わりではありません。</p>
+<p>本番運用では、</p>
+<ul class="guideline-list"><li>失敗例を集める</li><li><a class="term" href="../domain-glossary.html#eval" data-description="エージェントやワークフローの特定の振る舞いを確認するための評価単位。入力、期待される振る舞い、採点方法、合否基準などを含む。">評価ケース</a>に追加する</li><li>プロンプトを直す</li><li><a class="term" href="../domain-glossary.html#tool-description" data-description="ツールの目的、使うべき場面、使ってはいけない場面、入力の意味、返却値の読み方をエージェント向けに説明する文章。">ツール説明</a>を直す</li><li><a class="term" href="../domain-glossary.html#workflow" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。">ワークフロー</a>を分ける</li><li>人間<a class="term" href="../domain-glossary.html#checkpoint" data-description="ワークフローやエージェントループの途中で、人間レビュー、承認、状態確認、方針変更を行うために設ける停止地点。">確認ポイント</a>を調整する</li><li>モデルを見直す</li></ul>
+<p>という改善ループが必要です。</p>
+<p>特に重要なのは、<strong>失敗例を資産化すること</strong>です。</p>
+<p>本番で出た失敗を<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>データに加えれば、同じ失敗を繰り返しにくくなります。</p>
+<hr>
+<h2 id="OpenAIとAnthropicて-共通">OpenAIとAnthropicで共通</h2>
+<h3 id="1-本番運用て-はトレース-観測可能性か-重要">1. 本番運用では<a class="term" href="../domain-glossary.html#trace" data-description="1回のエージェント実行で起きたモデル呼び出し、ツール利用、ハンドオフ、ガードレール、カスタムイベントなどの時系列記録。">トレース</a>・<a class="term" href="../domain-glossary.html#observability" data-description="エージェントやLLMアプリケーションの内部動作を、トレース、ログ、メトリクス、評価結果などから理解・調査できる状態や仕組み。">観測可能性</a>が重要</h3>
+<p><strong>重要度: 5</strong></p>
+<p>OpenAIもAnthropicも、<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>がどう動いたかを観測できることを重視しています。</p>
+<p>OpenAIはAgents SDKやtracingの文脈で、<a class="term" href="../domain-glossary.html#tool-call" data-description="エージェントやモデルが、特定のツール名と入力を指定して実行を要求すること。Tool Use の中の実行単位として扱う。">ツール呼び出し</a>、<a class="term" href="../domain-glossary.html#handoff" data-description="あるエージェントや処理ステップから、別の専門エージェントや担当処理へ作業を引き渡すこと。責任の移動と、渡す情報の設計が重要になる。">ハンドオフ</a>、<a class="term" href="../domain-glossary.html#guardrail" data-description="入力、出力、ツール利用、権限操作などを検査・制御し、エージェントの危険な振る舞いを防ぐための安全制御。">ガードレール</a>などを追えるようにする発想があります。
+Anthropicも、長時間実行<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>やハーネスの文脈で、実行過程・環境・中間状態を観測することを重視しています。</p>
+<p>共通する大事な点はこれです。</p>
+<div class="takeaway-box">最終結果だけでなく、途中で何が起きたかを見る</div>
+<p>これは本番運用では最重要です。</p>
+<hr>
+<h3 id="2-評価を運用サイクルに組み込む">2. <a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>を運用サイクルに組み込む</h3>
+<p><strong>重要度: 5</strong></p>
+<p>OpenAIもAnthropicも、<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>を「作った後の採点」ではなく、改善と安全運用のための仕組みとして扱います。</p>
+<p>本番で見るべきなのは、</p>
+<ul class="guideline-list"><li>成功率</li><li>失敗率</li><li><a class="term" href="../domain-glossary.html#tool-use" data-description="エージェントが目的達成のためにツールを選び、入力を作り、結果を解釈して次の行動に反映すること。単なる関数呼び出しではなく、判断を含む行為を指す。">ツール利用</a>の正しさ</li><li>人間確認率</li><li><a class="term" href="../domain-glossary.html#guardrail" data-description="入力、出力、ツール利用、権限操作などを検査・制御し、エージェントの危険な振る舞いを防ぐための安全制御。">ガードレール</a>発火率</li><li>回帰<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>の通過率</li><li>変更前後の品質差</li></ul>
+<p>です。</p>
+<p>特にAnthropicは<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>体系やハーネスの考え方が強く、OpenAIは<a class="term" href="../domain-glossary.html#workflow" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。">ワークフロー</a><a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>や<a class="term" href="../domain-glossary.html#trace" data-description="1回のエージェント実行で起きたモデル呼び出し、ツール利用、ハンドオフ、ガードレール、カスタムイベントなどの時系列記録。">トレース</a>との接続が実務的です。</p>
+<p>共通して大事なのは、</p>
+<div class="takeaway-box">改善したつもりで壊れていないか確認する</div>
+<p>ことです。</p>
+<hr>
+<h3 id="3-カ-ート-レールと人間確認を組み込む">3. <a class="term" href="../domain-glossary.html#guardrail" data-description="入力、出力、ツール利用、権限操作などを検査・制御し、エージェントの危険な振る舞いを防ぐための安全制御。">ガードレール</a>と人間確認を組み込む</h3>
+<p><strong>重要度: 5</strong></p>
+<p>OpenAIとAnthropicの両方に共通しているのは、<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>には制御が必要という点です。</p>
+<p>特に本番運用では、</p>
+<ul class="risk-box"><li>入力チェック</li><li>出力チェック</li><li><a class="term" href="../domain-glossary.html#tool-use" data-description="エージェントが目的達成のためにツールを選び、入力を作り、結果を解釈して次の行動に反映すること。単なる関数呼び出しではなく、判断を含む行為を指す。">ツール利用</a>制御</li><li>権限管理</li><li>人間<a class="term" href="../domain-glossary.html#approval" data-description="エージェントが特定の操作を実行する前に、人間や管理者が明示的に許可すること。特に送信、削除、購入、公開、本番操作などで使う。">承認</a></li><li>高リスク操作のブロック</li></ul>
+<p>が必要です。</p>
+<p>大事なのは、<a class="term" href="../domain-glossary.html#guardrail" data-description="入力、出力、ツール利用、権限操作などを検査・制御し、エージェントの危険な振る舞いを防ぐための安全制御。">ガードレール</a>を後付けにしないことです。</p>
+<div class="takeaway-box">設計段階から、どこで止めるかを決める</div>
+<p>これが重要です。</p>
+<hr>
+<h3 id="4-長時間-複数ステッフ-の実行を前提にする">4. 長時間・複数ステップの実行を前提にする</h3>
+<p><strong>重要度: 4</strong></p>
+<p>OpenAIもAnthropicも、<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>は単発応答ではなく、複数ステップで動くものとして扱います。</p>
+<p>本番では、</p>
+<ul class="guideline-list"><li>途中で状態が変わる</li><li><a class="term" href="../domain-glossary.html#tool-result" data-description="ツール実行後にエージェントへ返す結果。成功/失敗だけでなく、次の判断に必要な情報、エラー理由、推奨アクションを含める。">ツール結果</a>によって分岐する</li><li>長時間処理が発生する</li><li>人間確認を挟む</li><li>途中失敗から回復する</li></ul>
+<p>ことがあります。</p>
+<p>このため、状態管理や中間ログが必要です。</p>
+<p>重要度は4ですが、長時間タスクや業務自動化では5です。</p>
+<hr>
+<h3 id="5-フ-ロタ-クト機能た-けて-なく運用設計か-必要">5. プロダクト機能だけでなく運用設計が必要</h3>
+<p><strong>重要度: 4</strong></p>
+<p>OpenAIにもAnthropicにも便利なSDKやプロダクト機能がありますが、本番運用は<a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a>を導入するだけでは成立しません。</p>
+<p>必要なのは、</p>
+<ul class="checklist question-checklist"><li>誰が監視するか</li><li>失敗時に誰へ渡すか</li><li>どの指標を見るか</li><li>いつ<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>を回すか</li><li>どのログを保存するか</li><li>どの権限を許すか</li><li>どの変更をレビューするか</li></ul>
+<p>です。</p>
+<p>これは地味ですが重要です。
+<strong><a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>運用は、技術設計と業務設計の両方</strong>です。</p>
+<hr>
+<h2 id="OpenAIのみ">OpenAIのみ</h2>
+<h3 id="1-Agents-SDK-tracing-guardrails-を運用部品として使う">1. Agents SDK / tracing / guardrails を運用部品として使う</h3>
+<p><strong>重要度: 4</strong></p>
+<p>OpenAIの特徴は、本番運用に必要な要素をSDKやAPIの構成要素として扱いやすいことです。</p>
+<p>たとえば、</p>
+<ul class="guideline-list"><li>Agent</li><li>Tool</li><li>Handoff</li><li>Guardrail</li><li>Session</li><li>Tracing</li></ul>
+<p>のような部品です。</p>
+<p>OpenAIスタックで作るなら重要です。
+ただし、一般原則としては製品依存なので重要度は4です。</p>
+<p>本質は、</p>
+<div class="takeaway-box"><a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>の実行・制御・観測を一体で設計する</div>
+<p>ことです。</p>
+<hr>
+<h3 id="2-ワークフロー単位て-評価する">2. <a class="term" href="../domain-glossary.html#workflow" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。">ワークフロー</a>単位で<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>する</h3>
+<p><strong>重要度: 4</strong></p>
+<p>OpenAIは、agent workflowを<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>対象にする発想が強いです。</p>
+<p>つまり、</p>
+<div class="takeaway-box">この<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>は賢いか</div>
+<p>ではなく、</p>
+<div class="takeaway-box">この業務フローは期待通り動くか</div>
+<p>を見る。</p>
+<p>これは本番運用に向いています。</p>
+<p>本番で重要なのは、モデル単体の能力より、</p>
+<div class="takeaway-box">入力から最終結果までの流れが安定しているか</div>
+<p>だからです。</p>
+<hr>
+<h3 id="3-built-in-tools-hosted-tools-によって運用負荷を下け-られる">3. built-in tools / hosted tools によって運用負荷を下げられる</h3>
+<p><strong>重要度: 3</strong></p>
+<p>OpenAIでは、検索、ファイル、コード実行などの一部を提供<a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a>として使えます。</p>
+<p>これは実装・運用を早めるには便利です。</p>
+<p>ただし、本番運用の一般原則としては、</p>
+<div class="takeaway-box">自前実装するか、マネージド機能を使うか</div>
+<p>の判断に近いです。</p>
+<p>重要度は3です。
+便利ですが、これだけで本番運用ができるわけではありません。</p>
+<hr>
+<h3 id="4-モテ-ル選定とコスト管理を運用設計に入れる">4. <a class="term" href="../domain-glossary.html#model-selection" data-description="品質、速度、コスト、コンテキスト長、ツール利用能力、安全要件などに応じて、利用するモデルを選ぶこと。">モデル選定</a>とコスト管理を運用設計に入れる</h3>
+<p><strong>重要度: 4</strong></p>
+<p>OpenAIは、モデルの使い分けを比較的明示的に扱います。</p>
+<p>本番では、</p>
+<ul class="checklist question-checklist"><li>どのステップで高性能モデルを使うか</li><li>どこは軽量モデルでよいか</li><li><a class="term" href="../domain-glossary.html#reasoning-model" data-description="複雑な問題解決、計画、コード、数学、多段推論などに強く、通常の応答生成より深い推論過程を使うモデル。">推論モデル</a>をどこに使うか</li><li>どの処理をキャッシュできるか</li><li>どこで<a class="term" href="../domain-glossary.html#tool-call" data-description="エージェントやモデルが、特定のツール名と入力を指定して実行を要求すること。Tool Use の中の実行単位として扱う。">ツール呼び出し</a>を減らせるか</li></ul>
+<p>を考える必要があります。</p>
+<p>これは運用コストに直結します。</p>
+<hr>
+<h2 id="Anthropicのみ">Anthropicのみ</h2>
+<h3 id="1-長時間実行エーシ-ェントのハーネス設計か-深い">1. 長時間実行<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>のハーネス設計が深い</h3>
+<p><strong>重要度: 5</strong></p>
+<p>Anthropicの本番運用系で特に重要なのは、長時間実行<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>のためのハーネス設計です。</p>
+<p>ハーネスとは、</p>
+<ul class="guideline-list"><li><a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>を実行し、</li><li>環境を用意し、</li><li>状態を観測し、</li><li>成果物を<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>し、</li><li>失敗を再現可能にする仕組み</li></ul>
+<p>です。</p>
+<p>長時間タスクでは、最終結果だけ見ても不十分です。</p>
+<ul class="checklist question-checklist"><li>途中で何をしたか</li><li>どのファイルを変えたか</li><li>どんなエラーが出たか</li><li>どの時点で迷ったか</li><li>どこで人間確認が必要だったか</li></ul>
+<p>を見る必要があります。</p>
+<p>これは本格運用では重要度5です。</p>
+<hr>
+<h3 id="2-サント-ホ-ックスと封し-込めの考え方か-強い">2. サンドボックスと封じ込めの考え方が強い</h3>
+<p><strong>重要度: 5</strong></p>
+<p>Anthropicは、<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>を安全に動かすための隔離・封じ込めをかなり重視しています。</p>
+<p>特に、</p>
+<ul class="risk-box"><li>一時環境</li><li>コンテナ</li><li>VM</li><li>ファイルアクセス制限</li><li>ネットワーク制限</li><li>権限の分離</li><li><a class="term" href="../domain-glossary.html#sensitive-information" data-description="漏洩・不正利用・不適切な共有によって個人、顧客、組織、事業に損害を与え得る情報。個人情報、認証情報、契約情報、社内機密などを含む。">機密情報</a>の保護</li></ul>
+<p>のような考え方です。</p>
+<p>本番運用では、<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>に強い権限を与えるほど危険です。</p>
+<p>そのため、</p>
+<div class="takeaway-box">自律性を上げるなら、実行環境を閉じ込める</div>
+<p>という原則が大事です。</p>
+<hr>
+<h3 id="3-自動化レヘ-ルと安全性のハ-ランスを細かく設計する">3. <a class="term" href="../domain-glossary.html#automation-level" data-description="エージェントにどこまで自律的な判断・操作を任せるかの段階。読み取りのみ、提案のみ、承認付き実行、自律実行などで定義する。">自動化レベル</a>と安全性のバランスを細かく設計する</h3>
+<p><strong>重要度: 5</strong></p>
+<p>AnthropicのClaude Code auto mode系では、許可確認を減らしながら安全性を保つ工夫が出てきます。</p>
+<p>本番運用にもそのまま応用できます。</p>
+<p>考えるべきことは、</p>
+<ul class="checklist question-checklist"><li>どの操作は自動で許可するか</li><li>どの操作は毎回確認するか</li><li>どの操作は禁止するか</li><li>どの条件なら一時的に許可するか</li><li>許可ルールを誰が管理するか</li></ul>
+<p>です。</p>
+<p>これは本番では非常に重要です。</p>
+<p>「全部確認」だと便利さが消えます。
+「全部許可」だと危険です。</p>
+<p>だから、<strong>操作ごとに<a class="term" href="../domain-glossary.html#automation-level" data-description="エージェントにどこまで自律的な判断・操作を任せるかの段階。読み取りのみ、提案のみ、承認付き実行、自律実行などで定義する。">自動化レベル</a>を設計する</strong>必要があります。</p>
+<hr>
+<h3 id="4-環境からのフィート-ハ-ックを評価-改善に使う">4. 環境からのフィードバックを<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>・改善に使う</h3>
+<p><strong>重要度: 4</strong></p>
+<p>Anthropicは、<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>が環境から得る事実情報を重視します。</p>
+<p>たとえば、</p>
+<ul class="guideline-list"><li>テスト結果</li><li>コマンド結果</li><li>実行ログ</li><li>ファイル差分</li><li>UIの状態</li><li>APIレスポンス</li></ul>
+<p>です。</p>
+<p>本番運用では、<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>が自分の出力だけで判断するのではなく、実際の環境から返ってくる結果を使って改善する必要があります。</p>
+<p>これは特にコーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>や業務自動化で重要です。</p>
+<hr>
+<h3 id="5-主観的品質も評価対象にする">5. 主観的品質も<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>対象にする</h3>
+<p><strong>重要度: 3</strong></p>
+<p>Anthropicのアプリ開発ハーネス系では、フロントエンドの見た目や使いやすさのような、主観的品質も扱います。</p>
+<p>本番運用では、</p>
+<ul class="guideline-list"><li>テストは通るが使いにくい</li><li>UIが崩れている</li><li>ユーザー体験が悪い</li><li>文章が不自然</li></ul>
+<p>のような問題もあります。</p>
+<p>これは重要ですが、対象領域によります。
+業務<a class="term" href="../domain-glossary.html#workflow" data-description="開発者があらかじめ決めた手順や分岐に沿って、LLMやツールを組み合わせて実行する処理の流れ。自律的な判断よりも、設計された経路が中心になる。">ワークフロー</a>やバックエンド中心なら優先度は少し下がります。</p>
+<hr>
+<h2 id="実務て-重要な順">実務で重要な順</h2>
+<p>本番運用系で押さえるべき順番はこうです。</p>
+<table>
+<thead>
+<tr>
+<th align="right">重要度</th>
+<th>ポイント</th>
+<th>判断への使い方</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">5</td>
+<td>PoCと本番を分ける</td>
+<td>デモ成功を本番可能と見なさない</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td><a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>・<a class="term" href="../domain-glossary.html#regression-testing" data-description="プロンプト、モデル、ツール、ワークフロー変更後に、以前できていた振る舞いが壊れていないか確認する評価。">回帰テスト</a>を運用に入れる</td>
+<td>変更で壊れていないか確認する</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td>ログ・<a class="term" href="../domain-glossary.html#trace" data-description="1回のエージェント実行で起きたモデル呼び出し、ツール利用、ハンドオフ、ガードレール、カスタムイベントなどの時系列記録。">トレース</a>・監視を残す</td>
+<td>失敗原因を追えるようにする</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td>人間確認・<a class="term" href="../domain-glossary.html#approval" data-description="エージェントが特定の操作を実行する前に、人間や管理者が明示的に許可すること。特に送信、削除、購入、公開、本番操作などで使う。">承認</a>を設計する</td>
+<td>高リスク操作はAIだけで完了させない</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td>権限を最小化する</td>
+<td>必要な<a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a>・情報だけ使わせる</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td>失敗時の扱いを決める</td>
+<td>再試行・停止・<a class="term" href="../domain-glossary.html#escalation" data-description="エージェントが自力で判断・処理すべきでない状況を、人間、管理者、専門担当、別システムに引き上げること。">エスカレーション</a>を定義する</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td>サンドボックス・隔離を使う</td>
+<td><a class="term" href="../domain-glossary.html#autonomous-execution" data-description="事前に定めた権限、ガードレール、停止条件、監視の範囲内で、エージェントが人間承認なしに操作を実行する方式。">自律実行</a>するほど閉じ込める</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td>長時間タスクにはハーネスを用意する</td>
+<td>環境・状態・成果物を<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>可能にする</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td>コスト・レイテンシ・品質を見る</td>
+<td>本番では精度だけでは判断しない</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td>デプロイ後も改善し続ける</td>
+<td>失敗例を<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>データに追加する</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td><a class="term" href="../domain-glossary.html#model-selection" data-description="品質、速度、コスト、コンテキスト長、ツール利用能力、安全要件などに応じて、利用するモデルを選ぶこと。">モデル選定</a>を運用設計に入れる</td>
+<td>高性能モデルを使う場所を絞る</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td>環境からのフィードバックを使う</td>
+<td>実行結果をもとに改善する</td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td>マネージド<a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a>を活用する</td>
+<td>便利だが本質ではない</td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td>主観的品質も<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>する</td>
+<td>UI・文章品質が重要な場合に見る</td>
+</tr>
+</tbody></table>
+<h2 id="一言て-いうと">一言でいうと</h2>
+<p>本番運用系で一番大事なのは、これです。</p>
+<ul class="guideline-list"><li><a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>を「動くもの」から、</li><li>「監視でき、<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>でき、止められ、改善できるもの」にすること。</li></ul>
+<p>実務向けにはこうです。</p>
+<ol class="process-steps"><li>成功条件を定義する</li><li><a class="term" href="../domain-glossary.html#eval" data-description="エージェントやワークフローの特定の振る舞いを確認するための評価単位。入力、期待される振る舞い、採点方法、合否基準などを含む。">評価ケース</a>を作る</li><li>ログと<a class="term" href="../domain-glossary.html#trace" data-description="1回のエージェント実行で起きたモデル呼び出し、ツール利用、ハンドオフ、ガードレール、カスタムイベントなどの時系列記録。">トレース</a>を残す</li><li>権限を最小化する</li><li>危険操作には人間<a class="term" href="../domain-glossary.html#approval" data-description="エージェントが特定の操作を実行する前に、人間や管理者が明示的に許可すること。特に送信、削除、購入、公開、本番操作などで使う。">承認</a>を入れる</li><li>失敗時の再試行・停止・<a class="term" href="../domain-glossary.html#escalation" data-description="エージェントが自力で判断・処理すべきでない状況を、人間、管理者、専門担当、別システムに引き上げること。">エスカレーション</a>を決める</li><li>サンドボックスで隔離する</li><li>コスト・速度・品質を継続的に見る</li><li>失敗例を<a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>データに戻す</li></ol>
+<p>本番運用系は、派手な「AI<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>すごい」話ではなく、かなり地味です。
+でも、ここを押さえないと、<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>は <strong>便利なおもちゃ</strong> から <strong>任せられる仕組み</strong> になりません。</p>
+</article></div>
+</body>
+</html>

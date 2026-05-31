@@ -304,6 +304,23 @@ function injectRatingGuide(document) {
   firstHeading.insertAdjacentElement("afterend", guide);
 }
 
+function injectPublicationNote(document) {
+  const firstHeading = document.querySelector("h1");
+  if (!firstHeading) {
+    return;
+  }
+
+  const note = document.createElement("aside");
+  note.className = "publication-note";
+  note.innerHTML = `
+    <p><strong>対象時点:</strong> 2026年5月</p>
+    <p>最新の仕様や推奨事項は、各公式ドキュメントを確認してください。</p>
+    <p>参照元と元記事への導線は、本文末の「対象記事」と「参考文献」を参照してください。</p>
+  `;
+
+  firstHeading.insertAdjacentElement("afterend", note);
+}
+
 function getFenceToken(codeBlock) {
   return Array.from(codeBlock.classList).find((className) =>
     className.startsWith("language-"),
@@ -703,6 +720,7 @@ function buildPage(
   rewriteLinks(document, glossaryDescriptions);
   transformMarkedFences(document);
   annotateHeadings(document);
+  injectPublicationNote(document);
   injectRatingGuide(document);
   linkGlossaryTerms(document, article, glossaryTerms);
 

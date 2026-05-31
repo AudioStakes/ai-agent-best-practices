@@ -13,6 +13,8 @@ GitHub Pages で公開するトップページは、次のファイルです。
 
 - [docs/index.md](./docs/index.md)
 
+公開物は `docs/` 配下にまとめてあり、`docs/index.md` から各章と用語集に辿れます。
+
 GitHub Pages を有効化した後は、次の形式のURLで公開される想定です。
 
 ```text

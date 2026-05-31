@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>04. コンテキスト設計系</title>
+  <link rel="stylesheet" href="../style.css?v=20260531-semantic-fences-1" />
+  <script src="../term-popup.js?v=20260531-semantic-fences-1" defer></script>
+</head>
+<body>
+<div class="container"><p class="nav"><a href="../index.html">← Index</a><a href="../domain-glossary.html">用語集</a></p><article class="article"><h1 id="04-コンテキスト設計系">04. <a class="term" href="../domain-glossary.html#context-engineering" data-description="エージェントが適切に判断できるように、目的、背景、制約、関連情報、ツール結果、成功条件を設計して渡すこと。単なるプロンプト文面ではなく、利用可能な文脈全体を扱う。">コンテキスト設計</a>系</h1><p class="rating-guide">★は重要度を表します。★★★★★ほど、設計・運用時に優先して確認すべき項目です。</p><aside class="publication-note">
+    <p><strong>対象時点:</strong> 2026年5月</p>
+    <p>最新の仕様や推奨事項は、各公式ドキュメントを確認してください。</p>
+    <p>参照元と元記事への導線は、本文末の「対象記事」と「参考文献」を参照してください。</p>
+  </aside>
+<h2 id="対象タク">対象タグ</h2>
+<p><code>context_engineering</code></p>
+<h2 id="対象記事">対象記事</h2>
+<ul>
+<li>Anthropic — Effective context engineering for AI agents</li>
+<li>Anthropic — Writing effective tools for AI agents</li>
+<li>Anthropic — Building Effective AI Agents</li>
+<li>OpenAI — Best practices – Codex</li>
+<li>OpenAI — Prompt engineering</li>
+<li>OpenAI — Reasoning best practices</li>
+<li>Google Cloud — A dev’s guide to production-ready AI agents</li>
+<li>Hugging Face — Building good agents</li>
+<li>LangChain — Thinking in LangGraph</li>
+</ul>
+<h2 id="結論">結論</h2>
+<p>ここでの結論は、<strong><a class="term" href="../domain-glossary.html#context-engineering" data-description="エージェントが適切に判断できるように、目的、背景、制約、関連情報、ツール結果、成功条件を設計して渡すこと。単なるプロンプト文面ではなく、利用可能な文脈全体を扱う。">コンテキスト設計</a>とは「プロンプトを長くすること」ではなく、AIが仕事を進めるために必要な情報を、必要なタイミングで、使いやすい形で渡すこと</strong>です。</p>
+<h2 id="と-の記事て-も共通">どの記事でも共通</h2>
+<h3 id="1-AIに必要な情報を明示的に渡す">1. AIに必要な情報を明示的に渡す</h3>
+<p><strong>重要度: 5</strong></p>
+<p><a class="term" href="../domain-glossary.html#context-engineering" data-description="エージェントが適切に判断できるように、目的、背景、制約、関連情報、ツール結果、成功条件を設計して渡すこと。単なるプロンプト文面ではなく、利用可能な文脈全体を扱う。">コンテキスト設計</a>系で一番大事なのはこれです。</p>
+<p>AIは、あなたの頭の中、組織の暗黙知、過去の経緯、プロジェクト固有のルールを自動では知りません。
+だから、作業に必要な情報をきちんと渡す必要があります。</p>
+<p>たとえば、コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>なら、</p>
+<ul class="guideline-list"><li>何を作るのか</li><li>どのファイルを見るべきか</li><li>既存の設計方針</li><li>テストコマンド</li><li>変更してはいけない範囲</li><li>完了条件</li><li>過去の失敗例</li></ul>
+<p>を渡す必要があります。</p>
+<p>ここで大事なのは、<strong>AIの性能不足に見える失敗の多くが、実は<a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>不足で起きる</strong>ということです。</p>
+<hr>
+<h3 id="2-コンテキストは-量-より-関連性-か-重要">2. <a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>は「量」より「関連性」が重要</h3>
+<p><strong>重要度: 5</strong></p>
+<p>たくさん情報を渡せば良いわけではありません。</p>
+<p>むしろ、関係ない情報を大量に入れると、</p>
+<ul class="guideline-list"><li>重要情報が埋もれる</li><li>判断がブレる</li><li>出力が長くなる</li><li>コストが増える</li><li>間違った文脈を拾う</li></ul>
+<p>という問題が起きます。</p>
+<p><a class="term" href="../domain-glossary.html#context-engineering" data-description="エージェントが適切に判断できるように、目的、背景、制約、関連情報、ツール結果、成功条件を設計して渡すこと。単なるプロンプト文面ではなく、利用可能な文脈全体を扱う。">コンテキスト設計</a>で大事なのは、</p>
+<ul class="guideline-list"><li>必要な情報を</li><li>必要な粒度で</li><li>必要な順番で</li><li>必要なタイミングで渡す</li></ul>
+<p>ことです。</p>
+<p>これは重要度5です。
+長いプロンプトを書くより、<strong>不要な情報を削る力</strong>のほうが重要な場合が多いです。</p>
+<hr>
+<h3 id="3-作業の目的-制約-成功条件を渡す">3. 作業の目的・制約・成功条件を渡す</h3>
+<p><strong>重要度: 5</strong></p>
+<p>AIには「何をすれば終わりか」を伝える必要があります。</p>
+<p>悪い例：</p>
+<ul class="risk-box"><li>この機能を改善してください</li></ul>
+<p>良い例：</p>
+<ul class="guideline-list"><li>この機能の表示速度を改善してください。</li><li>ただし既存APIのレスポンス形式は変更しないでください。</li><li>完了条件は、既存テストが通り、一覧画面の初回表示が2秒以内になることです。</li></ul>
+<p><a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>には、単なる資料だけでなく、</p>
+<ul class="guideline-list"><li>目的</li><li>制約</li><li>優先順位</li><li>完了条件</li><li><a class="term" href="../domain-glossary.html#evaluation" data-description="エージェントやワークフローが期待どおりに動いているかを、成功条件、評価ケース、ログ、トレース、人間評価などで確認すること。開発後だけでなく改善サイクルの一部として扱う。">評価</a>基準</li><li>禁止事項</li></ul>
+<p>を含める必要があります。</p>
+<p>これは、OpenAI、Anthropic、Google Cloud、LangChain、Hugging Face系の記事で広く共通する考え方です。</p>
+<hr>
+<h3 id="4-コンテキストを構造化する">4. <a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>を構造化する</h3>
+<p><strong>重要度: 5</strong></p>
+<p>AIに情報を渡すときは、雑に文章を貼るより、構造化したほうが使いやすいです。</p>
+<p>たとえば、</p>
+<div class="definition-box"><dl><dt>Goal</dt><dd><p>...</p></dd><dt>Background</dt><dd><p>...</p></dd><dt>Constraints</dt><dd><p>...</p></dd><dt>Relevant files</dt><dd><p>...</p></dd><dt>Tools available</dt><dd><p>...</p></dd><dt>Success criteria</dt><dd><p>...</p></dd><dt>Do not</dt><dd><p>...</p></dd></dl></div>
+<p>のように整理します。</p>
+<p>構造化すると、AIは「どれが目的で、どれが制約で、どれが参考情報か」を区別しやすくなります。</p>
+<p>これはかなり重要です。
+特に<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>は複数ステップで作業するので、最初に渡す<a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>がぐちゃぐちゃだと、後続の判断も崩れます。</p>
+<hr>
+<h3 id="5-コンテキストは固定情報と動的情報に分ける">5. <a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>は固定情報と動的情報に分ける</h3>
+<p><strong>重要度: 4</strong></p>
+<p><a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>には、毎回変わらない情報と、タスクごとに変わる情報があります。</p>
+<p>固定情報：</p>
+<ul class="guideline-list"><li>プロジェクト概要</li><li>コーディング規約</li><li>ディレクトリ構成</li><li>テスト方法</li><li>禁止事項</li><li>レビュー基準</li></ul>
+<p>動的情報：</p>
+<ul class="guideline-list"><li>今回の依頼内容</li><li>今回触るファイル</li><li>今回のエラー</li><li>今回のユーザー要望</li><li>今回の調査結果</li></ul>
+<p>固定情報は <code>AGENTS.md</code>、<code>CLAUDE.md</code>、README、システムプロンプトなどに置く。
+動的情報は毎回の依頼プロンプトや<a class="term" href="../domain-glossary.html#tool-result" data-description="ツール実行後にエージェントへ返す結果。成功/失敗だけでなく、次の判断に必要な情報、エラー理由、推奨アクションを含める。">ツール結果</a>として渡す。</p>
+<p>この分離はかなり大事です。
+全部を毎回プロンプトに詰めると、運用が重くなります。</p>
+<hr>
+<h3 id="6-ツール結果もコンテキストとして設計する">6. <a class="term" href="../domain-glossary.html#tool-result" data-description="ツール実行後にエージェントへ返す結果。成功/失敗だけでなく、次の判断に必要な情報、エラー理由、推奨アクションを含める。">ツール結果</a>も<a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>として設計する</h3>
+<p><strong>重要度: 5</strong></p>
+<p><a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>は、最初に渡すプロンプトだけではありません。
+<a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a>から返ってくる検索結果、ファイル内容、テスト結果、APIレスポンスも<a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>です。</p>
+<p>たとえば、<a class="term" href="../domain-glossary.html#tool-result" data-description="ツール実行後にエージェントへ返す結果。成功/失敗だけでなく、次の判断に必要な情報、エラー理由、推奨アクションを含める。">ツール結果</a>がこうだと弱いです。</p>
+<div class="code-example-box"><div class="code-example-label">JSON</div><pre class="code-example"><code class="language-json">{ "status": "ok" }
+</code></pre></div>
+<p>こう返すほうが、AIは次に進みやすいです。</p>
+<div class="code-example-box"><div class="code-example-label">JSON</div><pre class="code-example"><code class="language-json">{
+  "status": "failed",
+  "command": "npm test",
+  "failed_tests": ["UserList renders empty state"],
+  "error_summary": "Expected empty message but got loading state",
+  "suggested_next_files": ["src/UserList.tsx", "src/UserList.test.tsx"]
+}
+</code></pre></div>
+<p><a class="term" href="../domain-glossary.html#tool-use" data-description="エージェントが目的達成のためにツールを選び、入力を作り、結果を解釈して次の行動に反映すること。単なる関数呼び出しではなく、判断を含む行為を指す。">ツール利用</a>系とも重なりますが、<a class="term" href="../domain-glossary.html#context-engineering" data-description="エージェントが適切に判断できるように、目的、背景、制約、関連情報、ツール結果、成功条件を設計して渡すこと。単なるプロンプト文面ではなく、利用可能な文脈全体を扱う。">コンテキスト設計</a>の観点では、</p>
+<div class="takeaway-box">AIが次の判断に使える情報を返す</div>
+<p>ことが重要です。</p>
+<hr>
+<h3 id="7-長期タスクて-はコンテキストを更新-圧縮-再取得する">7. 長期タスクでは<a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>を更新・圧縮・再取得する</h3>
+<p><strong>重要度: 4</strong></p>
+<p>長い作業では、最初に渡した情報だけでは足りません。</p>
+<p>途中で、</p>
+<ul class="guideline-list"><li>調査結果</li><li>実行結果</li><li>失敗理由</li><li>中間判断</li><li>ユーザーからの追加指示</li><li>変更済みファイル</li><li>未解決事項</li></ul>
+<p>が増えていきます。</p>
+<p>このとき、すべてを会話履歴に残すだけではなく、</p>
+<ul class="guideline-list"><li>要点をまとめる</li><li>古い情報を捨てる</li><li>必要な情報を再検索する</li><li>現在の作業状態を更新する</li></ul>
+<p>必要があります。</p>
+<p>長時間動く<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>やコーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>ではかなり重要です。
+ただし、単発タスクではそこまで重く考えなくてもよいので重要度4です。</p>
+<hr>
+<h2 id="OpenAIとAnthropicて-共通">OpenAIとAnthropicで共通</h2>
+<h3 id="1-良い出力には良いコンテキストか-必要">1. 良い出力には良い<a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>が必要</h3>
+<p><strong>重要度: 5</strong></p>
+<p>OpenAI と Anthropic で最も共通しているのは、モデルの性能だけでなく、<strong>渡す文脈の質が成果を左右する</strong>という考え方です。</p>
+<p>OpenAIのCodex系では、コードベース情報、作業目的、関連ファイル、テスト方法などをきちんと渡すことが重要です。
+Anthropicも、<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>が使う情報・<a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a>・メモリ・環境からのフィードバックをどう設計するかを重視します。</p>
+<p>共通する判断はこれです。</p>
+<ul class="guideline-list"><li>AIが失敗したとき、まず「モデルが悪い」と考える前に、</li><li>必要な文脈を渡せていたか確認する</li></ul>
+<p>これは最重要です。</p>
+<hr>
+<h3 id="2-コンテキストは作業単位に合わせて与える">2. <a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>は作業単位に合わせて与える</h3>
+<p><strong>重要度: 5</strong></p>
+<p>OpenAIもAnthropicも、AIに全部の情報を渡すのではなく、作業に必要な情報を渡すことを重視しています。</p>
+<p>たとえば、バグ修正なら、</p>
+<ul class="guideline-list"><li>問題の説明</li><li>再現手順</li><li>関連ファイル</li><li>エラーログ</li><li>テストコマンド</li><li>期待する挙動</li></ul>
+<p>が必要です。</p>
+<p>一方で、関係ない仕様書や過去ログを大量に入れる必要はありません。</p>
+<p>大事なのは、</p>
+<div class="takeaway-box">タスクに必要な文脈を選ぶ</div>
+<p>ことです。</p>
+<hr>
+<h3 id="3-ツールや検索て-不足コンテキストを補う">3. <a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a>や検索で不足<a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>を補う</h3>
+<p><strong>重要度: 5</strong></p>
+<p>OpenAIもAnthropicも、<a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>を最初のプロンプトだけで完結させる発想ではありません。</p>
+<p>不足する情報は、</p>
+<ul class="guideline-list"><li>ファイル検索</li><li>Web検索</li><li>ドキュメント検索</li><li>コード実行</li><li>テスト実行</li><li>API呼び出し</li></ul>
+<p>などで取得します。</p>
+<p>これは<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>らしい重要ポイントです。</p>
+<ul class="guideline-list"><li>最初から全部渡すのではなく、</li><li>必要になったら取りに行けるようにする</li></ul>
+<p>という設計です。</p>
+<p>特に長いドキュメントや大きいコードベースでは、<a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>ウィンドウに全部入れるより、検索・取得の仕組みを持たせるほうが現実的です。</p>
+<hr>
+<h3 id="4-コンテキストとツール説明は一体て-考える">4. <a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>と<a class="term" href="../domain-glossary.html#tool-description" data-description="ツールの目的、使うべき場面、使ってはいけない場面、入力の意味、返却値の読み方をエージェント向けに説明する文章。">ツール説明</a>は一体で考える</h3>
+<p><strong>重要度: 4</strong></p>
+<p>OpenAIもAnthropicも、<a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a>を使う<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>では、<a class="term" href="../domain-glossary.html#tool-description" data-description="ツールの目的、使うべき場面、使ってはいけない場面、入力の意味、返却値の読み方をエージェント向けに説明する文章。">ツール説明</a>そのものが<a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>になります。</p>
+<p>たとえば、</p>
+<ul class="checklist question-checklist"><li>この<a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a>は何をするか</li><li>いつ使うべきか</li><li>何を返すか</li><li>失敗したらどうするか</li></ul>
+<p>を<a class="term" href="../domain-glossary.html#tool-definition" data-description="エージェントがツールを正しく選択・実行するために渡す、ツール名、説明、入力スキーマ、返却値、使用条件などの定義。">ツール定義</a>に書くことで、AIはそれを読んで行動します。</p>
+<p>なので、<a class="term" href="../domain-glossary.html#context-engineering" data-description="エージェントが適切に判断できるように、目的、背景、制約、関連情報、ツール結果、成功条件を設計して渡すこと。単なるプロンプト文面ではなく、利用可能な文脈全体を扱う。">コンテキスト設計</a>は、単に「資料を渡す」だけではなく、</p>
+<div class="takeaway-box"><a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a>の使い方をどう伝えるか</div>
+<p>も含みます。</p>
+<p>重要度は4ですが、<a class="term" href="../domain-glossary.html#tool-use" data-description="エージェントが目的達成のためにツールを選び、入力を作り、結果を解釈して次の行動に反映すること。単なる関数呼び出しではなく、判断を含む行為を指す。">ツール利用</a>型<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>では5に近いです。</p>
+<hr>
+<h3 id="5-出力形式-判断基準-制約を明示する">5. 出力形式・判断基準・制約を明示する</h3>
+<p><strong>重要度: 5</strong></p>
+<p>OpenAIのプロンプト設計でも、Anthropicの<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>設計でも、指示や制約を明確にすることは非常に重要です。</p>
+<p>特に、</p>
+<ul class="checklist question-checklist"><li>何を優先するか</li><li>何をしてはいけないか</li><li>どんな形式で返すか</li><li>どこまで自律的に進めるか</li><li>いつ確認するか</li></ul>
+<p>を明示する必要があります。</p>
+<p>これは<a class="term" href="../domain-glossary.html#context-engineering" data-description="エージェントが適切に判断できるように、目的、背景、制約、関連情報、ツール結果、成功条件を設計して渡すこと。単なるプロンプト文面ではなく、利用可能な文脈全体を扱う。">コンテキスト設計</a>の中核です。</p>
+<div class="takeaway-box">背景情報だけではなく、判断の基準も渡す</div>
+<p>ことが大切です。</p>
+<hr>
+<h2 id="OpenAIのみ">OpenAIのみ</h2>
+<h3 id="1-Codexて-はリホ-シ-トリ文脈を与えることか-特に重要">1. Codexではリポジトリ文脈を与えることが特に重要</h3>
+<p><strong>重要度: 5</strong></p>
+<p>OpenAIのCodexベストプラクティスでは、コーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>に十分な文脈を与えることが強く重視されます。</p>
+<p>特に重要なのは、</p>
+<ul class="guideline-list"><li>リポジトリ構造</li><li>関連ファイル</li><li>期待する変更内容</li><li>実行すべきテスト</li><li>既存の実装方針</li><li>失敗時のログ</li></ul>
+<p>です。</p>
+<p>これはコーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>では最重要です。
+「コードを書いて」だけではなく、<strong>どの世界でコードを書くのか</strong>を伝える必要があります。</p>
+<hr>
+<h3 id="2-Prompt-engineeringを一般原則として整理している">2. Prompt engineeringを一般原則として整理している</h3>
+<p><strong>重要度: 4</strong></p>
+<p>OpenAIは、プロンプト設計の一般原則として、</p>
+<ul class="guideline-list"><li>指示を明確にする</li><li>文脈を与える</li><li>出力形式を指定する</li><li>例を与える</li><li>モデルの強みに合わせる</li></ul>
+<p>といった点を整理しています。</p>
+<p>これは<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>専用ではありませんが、<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>のシステムプロンプト、タスク指示、<a class="term" href="../domain-glossary.html#tool-description" data-description="ツールの目的、使うべき場面、使ってはいけない場面、入力の意味、返却値の読み方をエージェント向けに説明する文章。">ツール説明</a>にもそのまま使えます。</p>
+<p>重要度は4です。
+基礎体力として重要ですが、<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>特化の文脈ではAnthropicの context engineering のほうが踏み込んでいます。</p>
+<hr>
+<h3 id="3-推論モテ-ルには-考える余地のあるタスク-を渡す">3. <a class="term" href="../domain-glossary.html#reasoning-model" data-description="複雑な問題解決、計画、コード、数学、多段推論などに強く、通常の応答生成より深い推論過程を使うモデル。">推論モデル</a>には「考える余地のあるタスク」を渡す</h3>
+<p><strong>重要度: 4</strong></p>
+<p>OpenAIのReasoning best practicesでは、<a class="term" href="../domain-glossary.html#reasoning-model" data-description="複雑な問題解決、計画、コード、数学、多段推論などに強く、通常の応答生成より深い推論過程を使うモデル。">推論モデル</a>に向くタスクとして、</p>
+<ul class="guideline-list"><li>複雑な判断</li><li>多段階の計画</li><li>コードレビュー</li><li>曖昧な依頼の整理</li><li>大量情報からの統合</li></ul>
+<p>が想定されます。</p>
+<p><a class="term" href="../domain-glossary.html#context-engineering" data-description="エージェントが適切に判断できるように、目的、背景、制約、関連情報、ツール結果、成功条件を設計して渡すこと。単なるプロンプト文面ではなく、利用可能な文脈全体を扱う。">コンテキスト設計</a>上の意味は、</p>
+<div class="takeaway-box"><a class="term" href="../domain-glossary.html#reasoning-model" data-description="複雑な問題解決、計画、コード、数学、多段推論などに強く、通常の応答生成より深い推論過程を使うモデル。">推論モデル</a>には、判断材料とゴールをきちんと渡す</div>
+<p>ことです。</p>
+<p>単純作業には過剰ですが、<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>の計画・判断フェーズでは重要です。</p>
+<hr>
+<h3 id="4-出力形式や制約をフ-ロンフ-トて-明示する実践色か-強い">4. 出力形式や制約をプロンプトで明示する実践色が強い</h3>
+<p><strong>重要度: 4</strong></p>
+<p>OpenAIのプロンプト系記事は、かなり実践的に、</p>
+<ul class="guideline-list"><li>こういう情報を入れる</li><li>こういう形式で返させる</li><li>こういう制約を書く</li></ul>
+<p>という方向に寄っています。</p>
+<p>これは、既存<a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a>を使う人にとって扱いやすいです。</p>
+<p>ただし、<a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>の長期管理や<a class="term" href="../domain-glossary.html#tool-result" data-description="ツール実行後にエージェントへ返す結果。成功/失敗だけでなく、次の判断に必要な情報、エラー理由、推奨アクションを含める。">ツール結果</a>設計という意味では、OpenAI単独の資料だけだとやや広義のプロンプト設計に寄ります。</p>
+<hr>
+<h2 id="Anthropicのみ">Anthropicのみ</h2>
+<h3 id="1-Context-engineering-を-エーシ-ェント性能の中核-として扱う">1. Context engineering を「<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>性能の中核」として扱う</h3>
+<p><strong>重要度: 5</strong></p>
+<p>Anthropicの特徴は、<a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>を単なるプロンプトではなく、<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>の性能を決める中核要素として扱っている点です。</p>
+<p>ここでいう<a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>は、</p>
+<ul class="guideline-list"><li>システム指示</li><li>ユーザー依頼</li><li><a class="term" href="../domain-glossary.html#tool-description" data-description="ツールの目的、使うべき場面、使ってはいけない場面、入力の意味、返却値の読み方をエージェント向けに説明する文章。">ツール説明</a></li><li><a class="term" href="../domain-glossary.html#tool-result" data-description="ツール実行後にエージェントへ返す結果。成功/失敗だけでなく、次の判断に必要な情報、エラー理由、推奨アクションを含める。">ツール結果</a></li><li>メモリ</li><li>検索結果</li><li>環境からのフィードバック</li><li>中間状態</li></ul>
+<p>を含む広い概念です。</p>
+<p>これは非常に重要です。
+「プロンプトをうまく書く」から一段進んで、<strong>AIに流れ込む情報全体を設計する</strong>という発想です。</p>
+<hr>
+<h3 id="2-情報は必要なタイミンク-て-取り出せるようにする">2. 情報は必要なタイミングで取り出せるようにする</h3>
+<p><strong>重要度: 5</strong></p>
+<p>Anthropicの<a class="term" href="../domain-glossary.html#context-engineering" data-description="エージェントが適切に判断できるように、目的、背景、制約、関連情報、ツール結果、成功条件を設計して渡すこと。単なるプロンプト文面ではなく、利用可能な文脈全体を扱う。">コンテキスト設計</a>で重要なのは、すべてを最初から入れるのではなく、必要なときに必要な情報へアクセスできるようにすることです。</p>
+<p>たとえば、</p>
+<ul class="risk-box"><li>検索</li><li>メモリ</li><li>ファイル参照</li><li>コード実行結果</li><li>外部<a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a></li></ul>
+<p>を使って、状況に応じて<a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>を増やします。</p>
+<p>これは、長いタスクや大量情報を扱う<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>では最重要です。</p>
+<ul class="guideline-list"><li>最初に全部詰め込むより、</li><li>必要な情報を取りに行く設計にする</li></ul>
+<p>という考え方です。</p>
+<hr>
+<h3 id="3-ツール結果の返し方もコンテキスト設計て-ある">3. <a class="term" href="../domain-glossary.html#tool-result" data-description="ツール実行後にエージェントへ返す結果。成功/失敗だけでなく、次の判断に必要な情報、エラー理由、推奨アクションを含める。">ツール結果</a>の返し方も<a class="term" href="../domain-glossary.html#context-engineering" data-description="エージェントが適切に判断できるように、目的、背景、制約、関連情報、ツール結果、成功条件を設計して渡すこと。単なるプロンプト文面ではなく、利用可能な文脈全体を扱う。">コンテキスト設計</a>である</h3>
+<p><strong>重要度: 5</strong></p>
+<p>Anthropicは、<a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a>の出力がそのまま<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>の<a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>になることを強く意識しています。</p>
+<p>だから、</p>
+<ul class="guideline-list"><li>返却値が長すぎる</li><li>重要情報が埋もれる</li><li>エラー理由が分からない</li><li>次に何をすべきか分からない</li></ul>
+<p>ような<a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a>は、<a class="term" href="../domain-glossary.html#context-engineering" data-description="エージェントが適切に判断できるように、目的、背景、制約、関連情報、ツール結果、成功条件を設計して渡すこと。単なるプロンプト文面ではなく、利用可能な文脈全体を扱う。">コンテキスト設計</a>として悪いです。</p>
+<p>良い<a class="term" href="../domain-glossary.html#tool-result" data-description="ツール実行後にエージェントへ返す結果。成功/失敗だけでなく、次の判断に必要な情報、エラー理由、推奨アクションを含める。">ツール結果</a>は、</p>
+<ul class="guideline-list"><li>次の判断に必要な情報だけを</li><li>分かりやすく</li><li>構造化して</li><li>必要なら<a class="term" href="../domain-glossary.html#evidence" data-description="回答、判断、評価、承認の裏付けとして使う具体的な情報。引用箇所、検索結果、ツール結果、ログ、評価結果などを含む。">根拠</a>も含めて返す</li></ul>
+<p>ことです。</p>
+<p>これは<a class="term" href="../domain-glossary.html#tool-use" data-description="エージェントが目的達成のためにツールを選び、入力を作り、結果を解釈して次の行動に反映すること。単なる関数呼び出しではなく、判断を含む行為を指す。">ツール利用</a>系とも重なりますが、<a class="term" href="../domain-glossary.html#context-engineering" data-description="エージェントが適切に判断できるように、目的、背景、制約、関連情報、ツール結果、成功条件を設計して渡すこと。単なるプロンプト文面ではなく、利用可能な文脈全体を扱う。">コンテキスト設計</a>では非常に重要です。</p>
+<hr>
+<h3 id="4-コンテキストの圧縮-整理-管理か-重要">4. <a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>の圧縮・整理・管理が重要</h3>
+<p><strong>重要度: 4</strong></p>
+<p>Anthropic系の記事では、長期タスクや<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>の<a class="term" href="../domain-glossary.html#autonomous-execution" data-description="事前に定めた権限、ガードレール、停止条件、監視の範囲内で、エージェントが人間承認なしに操作を実行する方式。">自律実行</a>において、<a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>が増えすぎる問題が重要になります。</p>
+<p>対策としては、</p>
+<ul class="guideline-list"><li>中間結果を要約する</li><li>現在の状態を明示する</li><li>古い情報を整理する</li><li>必要な情報だけ再取得する</li><li>メモリを使う</li></ul>
+<p>があります。</p>
+<p>これは長期実行<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>ではかなり重要です。</p>
+<p>単発プロンプトではそこまで気にしなくてよいですが、業務フロー化するなら早めに設計したいです。</p>
+<hr>
+<h3 id="5-エーシ-ェントか-環境から得る事実情報を重視する">5. <a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>が環境から得る事実情報を重視する</h3>
+<p><strong>重要度: 4</strong></p>
+<p>Anthropicは、<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>が<a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a>や環境から得る情報、つまり ground truth を重視しています。</p>
+<p>たとえば、</p>
+<ul class="guideline-list"><li>テスト結果</li><li>コマンド結果</li><li>ファイル内容</li><li>APIレスポンス</li><li>ユーザー確認</li></ul>
+<p>です。</p>
+<p>AIに「考えさせる」だけではなく、実際の環境から得た結果をもとに判断させる。</p>
+<p>これは、特にコーディング<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>や業務自動化<a class="term" href="../domain-glossary.html#agent" data-description="指示、ツール、必要に応じたハンドオフやガードレールを持ち、目的達成のために処理を進めるAI実行主体。単なるLLM呼び出しではなく、作業を進める単位を指す。">エージェント</a>で重要です。</p>
+<hr>
+<h2 id="実務て-重要な順">実務で重要な順</h2>
+<p><a class="term" href="../domain-glossary.html#context-engineering" data-description="エージェントが適切に判断できるように、目的、背景、制約、関連情報、ツール結果、成功条件を設計して渡すこと。単なるプロンプト文面ではなく、利用可能な文脈全体を扱う。">コンテキスト設計</a>系で押さえるべき順番はこうです。</p>
+<table>
+<thead>
+<tr>
+<th align="right">重要度</th>
+<th>ポイント</th>
+<th>判断への使い方</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">5</td>
+<td>必要な情報を明示的に渡す</td>
+<td>AIの失敗をモデル性能だけのせいにしない</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td>関連性の高い情報だけ渡す</td>
+<td>大量投入ではなく、必要十分を目指す</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td>目的・制約・成功条件を渡す</td>
+<td>何を達成し、何を避けるかを明確にする</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td><a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>を構造化する</td>
+<td>目的・背景・制約・資料・完了条件を分ける</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td>不足情報を<a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a>や検索で補えるようにする</td>
+<td>最初に全部詰め込まない</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td><a class="term" href="../domain-glossary.html#tool-result" data-description="ツール実行後にエージェントへ返す結果。成功/失敗だけでなく、次の判断に必要な情報、エラー理由、推奨アクションを含める。">ツール結果</a>を次の判断に使える形にする</td>
+<td><a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a>出力も<a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>として設計する</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td>固定情報と動的情報を分ける</td>
+<td>AGENTS.md / CLAUDE.md / README と都度指示を分ける</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td><a class="term" href="../domain-glossary.html#context" data-description="エージェントが次の判断や出力に使う情報の集合。システム指示、ユーザー入力、ツール定義、ツール結果、外部データ、会話履歴、作業状態などを含む。">コンテキスト</a>を更新・圧縮する</td>
+<td>長期タスクで情報が溢れないようにする</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td>出力形式・判断基準を明示する</td>
+<td>期待とズレた出力を減らす</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td>環境からの事実情報を使わせる</td>
+<td>テスト結果・API結果・ファイル内容で判断させる</td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td>例を入れる</td>
+<td>効くが、常に必須ではない</td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td>モデルごとに渡し方を変える</td>
+<td>高度化したら考える</td>
+</tr>
+</tbody></table>
+<h2 id="一言て-いうと">一言でいうと</h2>
+<p><a class="term" href="../domain-glossary.html#context-engineering" data-description="エージェントが適切に判断できるように、目的、背景、制約、関連情報、ツール結果、成功条件を設計して渡すこと。単なるプロンプト文面ではなく、利用可能な文脈全体を扱う。">コンテキスト設計</a>系で一番大事なのは、これです。</p>
+<ul class="guideline-list"><li>AIに何を知っていてほしいかを考えるのではなく、</li><li>AIがその仕事を進めるために、今どの情報が必要かを設計すること。</li></ul>
+<p>実務向けには、こうです。</p>
+<ol class="process-steps"><li>目的を渡す</li><li>背景を渡す</li><li>制約を渡す</li><li>関連資料を渡す</li><li>使える<a class="term" href="../domain-glossary.html#tool" data-description="エージェントが外部情報を取得したり、環境に作用したりするために呼び出す機能。検索、ファイル操作、API呼び出し、コード実行などを含む。">ツール</a>を渡す</li><li><a class="term" href="../domain-glossary.html#tool-result" data-description="ツール実行後にエージェントへ返す結果。成功/失敗だけでなく、次の判断に必要な情報、エラー理由、推奨アクションを含める。">ツール結果</a>を次の判断に使える形にする</li><li>長い作業では要約・更新・再取得する</li></ol>
+<p>プロンプト設計との違いで言うと、</p>
+<ul class="checklist question-checklist"><li>プロンプト設計:</li><li>AIにどう指示するか</li><li><a class="term" href="../domain-glossary.html#context-engineering" data-description="エージェントが適切に判断できるように、目的、背景、制約、関連情報、ツール結果、成功条件を設計して渡すこと。単なるプロンプト文面ではなく、利用可能な文脈全体を扱う。">コンテキスト設計</a>:</li><li>AIが判断するための情報環境をどう作るか</li></ul>
+<p>です。</p>
+</article></div>
+</body>
+</html>

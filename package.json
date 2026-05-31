@@ -4,17 +4,19 @@
   "type": "module",
   "scripts": {
     "lint": "biome lint AGENTS.md README.md biome.json domain-glossary.md term-popup.js tests workflow/AGENTS.md workflow/README.md workflow/scripts",
-    "format": "biome format --write AGENTS.md README.md README.html biome.json domain-glossary.html domain-glossary.md index.html semantic-overrides.css style.css term-popup.js tests workflow/AGENTS.md workflow/README.md workflow/scripts",
-    "format:check": "biome format AGENTS.md README.md README.html biome.json domain-glossary.html domain-glossary.md index.html semantic-overrides.css style.css term-popup.js tests workflow/AGENTS.md workflow/README.md workflow/scripts",
+    "format": "biome format --write AGENTS.md README.md README.html biome.json docs/*.md domain-glossary.html domain-glossary.md index.html semantic-overrides.css style.css term-popup.js tests workflow/AGENTS.md workflow/README.md workflow/scripts",
+    "format:check": "biome format AGENTS.md README.md README.html biome.json docs/*.md domain-glossary.html domain-glossary.md index.html semantic-overrides.css style.css term-popup.js tests workflow/AGENTS.md workflow/README.md workflow/scripts",
     "test": "playwright test tests/ui-behavior-checklist.test.mjs",
     "verify": "npm run lint && npm run format:check && npm test",
+    "build": "npm run build:pages",
     "save:singlefile": "node workflow/scripts/save_singlefile.js && node workflow/scripts/build_singlefile_index.js",
     "save:singlefile:dry-run": "node workflow/scripts/save_singlefile.js --dry-run",
     "save:content": "node workflow/scripts/save_content.js",
     "save:content:dry-run": "node workflow/scripts/save_content.js --dry-run",
     "build:index": "node workflow/scripts/build_singlefile_index.js",
     "annotate:tag-guides": "node workflow/scripts/annotate_tag_guides_fences.js",
-    "build:tag-guides": "npm run annotate:tag-guides && node workflow/scripts/build_tag_guides_html.js"
+    "build:tag-guides": "npm run annotate:tag-guides && node workflow/scripts/build_tag_guides_html.js",
+    "build:pages": "node workflow/scripts/build_public_pages.js"
   },
   "devDependencies": {
     "@biomejs/biome": "latest",

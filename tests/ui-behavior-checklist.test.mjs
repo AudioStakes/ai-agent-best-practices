@@ -22,6 +22,10 @@ const buildTagGuidesScript = path.join(
   siteDir,
   "workflow/scripts/build_tag_guides_html.js",
 );
+const buildPublicPagesScript = path.join(
+  siteDir,
+  "workflow/scripts/build_public_pages.js",
+);
 const annotateTagGuidesScript = path.join(
   siteDir,
   "workflow/scripts/annotate_tag_guides_fences.js",
@@ -188,9 +192,69 @@ test("tag guide markdown can be regenerated into readable HTML", () => {
       expect(generated).toContain(
         '<p class="nav"><a href="../index.html">← Index</a><a href="../domain-glossary.html">用語集</a></p>',
       );
+      expect(generated).toContain('class="publication-note"');
+      expect(generated).toContain("対象時点:</strong> 2026年5月");
       expect(generated).toContain('class="rating-guide"');
       expect(generated).toContain('class="term"');
       expect(generated).toContain('href="../domain-glossary.html#agent"');
+    })
+    .finally(() => {
+      rmSync(tempRoot, { recursive: true, force: true });
+    });
+});
+
+test("public docs can be regenerated for GitHub Pages", () => {
+  const tempRoot = mkdtempSync(path.join(os.tmpdir(), "docs-build-"));
+  const docsDir = path.join(tempRoot, "docs");
+  const result = spawn(
+    "node",
+    [buildPublicPagesScript, "--docs-dir", docsDir],
+    {
+      cwd: siteDir,
+      stdio: ["ignore", "pipe", "pipe"],
+    },
+  );
+
+  const stdout = [];
+  const stderr = [];
+  result.stdout.on("data", (chunk) => {
+    stdout.push(chunk.toString("utf8"));
+  });
+  result.stderr.on("data", (chunk) => {
+    stderr.push(chunk.toString("utf8"));
+  });
+
+  return once(result, "close")
+    .then(([code]) => {
+      if (code !== 0) {
+        throw new Error(
+          `public docs build failed with exit code ${code}\nstdout:\n${stdout.join("")}\nstderr:\n${stderr.join("")}`,
+        );
+      }
+
+      const generatedFiles = readdirSync(path.join(docsDir, "tag-guides"));
+      expect(generatedFiles).toContain("01-agent-design.html");
+      expect(generatedFiles).toContain("01-agent-design.md");
+      expect(readFileSync(path.join(docsDir, "style.css"), "utf8")).toContain(
+        ".publication-note",
+      );
+
+      const generated = readFileSync(
+        path.join(docsDir, "tag-guides", "01-agent-design.html"),
+        "utf8",
+      );
+      expect(generated).toContain("対象時点:</strong> 2026年5月");
+      expect(generated).toContain('href="../style.css?v=');
+      expect(generated).toContain('src="../term-popup.js?v=');
+      expect(generated).toContain('href="../domain-glossary.html#agent"');
+
+      const glossary = readFileSync(
+        path.join(docsDir, "domain-glossary.html"),
+        "utf8",
+      );
+      expect(glossary).not.toContain('href="README.html"');
+      expect(glossary).toContain('href="index.html"');
+      expect(glossary).toContain('href="domain-glossary.html"');
     })
     .finally(() => {
       rmSync(tempRoot, { recursive: true, force: true });

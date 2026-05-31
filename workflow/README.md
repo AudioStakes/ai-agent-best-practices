@@ -140,10 +140,30 @@ node workflow/scripts/build_tag_guides_html.js --output-dir /tmp/tag-guides
 
 このスクリプトは、各 Markdown を共通の HTML シェルに載せ、`domain-glossary.md` の用語説明を使って本文中の用語リンクも付け直します。
 
+## GitHub Pages 公開用に `docs/` を再生成する
+
+GitHub Pages の公開用ファイルを `docs/` 配下にまとめ直したいときは、次を実行します。
+
+```bash
+npm run build:pages
+```
+
+このコマンドは次をまとめて行います。
+
+- タグガイドの fence 注釈を更新する
+- `docs/tag-guides/*.html` を再生成する
+- `docs/tag-guides/*.md` を同期する
+- `docs/style.css` / `docs/term-popup.js` / `docs/domain-glossary.html` / `docs/domain-glossary.md` を同期する
+
+公開トップは `docs/index.md` なので、公開前にそこから各章と用語集へ辿れるかを確認してください。
+
 ## 再生成の入口
 
-`workflow/scripts/` にある 3 つのスクリプトが、記事保存と一覧生成の中心です。
+`workflow/scripts/` にあるスクリプトが、記事保存、一覧生成、タグガイド生成、公開同期の中心です。
 
 - `workflow/scripts/save_singlefile.js`
 - `workflow/scripts/save_content.js`
 - `workflow/scripts/build_singlefile_index.js`
+- `workflow/scripts/annotate_tag_guides_fences.js`
+- `workflow/scripts/build_tag_guides_html.js`
+- `workflow/scripts/build_public_pages.js`
