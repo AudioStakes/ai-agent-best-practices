@@ -124,6 +124,18 @@ function syncTagGuideMarkdownFiles(docsTagGuidesDir) {
 }
 
 function syncPublicAssets(docsDir) {
+  copyTextFile(
+    join(repoRoot, "docs", "_config.yml"),
+    join(docsDir, "_config.yml"),
+  );
+  copyTextFile(
+    join(repoRoot, "docs", "public-page-problem-statement.md"),
+    join(docsDir, "public-page-problem-statement.md"),
+  );
+  copyTextFile(
+    join(repoRoot, "docs", "publishing-checklist.md"),
+    join(docsDir, "publishing-checklist.md"),
+  );
   copyTextFile(join(repoRoot, "style.css"), join(docsDir, "style.css"));
   copyTextFile(join(repoRoot, "term-popup.js"), join(docsDir, "term-popup.js"));
   copyTextFile(

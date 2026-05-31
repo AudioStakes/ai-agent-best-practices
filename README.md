@@ -15,6 +15,7 @@ GitHub Pages で公開するトップページは、`docs/index.md` を元に生
 - [docs/index.html](./docs/index.html)
 - 公開対象は `docs/` 配下です。
 - 公開用ファイルの再生成は `npm run build:pages` で行います。
+- 公開前の確認項目は [docs/publishing-checklist.md](./docs/publishing-checklist.md) にまとめています。
 
 公開物は `docs/` 配下にまとめてあり、`docs/index.html` から各章と用語集に辿れます。
 
@@ -119,19 +120,17 @@ Settings
 
 この設定により、`docs/index.html` が公開トップになります。
 
-## 品質確認
+## 公開前チェック
 
-このサイトに対する lint, format, test は一つのコマンドで実行できます。
+公開前は、次の順で確認します。
 
 ```bash
+npm run build
 npm run verify
+npm run verify:pages
 ```
 
-公開用ファイルの生成結果を含めて確認したい場合は、先に次を実行します。
-
-```bash
-npm run build:pages
-```
+`npm run build` は `docs/` 配下の公開物を再生成します。`npm run verify:pages` は `docs/` 配下のファイル存在、章の必須要素、ローカルリンク切れを確認します。
 
 ## 再生成手順
 

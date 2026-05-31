@@ -236,6 +236,11 @@ test("public docs can be regenerated for GitHub Pages", () => {
       expect(generatedFiles).toContain("01-agent-design.html");
       expect(generatedFiles).toContain("01-agent-design.md");
       expect(readdirSync(docsDir)).toContain("index.html");
+      expect(readdirSync(docsDir)).toContain("_config.yml");
+      expect(readdirSync(docsDir)).toContain(
+        "public-page-problem-statement.md",
+      );
+      expect(readdirSync(docsDir)).toContain("publishing-checklist.md");
       expect(readFileSync(path.join(docsDir, "style.css"), "utf8")).toContain(
         ".publication-note",
       );
@@ -246,6 +251,7 @@ test("public docs can be regenerated for GitHub Pages", () => {
         'href="tag-guides/08-security-sandboxing.html"',
       );
       expect(docsIndex).toContain('href="domain-glossary.html"');
+      expect(docsIndex).toContain("public-page-problem-statement.md");
       expect(docsIndex).toContain("AI Agent Best Practices Knowledge Base");
 
       const generated = readFileSync(
