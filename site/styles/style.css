@@ -105,24 +105,40 @@ body.site-index :where(.badge) {
 }
 
 /* Domain term popup */
-.term {
+.markdown-body a.term {
   display: inline;
   padding: 0 0.04em;
-  border-bottom: 1px dotted #aebdcc;
+  border-bottom: 1px dotted rgba(31, 35, 40, 0.38);
   color: inherit;
-  font-weight: inherit;
   text-decoration: none;
+  font-weight: inherit;
   cursor: help;
   -webkit-tap-highlight-color: rgba(11, 87, 208, 0.1);
 }
 
-.term:focus {
+.markdown-body a.term:hover,
+.markdown-body a.term:focus-visible {
+  color: var(--color-accent-fg, #0969da);
+  border-bottom-style: solid;
+  text-decoration: none;
+}
+
+.markdown-body a.term:visited {
+  color: inherit;
+}
+
+.markdown-body a.term:focus-visible {
+  outline: 3px solid rgba(9, 105, 218, 0.3);
+  outline-offset: 2px;
+}
+
+.markdown-body a.term:focus {
   outline: 2px solid rgba(11, 87, 208, 0.25);
   outline-offset: 2px;
   border-radius: 3px;
 }
 
-.term::after {
+.markdown-body a.term::after {
   content: none;
   display: none;
 }

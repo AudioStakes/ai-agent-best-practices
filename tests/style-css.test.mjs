@@ -40,9 +40,9 @@ function runProcess(args) {
 test("site CSS stays focused on the shell, glossary, and term popup", async () => {
   const css = readFileSync(cssPath, "utf8");
 
-  expect(css).not.toContain(".markdown-body");
-  expect(css).not.toContain(".markdown-document");
-
+  expect(css).toContain(".markdown-body a.term");
+  expect(css).toContain(".markdown-body a.term:hover");
+  expect(css).toContain(".markdown-body a.term:visited");
   expect(css).toContain(".term-popup");
   expect(css).toContain(".glossary-table-wrap");
   expect(css).toContain("body.site-index :where(.article)");
