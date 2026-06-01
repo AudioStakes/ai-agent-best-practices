@@ -83,7 +83,7 @@ npm run build:root
 ```
 
 このコマンドで `index.html` と `domain-glossary.html` が生成されます。  
-`npm run build` を実行すると、これに加えてタグガイド HTML と `docs/` 配下の公開用ファイルもまとめて再生成されます。
+`npm run build` を実行すると、これに加えてタグガイド HTML と `docs/` 配下の公開用ファイルもまとめて再生成されます。`docs/index.md` や `docs/domain-glossary.md` も build output であり、原本ではありません。
 
 ## 保存済みSingleFileを一覧表示する
 
@@ -159,15 +159,17 @@ GitHub Pages の公開用ファイルを `docs/` 配下にまとめ直したい�
 npm run build:pages
 ```
 
-このコマンドは次をまとめて行います。生成された HTML は Git にコミットしない前提です。
+このコマンドは次をまとめて行います。生成された HTML と、公開用に同期された Markdown は Git にコミットしない前提です。
 
+- ルートの `index.html` / `domain-glossary.html` を再生成する
 - タグガイドの fence 注釈を更新する
 - `docs/tag-guides/*.html` を再生成する
-- `docs/index.html` を `docs/index.md` から生成する
+- `docs/index.md` を `index.md` から同期する
+- `docs/index.html` を `index.md` から生成する
 - `docs/tag-guides/*.md` を同期する
 - `docs/style.css` / `docs/term-popup.js` / `docs/domain-glossary.html` / `docs/domain-glossary.md` を同期する
 
-公開トップは `docs/index.html` なので、公開前に `npm run build` のあとでそこから各章と用語集へ辿れるかを確認してください。  
+公開トップは build 後にできる `docs/index.html` なので、公開前に `npm run build` のあとでそこから各章と用語集へ辿れるかを確認してください。  
 GitHub Pages を branch deploy で配る場合はこの方針と衝突するため、Actions で artifact を生成して公開する運用に寄せるのが前提です。
 
 ## 再生成の入口

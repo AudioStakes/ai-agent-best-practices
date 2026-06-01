@@ -17,7 +17,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
 const defaultDocsDir = join(repoRoot, "docs");
 const tagGuidesSourceDir = join(repoRoot, "knowledge_templated/tag-guides");
-const docsIndexSourcePath = join(repoRoot, "docs/index.md");
+const glossaryMarkdownSourcePath = join(repoRoot, "domain-glossary.md");
+const buildRootPagesScript = join(
+  repoRoot,
+  "workflow/scripts/build_root_pages.js",
+);
 const buildTagGuidesScript = join(
   repoRoot,
   "workflow/scripts/build_tag_guides_html.js",
@@ -80,12 +84,66 @@ function copyTextFile(sourcePath, destinationPath) {
   writeFileSync(destinationPath, readFileSync(sourcePath, "utf8"), "utf8");
 }
 
-function buildDocsIndexHtml(docsDir) {
-  if (!existsSync(docsIndexSourcePath)) {
-    throw new Error(`Source file not found: ${docsIndexSourcePath}`);
-  }
+function writeTextFile(destinationPath, text) {
+  mkdirSync(dirname(destinationPath), { recursive: true });
+  writeFileSync(destinationPath, text, "utf8");
+}
 
-  const markdown = readFileSync(docsIndexSourcePath, "utf8");
+function buildPublicIndexMarkdown() {
+  return [
+    "# AI Agent Best Practices Knowledge Base",
+    "",
+    "AIエージェントを使った開発経験がある人向けに、主要な公式ドキュメントを横断整理したナレッジベースです。",
+    "",
+    "## 対象時点",
+    "",
+    "> **対象時点: 2026年5月**",
+    "",
+    "## 対象読者",
+    "",
+    "AIエージェントを使った開発経験があり、主要な公式ドキュメントに基づいて活用を改善したい人向けです。",
+    "",
+    "## このナレッジベースで得られること",
+    "",
+    "エージェントの設計・評価・運用・コーディング活用に共通するベストプラクティスを整理できます。",
+    "",
+    "## 読み方",
+    "",
+    "このナレッジベースは、最初から順番に読む必要はありません。",
+    "",
+    "## 目次",
+    "",
+    "1. [エージェント設計系](tag-guides/01-agent-design.html)",
+    "2. [ワークフロー設計系](tag-guides/02-workflow-design.html)",
+    "3. [ツール利用系](tag-guides/03-tool-use.html)",
+    "4. [コンテキスト設計系](tag-guides/04-context-engineering.html)",
+    "5. [評価系](tag-guides/05-evals.html)",
+    "6. [コーディングエージェント系](tag-guides/06-coding-agents.html)",
+    "7. [本番運用系](tag-guides/07-production-operations.html)",
+    "8. [セキュリティ・サンドボックス系](tag-guides/08-security-sandboxing.html)",
+    "9. [マルチエージェント系](tag-guides/09-multi-agent.html)",
+    "10. [ガバナンス系](tag-guides/10-governance.html)",
+    "",
+    "## 見本",
+    "",
+    "- [MarkdownコードブロックHTMLデザイン見本](tag-guides/11-markdown-code-block-gallery.html)",
+    "",
+    "## 公開範囲",
+    "",
+    "- 公開用ファイルは build output です。",
+    "- 用語集は [domain-glossary.html](domain-glossary.html) で参照できます。",
+    "- [public-page-problem-statement.md](public-page-problem-statement.md) に公開ページの問題設定をまとめています。",
+    "",
+    "## 対象外",
+    "",
+    "- AIエージェントをまだ使ったことがない人向けの入門",
+    "- AIエージェントを使い始めたばかりの人向けのチュートリアル",
+    "- AIエージェント関連の最新ニュースの収集",
+    "- 特定ツールの詳しい使い方や操作手順の解説",
+  ].join("\n");
+}
+
+function buildDocsIndexHtml(docsDir, markdown) {
   const body = marked.parse(markdown);
   const html = `<!DOCTYPE html>
 <html lang="ja">
@@ -138,10 +196,7 @@ function syncPublicAssets(docsDir) {
   );
   copyTextFile(join(repoRoot, "style.css"), join(docsDir, "style.css"));
   copyTextFile(join(repoRoot, "term-popup.js"), join(docsDir, "term-popup.js"));
-  copyTextFile(
-    join(repoRoot, "domain-glossary.md"),
-    join(docsDir, "domain-glossary.md"),
-  );
+  copyTextFile(glossaryMarkdownSourcePath, join(docsDir, "domain-glossary.md"));
 
   const glossaryHtmlPath = join(repoRoot, "domain-glossary.html");
   const glossaryHtml = readFileSync(glossaryHtmlPath, "utf8").replace(
@@ -158,10 +213,12 @@ function main() {
   mkdirSync(options.docsDir, { recursive: true });
   rmSync(docsTagGuidesDir, { recursive: true, force: true });
 
+  runScript(buildRootPagesScript);
   runScript(annotateTagGuidesScript);
   runScript(buildTagGuidesScript, ["--output-dir", docsTagGuidesDir]);
-  copyTextFile(docsIndexSourcePath, join(options.docsDir, "index.md"));
-  buildDocsIndexHtml(options.docsDir);
+  const docsIndexMarkdown = buildPublicIndexMarkdown();
+  writeTextFile(join(options.docsDir, "index.md"), docsIndexMarkdown);
+  buildDocsIndexHtml(options.docsDir, docsIndexMarkdown);
   syncTagGuideMarkdownFiles(docsTagGuidesDir);
   syncPublicAssets(options.docsDir);
 

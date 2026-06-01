@@ -70,4 +70,8 @@ http://localhost:8000/
 
 The site is intended to be published with GitHub Pages.
 
+`index.md` and `domain-glossary.md` are the source Markdown. `npm run build` regenerates the HTML and the mirrored `docs/` output, including `docs/index.md`, `docs/domain-glossary.md`, `docs/index.html`, `docs/domain-glossary.html`, and `docs/tag-guides/*.html`.
+
+Do not edit generated files directly. Fix the source Markdown or build scripts instead, then run `npm run build` and `npm run verify` before handing off.
+
 If generated HTML is not committed, publish through CI by building the site and deploying the generated output as a Pages artifact.

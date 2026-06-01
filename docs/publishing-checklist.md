@@ -32,6 +32,7 @@
 - [ ] `style.css` と `term-popup.js` の相対パスが GitHub Pages 配下でも解決される
 - [ ] 用語ポップアップ、または用語リンクの挙動が壊れていない
 - [ ] `docs/index.html` を build 後に直接開いた場合と GitHub Pages 経由で開いた場合のリンク先が一致している
+- [ ] `docs/index.md` や `docs/domain-glossary.md` は build output であり、原本ではない
 - [ ] 外部リンクが意図した公式ドキュメントを指している
 
 ## Readability

@@ -82,5 +82,5 @@ AIエージェントを使った開発経験がある人向けに、OpenAI / Ant
 ## Decisions
 
 - 対象時点は「2026年5月」で固定する
-- 案内文は `docs/index.md` の先頭に置く
+- 案内文は build 後の `docs/index.md` の先頭に置き、`docs/index.md` は build output として生成する
 - 各章の個別の日付は、必要になったら追加する

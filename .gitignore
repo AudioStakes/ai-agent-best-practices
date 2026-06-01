@@ -4,11 +4,15 @@ node_modules/
 /index.html
 /domain-glossary.html
 /README.html
-/tag-guides/*.html
+/tag-guides/
 /docs/index.html
+/docs/index.md
 /docs/domain-glossary.html
-/docs/tag-guides/*.html
-/ai-agent-best-practices-linked-glossary/*.html
+/docs/domain-glossary.md
+/docs/tag-guides/
+/docs/markdown-style-guide.md
+/knowledge/
+/ai-agent-best-practices-linked-glossary/
 
 # Local article archives
 singlefile/
@@ -23,3 +27,4 @@ knowledge/
 *.log
 npm-debug.log*
 .DS_Store
+test-results/
