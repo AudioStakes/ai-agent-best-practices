@@ -322,9 +322,7 @@ test("tag guide markdown can be regenerated into readable HTML", () => {
       expect(generated).toContain(
         '<p class="nav"><a href="../index.html">← Index</a><a href="../domain-glossary.html">用語集</a></p>',
       );
-      expect(generated).toContain('class="publication-note"');
-      expect(generated).toContain("対象時点:</strong> 2026年5月");
-      expect(generated).toContain('class="rating-guide"');
+      expect(generated).toContain('<article class="markdown-body">');
       expect(generated).toContain('class="term"');
       expect(generated).toContain('href="../domain-glossary.html#agent"');
       expect(generated).toContain('href="../site/styles/style.css?v=');
@@ -367,21 +365,15 @@ test("public dist assets package only copies static assets", () => {
       expect(readdirSync(path.join(distDir, "site"))).toContain("scripts");
       expect(
         readFileSync(path.join(distDir, "site/styles/style.css"), "utf8"),
-      ).toContain(".publication-note");
+      ).not.toContain(".markdown-alert");
       const distCss = readFileSync(
         path.join(distDir, "site/styles/style.css"),
         "utf8",
       );
-      expect(distCss).toContain(".markdown-body");
-      expect(distCss).toContain(".markdown-alert-note");
-      expect(distCss).toContain(".markdown-alert-warning");
-      expect(distCss).toContain(".markdown-alert-caution");
-      expect(
-        readFileSync(
-          path.join(distDir, "site/styles/semantic-overrides.css"),
-          "utf8",
-        ),
-      ).toContain("Deprecated");
+      expect(distCss).toContain(".term-popup");
+      expect(distCss).toContain(".glossary-table-wrap");
+      expect(distCss).not.toContain(".publication-note");
+      expect(distCss).not.toContain(".rating-guide");
       expect(
         readFileSync(path.join(distDir, "site/scripts/term-popup.js"), "utf8"),
       ).toContain('popup.id = "term-popup"');
@@ -692,7 +684,7 @@ test("semantic markers become semantic HTML blocks", () => {
     });
 });
 
-test("semantic blocks render as good, bad, or neutral colors", async ({
+test("semantic blocks still generate structure without bespoke CSS", async ({
   page,
 }) => {
   const server = await startServer();
@@ -715,12 +707,9 @@ test("semantic blocks render as good, bad, or neutral colors", async ({
       path.join(siteDir, "site/styles/style.css"),
       "utf8",
     );
-    expect(styleSheet).toContain(".risk-box,");
-    expect(styleSheet).toContain("background: var(--negative-bg);");
-    expect(styleSheet).toContain(".guideline-list");
-    expect(styleSheet).toContain("background: var(--good-bg);");
-    expect(styleSheet).toContain(".takeaway-box");
-    expect(styleSheet).toContain("background: var(--soft-strong);");
+    expect(styleSheet).not.toContain(".risk-box");
+    expect(styleSheet).not.toContain(".guideline-list");
+    expect(styleSheet).not.toContain(".takeaway-box");
 
     await expect(badBlock).toHaveCount(1);
     await expect(goodBlock).toHaveCount(1);
@@ -774,7 +763,8 @@ test("article pages keep the shared shell and readable headings", async ({
       await expect(page.locator('script[src*="term-popup.js?v="]')).toHaveCount(
         1,
       );
-      await expect(page.locator("p.rating-guide")).toBeVisible();
+      await expect(page.locator("article.markdown-body")).toBeVisible();
+      await expect(page.locator("p.rating-guide")).toHaveCount(0);
 
       const title = await page.title();
       expect(title).toContain(heading);

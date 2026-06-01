@@ -36,19 +36,18 @@ function runProcess(args) {
 test("site CSS uses GitHub Markdown styling instead of legacy article cards", async () => {
   const css = readFileSync(cssPath, "utf8");
 
-  expect(css).toContain(".markdown-body");
-  expect(css).toContain("--color-canvas-subtle: #f6f8fa");
-  expect(css).toContain(".markdown-alert-note");
-  expect(css).toContain(".markdown-alert-warning");
-  expect(css).toContain(".markdown-alert-caution");
-  expect(css).toContain(
-    ":where(.markdown-body, .markdown-document, .article) pre {",
-  );
-  expect(css).toContain("background-color: var(--color-canvas-subtle);");
-  expect(css).toContain("font-family: var(--mono-stack);");
+  expect(css).not.toContain(".markdown-body");
+  expect(css).not.toContain(".markdown-document");
+  expect(css).not.toContain(".markdown-alert");
+  expect(css).not.toContain(".publication-note");
+  expect(css).not.toContain(".rating-guide");
+  expect(css).not.toContain(".checklist");
+  expect(css).not.toContain(".semantic-list");
 
-  expect(css).not.toMatch(/(^|\n)\.article\s*\{[^}]*box-shadow:/s);
-  expect(css).not.toMatch(/(^|\n)pre\s*\{[^}]*background:\s*var\(--code-bg\)/s);
+  expect(css).toContain(".term-popup");
+  expect(css).toContain(".glossary-table-wrap");
+  expect(css).toContain("body.site-index :where(.article)");
+  expect(css).toContain("body.glossary-page .glossary-cards");
 
   const tempRoot = mkdtempSync(path.join(os.tmpdir(), "css-copy-"));
   const distDir = path.join(tempRoot, "dist");
@@ -61,10 +60,8 @@ test("site CSS uses GitHub Markdown styling instead of legacy article cards", as
       path.join(distDir, "site/styles/style.css"),
       "utf8",
     );
-    expect(distCss).toContain(".markdown-body");
-    expect(distCss).toContain(".markdown-alert-note");
-    expect(distCss).toContain(".markdown-alert-warning");
-    expect(distCss).toContain(".markdown-alert-caution");
+    expect(distCss).not.toContain(".semantic-overrides");
+    expect(distCss).not.toContain(".markdown-alert");
   } finally {
     rmSync(tempRoot, { recursive: true, force: true });
   }

@@ -95,13 +95,7 @@ test("GitHub Markdown style guide renders into the expected DOM", async () => {
   expect(alertCodeBlocks).toHaveLength(1);
   expect(
     readFileSync(path.join(repoRoot, "site/styles/style.css"), "utf8"),
-  ).toContain(".markdown-alert-note");
-  expect(
-    readFileSync(path.join(repoRoot, "site/styles/style.css"), "utf8"),
-  ).toContain(".markdown-alert-warning");
-  expect(
-    readFileSync(path.join(repoRoot, "site/styles/style.css"), "utf8"),
-  ).toContain(".markdown-alert-caution");
+  ).not.toContain(".markdown-alert");
   expect(document.querySelectorAll("pre code").length).toBeGreaterThan(0);
   expect(document.querySelector("table")).toBeTruthy();
   expect(document.querySelector('input[type="checkbox"]')).toBeTruthy();

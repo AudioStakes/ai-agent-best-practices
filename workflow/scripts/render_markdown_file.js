@@ -12,7 +12,6 @@ import {
 } from "node:path";
 import { fileURLToPath } from "node:url";
 import { JSDOM } from "jsdom";
-import { transformMarkdownAlerts } from "./markdown_alerts.js";
 import { extractTitle, markdownToHtml } from "./markdown_to_html.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -54,11 +53,10 @@ if (!existsSync(inputPath)) {
 const markdown = readFileSync(inputPath, "utf8");
 const renderedBody = await markdownToHtml(markdown);
 const renderedDom = new JSDOM(
-  `<main class="markdown-document markdown-body">${renderedBody}</main>`,
+  `<article class="markdown-body">${renderedBody}</article>`,
 );
-transformMarkdownAlerts(renderedDom.window.document);
-const renderedMain = renderedDom.window.document.querySelector("main");
-const renderedHtml = renderedMain?.innerHTML ?? renderedBody;
+const renderedArticle = renderedDom.window.document.querySelector("article");
+const renderedHtml = renderedArticle?.innerHTML ?? renderedBody;
 const title = extractTitle(
   markdown,
   basename(inputPath, extname(inputPath)) || "Document",
@@ -88,9 +86,9 @@ const html = `<!doctype html>
     <link rel="stylesheet" href="${escapeHtml(stylesheetHref)}">
   </head>
   <body>
-    <main class="markdown-document markdown-body">
+    <article class="markdown-body">
       ${renderedHtml}
-    </main>
+    </article>
   </body>
 </html>
 `;

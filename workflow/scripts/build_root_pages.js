@@ -4,7 +4,6 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { JSDOM } from "jsdom";
-import { transformMarkdownAlerts } from "./markdown_alerts.js";
 import { markdownToHtml } from "./markdown_to_html.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -30,13 +29,10 @@ function readMarkdown(filePath) {
 
 async function renderMarkdown(markdown) {
   const rendered = await markdownToHtml(markdown);
-  const dom = new JSDOM(
-    `<main class="markdown-body markdown-document">${rendered}</main>`,
-  );
+  const dom = new JSDOM(`<article class="markdown-body">${rendered}</article>`);
   const { document } = dom.window;
-  transformMarkdownAlerts(document);
 
-  return document.querySelector("main")?.innerHTML ?? rendered;
+  return document.querySelector("article")?.innerHTML ?? rendered;
 }
 
 async function splitGlossaryMarkdown(markdown) {
@@ -110,8 +106,10 @@ async function buildIndexHtml() {
   <link rel="stylesheet" href="site/styles/style.css?v=${stylesheetVersion}">
 </head>
 <body class="site-index">
-<main class="markdown-body markdown-document">
+<main>
+<article class="markdown-body">
 ${body}
+</article>
 </main>
 </body>
 </html>`;
@@ -154,55 +152,12 @@ async function buildGlossaryHtml() {
   <title>AI Agent Domain Glossary</title>
   <link rel="stylesheet" href="site/styles/github-markdown.css?v=${stylesheetVersion}" />
   <link rel="stylesheet" href="site/styles/style.css?v=${stylesheetVersion}" />
-  <style>
-/* Force glossary mobile layout: desktop keeps a table; mobile uses card/list items. */
-.glossary-cards { display: none; }
-.glossary-table-wrap { width: 100%; overflow-x: auto; }
-.glossary-table { display: table; width: 100%; table-layout: auto; border-collapse: collapse; }
-.glossary-table thead { display: table-header-group; }
-.glossary-table tbody { display: table-row-group; }
-.glossary-table tr { display: table-row; }
-.glossary-table th, .glossary-table td { display: table-cell; }
-
-@media (max-width: 720px) {
-  body.glossary-page .container { padding-left: 4px; padding-right: 4px; }
-  body.glossary-page .article { padding-left: 10px; padding-right: 10px; }
-  body.glossary-page .glossary-table-wrap { display: none !important; }
-  body.glossary-page .glossary-cards { display: grid !important; gap: 12px; margin-top: 18px; padding: 0; }
-  body.glossary-page .glossary-card {
-    display: block;
-    list-style: none;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    background: #fff;
-    padding: 12px 12px 12px 14px;
-  }
-  body.glossary-page .glossary-card-title {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    margin-bottom: 8px;
-  }
-  body.glossary-page .glossary-card-title .english {
-    font-weight: 800;
-    font-size: 1.05rem;
-    line-height: 1.35;
-  }
-  body.glossary-page .glossary-card-title .japanese {
-    font-weight: 700;
-    color: var(--muted);
-    line-height: 1.35;
-  }
-  body.glossary-page .glossary-card p { margin: 7px 0; }
-  body.glossary-page .glossary-label { font-weight: 700; color: var(--muted); }
-}
-  </style>
   <script src="site/scripts/term-popup.js?v=${popupScriptVersion}" defer></script>
 </head>
 <body class="glossary-page">
 <div class="container">
   <p class="nav"><a href="index.html">Index</a><a href="domain-glossary.html">用語集</a></p>
-  <article class="article markdown-body markdown-document">
+  <article class="markdown-body">
     ${headerHtml}
 
     <div class="glossary-table-wrap">
