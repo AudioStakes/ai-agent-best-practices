@@ -322,7 +322,9 @@ test("tag guide markdown can be regenerated into readable HTML", () => {
       expect(generated).toContain(
         '<p class="nav"><a href="../index.html">← Index</a><a href="../domain-glossary.html">用語集</a></p>',
       );
-      expect(generated).toContain('<article class="markdown-body">');
+      expect(generated).toContain(
+        '<article class="article markdown-body markdown-document">',
+      );
       expect(generated).toContain('class="term"');
       expect(generated).toContain('href="../domain-glossary.html#agent"');
       expect(generated).toContain('href="../site/styles/style.css?v=');
@@ -763,7 +765,9 @@ test("article pages keep the shared shell and readable headings", async ({
       await expect(page.locator('script[src*="term-popup.js?v="]')).toHaveCount(
         1,
       );
-      await expect(page.locator("article.markdown-body")).toBeVisible();
+      await expect(
+        page.locator("article.article.markdown-body.markdown-document"),
+      ).toBeVisible();
       await expect(page.locator("p.rating-guide")).toHaveCount(0);
 
       const title = await page.title();
@@ -843,6 +847,9 @@ test("domain glossary switches between desktop table and mobile cards", async ({
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto(`${server.url}domain-glossary.html#agent`);
 
+    await expect(
+      page.locator("article.article.markdown-body.markdown-document"),
+    ).toBeVisible();
     await expect(page.locator(".glossary-table-wrap")).toBeVisible();
     await expect(page.locator(".glossary-cards")).toBeHidden();
 

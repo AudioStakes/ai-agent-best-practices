@@ -86,7 +86,9 @@ body {
   margin-right: 12px;
 }
 
-body.site-index :where(.article) {
+body.site-index :where(.article),
+body.tag-guide-page :where(.article),
+body.glossary-page :where(.article) {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 16px;
@@ -280,7 +282,9 @@ body.site-index :where(.badge) {
     padding: 10px 6px 28px;
   }
 
-  body.site-index :where(.article) {
+  body.site-index :where(.article),
+  body.tag-guide-page :where(.article),
+  body.glossary-page :where(.article) {
     border-left: 0;
     border-right: 0;
     border-radius: 0;
@@ -353,7 +357,7 @@ body.site-index :where(.badge) {
     list-style: none;
     border: 1px solid var(--border);
     border-radius: 12px;
-    background: #fff;
+    background: var(--card);
     padding: 12px 12px 12px 14px;
   }
 

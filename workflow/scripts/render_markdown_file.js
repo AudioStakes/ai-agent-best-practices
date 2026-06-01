@@ -53,7 +53,7 @@ if (!existsSync(inputPath)) {
 const markdown = readFileSync(inputPath, "utf8");
 const renderedBody = await markdownToHtml(markdown);
 const renderedDom = new JSDOM(
-  `<article class="markdown-body">${renderedBody}</article>`,
+  `<article class="article markdown-body markdown-document">${renderedBody}</article>`,
 );
 const renderedArticle = renderedDom.window.document.querySelector("article");
 const renderedHtml = renderedArticle?.innerHTML ?? renderedBody;
@@ -86,7 +86,7 @@ const html = `<!doctype html>
     <link rel="stylesheet" href="${escapeHtml(stylesheetHref)}">
   </head>
   <body>
-    <article class="markdown-body">
+    <article class="article markdown-body markdown-document">
       ${renderedHtml}
     </article>
   </body>

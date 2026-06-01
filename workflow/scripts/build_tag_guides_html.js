@@ -675,7 +675,9 @@ async function buildPage(
 ) {
   const rendered = await markdownToHtml(markdown);
 
-  const dom = new JSDOM(`<article class="markdown-body">${rendered}</article>`);
+  const dom = new JSDOM(
+    `<article class="article markdown-body markdown-document">${rendered}</article>`,
+  );
   const { document } = dom.window;
   const article = document.querySelector("article");
 
@@ -699,7 +701,7 @@ async function buildPage(
   <script src="../site/scripts/term-popup.js?v=${popupScriptVersion}" defer></script>
 </head>
 <body class="tag-guide-page">
-<div class="container"><p class="nav"><a href="../index.html">← Index</a><a href="../domain-glossary.html">用語集</a></p><article class="markdown-body">${body}</article></div>
+<div class="container"><p class="nav"><a href="../index.html">← Index</a><a href="../domain-glossary.html">用語集</a></p><article class="article markdown-body markdown-document">${body}</article></div>
 </body>
 </html>
 `;

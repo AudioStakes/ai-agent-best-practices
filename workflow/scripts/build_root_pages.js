@@ -29,7 +29,9 @@ function readMarkdown(filePath) {
 
 async function renderMarkdown(markdown) {
   const rendered = await markdownToHtml(markdown);
-  const dom = new JSDOM(`<article class="markdown-body">${rendered}</article>`);
+  const dom = new JSDOM(
+    `<article class="article markdown-body markdown-document">${rendered}</article>`,
+  );
   const { document } = dom.window;
 
   return document.querySelector("article")?.innerHTML ?? rendered;
@@ -107,7 +109,7 @@ async function buildIndexHtml() {
 </head>
 <body class="site-index">
 <main>
-<article class="markdown-body">
+<article class="article markdown-body markdown-document">
 ${body}
 </article>
 </main>
@@ -157,7 +159,7 @@ async function buildGlossaryHtml() {
 <body class="glossary-page">
 <div class="container">
   <p class="nav"><a href="index.html">Index</a><a href="domain-glossary.html">用語集</a></p>
-  <article class="markdown-body">
+  <article class="article markdown-body markdown-document">
     ${headerHtml}
 
     <div class="glossary-table-wrap">

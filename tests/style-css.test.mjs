@@ -9,6 +9,10 @@ import { test, expect } from "@playwright/test";
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(testDir, "..");
 const cssPath = path.join(repoRoot, "site/styles/style.css");
+const githubMarkdownCssPath = path.join(
+  repoRoot,
+  "node_modules/github-markdown-css/github-markdown-light.css",
+);
 const packageDistAssetsScript = path.join(
   repoRoot,
   "workflow/scripts/package_dist_assets.js",
@@ -47,6 +51,8 @@ test("site CSS uses GitHub Markdown styling instead of legacy article cards", as
   expect(css).toContain(".term-popup");
   expect(css).toContain(".glossary-table-wrap");
   expect(css).toContain("body.site-index :where(.article)");
+  expect(css).toContain("body.tag-guide-page :where(.article)");
+  expect(css).toContain("body.glossary-page :where(.article)");
   expect(css).toContain("body.glossary-page .glossary-cards");
 
   const tempRoot = mkdtempSync(path.join(os.tmpdir(), "css-copy-"));
@@ -60,8 +66,17 @@ test("site CSS uses GitHub Markdown styling instead of legacy article cards", as
       path.join(distDir, "site/styles/style.css"),
       "utf8",
     );
+    const distMarkdownCss = readFileSync(
+      path.join(distDir, "site/styles/github-markdown.css"),
+      "utf8",
+    );
     expect(distCss).not.toContain(".semantic-overrides");
     expect(distCss).not.toContain(".markdown-alert");
+    expect(distMarkdownCss).not.toContain("prefers-color-scheme: dark");
+    expect(distMarkdownCss).toContain(".markdown-body");
+    expect(readFileSync(githubMarkdownCssPath, "utf8")).not.toContain(
+      "prefers-color-scheme: dark",
+    );
   } finally {
     rmSync(tempRoot, { recursive: true, force: true });
   }
