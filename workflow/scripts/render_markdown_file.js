@@ -12,8 +12,8 @@ import {
 } from "node:path";
 import { fileURLToPath } from "node:url";
 import { JSDOM } from "jsdom";
-import { marked } from "marked";
 import { transformMarkdownAlerts } from "./markdown_alerts.js";
+import { extractTitle, markdownToHtml } from "./markdown_to_html.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
@@ -27,17 +27,6 @@ Notes:
   - OUTPUT.html will be created along with any missing parent directories.
   - The script renders the Markdown as a standalone HTML document.`);
   process.exit(0);
-}
-
-function extractTitle(markdown, fallback) {
-  for (const line of markdown.split(/\r?\n/)) {
-    const match = line.match(/^#\s+(.+?)\s*$/);
-    if (match) {
-      return match[1].trim();
-    }
-  }
-
-  return fallback;
 }
 
 function escapeHtml(value) {
@@ -63,10 +52,7 @@ if (!existsSync(inputPath)) {
 }
 
 const markdown = readFileSync(inputPath, "utf8");
-const renderedBody = marked.parse(markdown, {
-  gfm: true,
-  breaks: false,
-});
+const renderedBody = await markdownToHtml(markdown);
 const renderedDom = new JSDOM(
   `<main class="markdown-document markdown-body">${renderedBody}</main>`,
 );
@@ -77,6 +63,12 @@ const title = extractTitle(
   markdown,
   basename(inputPath, extname(inputPath)) || "Document",
 );
+const markdownCssHref = relative(
+  dirname(outputPath),
+  join(repoRoot, "site/styles/github-markdown.css"),
+)
+  .split(sep)
+  .join("/");
 const stylesheetHref = relative(
   dirname(outputPath),
   join(repoRoot, "site/styles/style.css"),
@@ -92,6 +84,7 @@ const html = `<!doctype html>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>${escapeHtml(title)}</title>
+    <link rel="stylesheet" href="${escapeHtml(markdownCssHref)}">
     <link rel="stylesheet" href="${escapeHtml(stylesheetHref)}">
   </head>
   <body>

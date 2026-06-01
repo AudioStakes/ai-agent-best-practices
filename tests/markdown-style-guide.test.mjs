@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { test, expect } from "@playwright/test";
 import { JSDOM } from "jsdom";
-import { marked } from "marked";
+import { markdownToHtml } from "../workflow/scripts/markdown_to_html.js";
 
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(testDir, "..");
@@ -13,12 +13,9 @@ const guidePath = path.join(
 );
 const guideDirUrl = pathToFileURL(path.dirname(guidePath) + path.sep);
 
-function renderGuide() {
+async function renderGuide() {
   const markdown = readFileSync(guidePath, "utf8");
-  const html = marked.parse(markdown, {
-    gfm: true,
-    breaks: false,
-  });
+  const html = await markdownToHtml(markdown);
 
   return new JSDOM(html).window.document;
 }
@@ -44,10 +41,10 @@ function getLocalHrefPath(href) {
   return fileURLToPath(url);
 }
 
-test("GitHub Markdown style guide renders into the expected DOM", () => {
+test("GitHub Markdown style guide renders into the expected DOM", async () => {
   expect(existsSync(guidePath)).toBeTruthy();
 
-  const document = renderGuide();
+  const document = await renderGuide();
 
   const h1s = [...document.querySelectorAll("h1")];
   expect(h1s).toHaveLength(1);
@@ -110,8 +107,8 @@ test("GitHub Markdown style guide renders into the expected DOM", () => {
   expect(document.querySelector('input[type="checkbox"]')).toBeTruthy();
 });
 
-test("GitHub Markdown style guide keeps fenced code language classes", () => {
-  const document = renderGuide();
+test("GitHub Markdown style guide keeps fenced code language classes", async () => {
+  const document = await renderGuide();
 
   const codeClassNames = [...document.querySelectorAll("pre code")]
     .map((code) => code.getAttribute("class") ?? "")

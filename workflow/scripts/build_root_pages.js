@@ -4,8 +4,8 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { JSDOM } from "jsdom";
-import { marked } from "marked";
 import { transformMarkdownAlerts } from "./markdown_alerts.js";
+import { markdownToHtml } from "./markdown_to_html.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
@@ -28,11 +28,8 @@ function readMarkdown(filePath) {
   return readFileSync(filePath, "utf8");
 }
 
-function renderMarkdown(markdown) {
-  const rendered = marked.parse(markdown, {
-    gfm: true,
-    breaks: false,
-  });
+async function renderMarkdown(markdown) {
+  const rendered = await markdownToHtml(markdown);
   const dom = new JSDOM(
     `<main class="markdown-body markdown-document">${rendered}</main>`,
   );
@@ -42,7 +39,7 @@ function renderMarkdown(markdown) {
   return document.querySelector("main")?.innerHTML ?? rendered;
 }
 
-function splitGlossaryMarkdown(markdown) {
+async function splitGlossaryMarkdown(markdown) {
   const lines = markdown.split(/\r?\n/);
   const headerLines = [];
   const tableLines = [];
@@ -61,7 +58,7 @@ function splitGlossaryMarkdown(markdown) {
   }
 
   return {
-    headerHtml: renderMarkdown(headerLines.join("\n")),
+    headerHtml: await renderMarkdown(headerLines.join("\n")),
     tableLines,
   };
 }
@@ -99,9 +96,9 @@ function parseGlossaryEntries(tableLines) {
   return entries;
 }
 
-function buildIndexHtml() {
+async function buildIndexHtml() {
   const markdown = readMarkdown(indexMarkdownPath);
-  const body = renderMarkdown(markdown);
+  const body = await renderMarkdown(markdown);
 
   return `<!doctype html>
 <html lang="ja">
@@ -109,6 +106,7 @@ function buildIndexHtml() {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AI Agent Best Practices Linked Glossary</title>
+  <link rel="stylesheet" href="site/styles/github-markdown.css?v=${stylesheetVersion}">
   <link rel="stylesheet" href="site/styles/style.css?v=${stylesheetVersion}">
 </head>
 <body class="site-index">
@@ -119,9 +117,9 @@ ${body}
 </html>`;
 }
 
-function buildGlossaryHtml() {
+async function buildGlossaryHtml() {
   const markdown = readMarkdown(glossaryMarkdownPath);
-  const { headerHtml, tableLines } = splitGlossaryMarkdown(markdown);
+  const { headerHtml, tableLines } = await splitGlossaryMarkdown(markdown);
   const entries = parseGlossaryEntries(tableLines);
 
   const tableRows = entries
@@ -154,6 +152,7 @@ function buildGlossaryHtml() {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Agent Domain Glossary</title>
+  <link rel="stylesheet" href="site/styles/github-markdown.css?v=${stylesheetVersion}" />
   <link rel="stylesheet" href="site/styles/style.css?v=${stylesheetVersion}" />
   <style>
 /* Force glossary mobile layout: desktop keeps a table; mobile uses card/list items. */
@@ -226,12 +225,12 @@ ${cards}
 </html>`;
 }
 
-function main() {
+async function main() {
   mkdirSync(distRoot, { recursive: true });
-  writeFileSync(join(distRoot, "index.html"), buildIndexHtml(), "utf8");
+  writeFileSync(join(distRoot, "index.html"), await buildIndexHtml(), "utf8");
   writeFileSync(
     join(distRoot, "domain-glossary.html"),
-    buildGlossaryHtml(),
+    await buildGlossaryHtml(),
     "utf8",
   );
 

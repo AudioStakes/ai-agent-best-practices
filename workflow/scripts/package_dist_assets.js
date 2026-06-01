@@ -60,6 +60,10 @@ function copySiteAssets(distDir) {
     join(distDir, "site/styles/style.css"),
   );
   copyTextFile(
+    join(repoRoot, "node_modules/github-markdown-css/github-markdown.css"),
+    join(distDir, "site/styles/github-markdown.css"),
+  );
+  copyTextFile(
     join(repoRoot, "site/styles/semantic-overrides.css"),
     join(distDir, "site/styles/semantic-overrides.css"),
   );

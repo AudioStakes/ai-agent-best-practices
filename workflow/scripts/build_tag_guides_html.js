@@ -10,8 +10,8 @@ import {
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { JSDOM } from "jsdom";
-import { marked } from "marked";
 import { transformMarkdownAlerts } from "./markdown_alerts.js";
+import { markdownToHtml } from "./markdown_to_html.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
@@ -409,23 +409,18 @@ function renderTakeaway(document, lines) {
   return box;
 }
 
-function renderDefinition(document, text) {
+async function renderDefinition(document, text) {
   const box = document.createElement("div");
   box.className = "definition-box";
   const dl = document.createElement("dl");
   const lines = text.split(/\r?\n/);
   let index = 0;
 
-  const flushSection = (title, sectionLines) => {
+  const flushSection = async (title, sectionLines) => {
     const dt = document.createElement("dt");
     dt.textContent = title;
     const dd = document.createElement("dd");
-    const html = marked
-      .parse(sectionLines.join("\n"), {
-        gfm: true,
-        breaks: false,
-      })
-      .trim();
+    const html = (await markdownToHtml(sectionLines.join("\n"))).trim();
     dd.innerHTML = html || "";
     dl.append(dt, dd);
   };
@@ -450,7 +445,7 @@ function renderDefinition(document, text) {
         sectionLines.push(nextLine);
         index += 1;
       }
-      flushSection(title, sectionLines);
+      await flushSection(title, sectionLines);
       continue;
     }
 
@@ -474,7 +469,7 @@ function renderDefinition(document, text) {
         sectionLines.push(nextLine);
         index += 1;
       }
-      flushSection(title, sectionLines);
+      await flushSection(title, sectionLines);
       continue;
     }
 
@@ -492,7 +487,7 @@ function renderDefinition(document, text) {
       sectionLines.push(nextLine);
       index += 1;
     }
-    flushSection(title, sectionLines);
+    await flushSection(title, sectionLines);
   }
 
   if (dl.childNodes.length > 0) {
@@ -634,7 +629,7 @@ function renderRiskBox(document, text) {
   return renderListFromLines(document, "ul", "risk-box", text);
 }
 
-function transformMarkedFences(document) {
+async function transformMarkedFences(document) {
   const codeBlocks = Array.from(
     document.querySelectorAll('pre > code[class*="language-"]'),
   );
@@ -683,7 +678,7 @@ function transformMarkedFences(document) {
     } else if (tags.has("guideline")) {
       replacement = renderGuidelineList(document, text);
     } else if (tags.has("definition")) {
-      replacement = renderDefinition(document, text);
+      replacement = await renderDefinition(document, text);
     } else if (tags.has("structured")) {
       replacement = renderStructuredList(document, lines);
     } else if (
@@ -703,16 +698,13 @@ function transformMarkedFences(document) {
   }
 }
 
-function buildPage(
+async function buildPage(
   markdown,
   sourceFileName,
   glossaryDescriptions,
   glossaryTerms,
 ) {
-  const rendered = marked.parse(markdown, {
-    gfm: true,
-    breaks: false,
-  });
+  const rendered = await markdownToHtml(markdown);
 
   const dom = new JSDOM(
     `<article class="article markdown-body markdown-document">${rendered}</article>`,
@@ -721,7 +713,7 @@ function buildPage(
   const article = document.querySelector("article");
 
   rewriteLinks(document, glossaryDescriptions);
-  transformMarkedFences(document);
+  await transformMarkedFences(document);
   transformMarkdownAlerts(document);
   annotateHeadings(document);
   injectPublicationNote(document);
@@ -738,6 +730,7 @@ function buildPage(
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${escapeHtml(title)}</title>
+  <link rel="stylesheet" href="../site/styles/github-markdown.css?v=${stylesheetVersion}" />
   <link rel="stylesheet" href="../site/styles/style.css?v=${stylesheetVersion}" />
   <script src="../site/scripts/term-popup.js?v=${popupScriptVersion}" defer></script>
 </head>
@@ -748,7 +741,7 @@ function buildPage(
 `;
 }
 
-function main() {
+async function main() {
   const options = parseArgs(process.argv.slice(2));
   if (!existsSync(options.inputDir)) {
     throw new Error(`Input directory not found: ${options.inputDir}`);
@@ -771,7 +764,7 @@ function main() {
       fileName.replace(/\.md$/i, ".html"),
     );
     const markdown = readFileSync(inputPath, "utf8");
-    const html = buildPage(
+    const html = await buildPage(
       markdown,
       fileName,
       glossaryDescriptions,
