@@ -7,6 +7,7 @@
 - `sources/` は一次情報の URL リストや capture metadata を置く場所です。
 - `archive/` は Web から保存・抽出した中間成果物を置く場所です。
 - `content/` は人間または ChatGPT が編集する原本 Markdown を置く場所です。
+- `notes/` は ChatGPT の読書メモや synthesis draft を置く場所です。
 - `site/` はサイト表示に必要な CSS と JavaScript を置く場所です。
 - `dist/` は生成 HTML と公開可能な静的資産を置く場所です。
 
@@ -90,6 +91,11 @@ npm run build:tag-guides
 ```
 
 このコマンドは、Markdown をそのまま HTML に変換します。semantic fence の整形をしたい場合は `npm run fix:tag-guides`、整形が必要か確認したい場合は `npm run check:tag-guides` を使ってください。`tone-*` は色のヒント、`.process` や `.definition` などの suffix は構造のヒントとして扱われます。
+
+## Source Safety
+
+`npm run build` と `npm run verify` は、`content/` 配下の原本 Markdown を変更しません。
+semantic fence の整形が必要か確認する場合は `npm run check:tag-guides` を使い、原本を更新したい場合だけ `npm run fix:tag-guides` を使ってください。
 
 ## 公開用資産を `dist/` にまとめる
 
