@@ -11,14 +11,15 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { JSDOM } from "jsdom";
 import { marked } from "marked";
+import { transformMarkdownAlerts } from "./markdown_alerts.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
-const defaultInputDir = join(repoRoot, "knowledge_templated/tag-guides");
-const defaultOutputDir = join(repoRoot, "tag-guides");
-const defaultGlossaryPath = join(repoRoot, "domain-glossary.md");
-const stylesheetVersion = "20260531-semantic-fences-1";
-const popupScriptVersion = "20260531-semantic-fences-1";
+const defaultInputDir = join(repoRoot, "content/tag-guides");
+const defaultOutputDir = join(repoRoot, "dist/tag-guides");
+const defaultGlossaryPath = join(repoRoot, "content/domain-glossary.md");
+const stylesheetVersion = "20260601-site-shell-3";
+const popupScriptVersion = "20260601-site-shell-3";
 
 function parseArgs(argv) {
   const options = {
@@ -302,6 +303,23 @@ function injectRatingGuide(document) {
   guide.textContent =
     "★は重要度を表します。★★★★★ほど、設計・運用時に優先して確認すべき項目です。";
   firstHeading.insertAdjacentElement("afterend", guide);
+}
+
+function injectPublicationNote(document) {
+  const firstHeading = document.querySelector("h1");
+  if (!firstHeading) {
+    return;
+  }
+
+  const note = document.createElement("aside");
+  note.className = "publication-note";
+  note.innerHTML = `
+    <p><strong>対象時点:</strong> 2026年5月</p>
+    <p>最新の仕様や推奨事項は、各公式ドキュメントを確認してください。</p>
+    <p>参照元と元記事への導線は、本文末の「対象記事」と「参考文献」を参照してください。</p>
+  `;
+
+  firstHeading.insertAdjacentElement("afterend", note);
 }
 
 function getFenceToken(codeBlock) {
@@ -696,13 +714,17 @@ function buildPage(
     breaks: false,
   });
 
-  const dom = new JSDOM(`<article class="article">${rendered}</article>`);
+  const dom = new JSDOM(
+    `<article class="article markdown-body markdown-document">${rendered}</article>`,
+  );
   const { document } = dom.window;
   const article = document.querySelector("article");
 
   rewriteLinks(document, glossaryDescriptions);
   transformMarkedFences(document);
+  transformMarkdownAlerts(document);
   annotateHeadings(document);
+  injectPublicationNote(document);
   injectRatingGuide(document);
   linkGlossaryTerms(document, article, glossaryTerms);
 
@@ -716,11 +738,11 @@ function buildPage(
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${escapeHtml(title)}</title>
-  <link rel="stylesheet" href="../style.css?v=${stylesheetVersion}" />
-  <script src="../term-popup.js?v=${popupScriptVersion}" defer></script>
+  <link rel="stylesheet" href="../site/styles/style.css?v=${stylesheetVersion}" />
+  <script src="../site/scripts/term-popup.js?v=${popupScriptVersion}" defer></script>
 </head>
-<body>
-<div class="container"><p class="nav"><a href="../index.html">← Index</a><a href="../domain-glossary.html">用語集</a></p><article class="article">${body}</article></div>
+<body class="tag-guide-page">
+<div class="container"><p class="nav"><a href="../index.html">← Index</a><a href="../domain-glossary.html">用語集</a></p><article class="article markdown-body markdown-document">${body}</article></div>
 </body>
 </html>
 `;

@@ -25,9 +25,9 @@ const overwrite = args.has("--overwrite");
 const pendingOnly = !args.has("--all");
 const saveImages = !args.has("--no-images");
 
-const csvPath = join(repoRoot, "articles.csv");
-const contentRoot = join(repoRoot, "content");
-const assetsRoot = join(repoRoot, "assets");
+const csvPath = join(repoRoot, "sources/articles.csv");
+const contentRoot = join(repoRoot, "archive/extracted");
+const assetsRoot = join(repoRoot, "archive/assets");
 const defaultTimeoutSeconds = 60;
 
 function usage() {
@@ -48,8 +48,8 @@ Examples:
   node workflow/scripts/save_content.js --no-images
 
 Output:
-  content/<source>/<id>.md
-  assets/<source>/<id>/image-001.<ext>
+  archive/extracted/<source>/<id>.md
+  archive/assets/<source>/<id>/image-001.<ext>
 `);
 }
 
@@ -338,7 +338,7 @@ async function saveArticle(row) {
   const outputDir = join(contentRoot, sourceDir);
   const outputPath = join(outputDir, `${id}.md`);
   const assetsDir = join(assetsRoot, sourceDir, id);
-  const relativeOutputPath = `content/${sourceDir}/${id}.md`;
+  const relativeOutputPath = `archive/extracted/${sourceDir}/${id}.md`;
 
   const { process, reason } = shouldProcessContent(outputPath);
   if (!process && !pendingOnly) {

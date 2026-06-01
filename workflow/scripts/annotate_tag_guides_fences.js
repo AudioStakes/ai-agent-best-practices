@@ -6,11 +6,12 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
-const defaultInputDir = join(repoRoot, "knowledge_templated/tag-guides");
+const defaultInputDir = join(repoRoot, "content/tag-guides");
 
 function parseArgs(argv) {
   const options = {
     inputDir: defaultInputDir,
+    check: false,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -20,6 +21,8 @@ function parseArgs(argv) {
     if (arg === "--input-dir" && next) {
       options.inputDir = resolve(next);
       index += 1;
+    } else if (arg === "--check") {
+      options.check = true;
     } else if (arg === "--help" || arg === "-h") {
       printHelpAndExit();
     } else {
@@ -34,10 +37,11 @@ function parseArgs(argv) {
 
 function printHelpAndExit() {
   console.log(`Usage:
-  node workflow/scripts/annotate_tag_guides_fences.js [--input-dir DIR]
+  node workflow/scripts/annotate_tag_guides_fences.js [--input-dir DIR] [--check]
 
 Defaults:
-  --input-dir   ${defaultInputDir}`);
+  --input-dir   ${defaultInputDir}
+  --check       Validate only; exit 1 if normalization is needed`);
   process.exit(0);
 }
 
@@ -266,15 +270,30 @@ function main() {
     .map((entry) => entry.name)
     .sort((a, b) => a.localeCompare(b));
 
+  const mismatchedFiles = [];
+
   for (const fileName of markdownFiles) {
     const inputPath = join(options.inputDir, fileName);
     const original = readFileSync(inputPath, "utf8");
     const annotated = annotateMarkdown(original);
 
     if (annotated !== original) {
-      writeFileSync(inputPath, annotated, "utf8");
-      console.log(`annotated: ${inputPath}`);
+      if (options.check) {
+        mismatchedFiles.push(inputPath);
+      } else {
+        writeFileSync(inputPath, annotated, "utf8");
+        console.log(`annotated: ${inputPath}`);
+      }
     }
+  }
+
+  if (options.check && mismatchedFiles.length > 0) {
+    console.error("Tag guide semantic fences are not normalized:");
+    for (const filePath of mismatchedFiles) {
+      console.error(`- ${filePath}`);
+    }
+    console.error("Run `npm run fix:tag-guides` to update them.");
+    process.exitCode = 1;
   }
 }
 

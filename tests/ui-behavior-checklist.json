@@ -1,7 +1,7 @@
 {
   "name": "AI Agent Best Practices UI behavior checklist",
   "version": "2026-05-31",
-  "target": "repo-root",
+  "target": "dist",
   "categories": [
     {
       "id": "serve_cache",
@@ -42,7 +42,7 @@
         "index.html から domain-glossary.html へ移動できる",
         "各記事ページから index.html へ戻れる",
         "各記事ページから domain-glossary.html へ移動できる",
-        "Markdown原文へのリンクが壊れていない"
+        "Markdown原文へのリンクがある場合、local .md ではなく GitHub source か HTML 版になっている"
       ]
     },
     {
@@ -55,7 +55,7 @@
         "ポップアップとコードブロックの背景色が明確に区別できる",
         "ポップアップは本文やコードブロックより前面に表示される",
         "ポップアップ外クリック/タップまたはEscで閉じる",
-        "用語リンクの遷移先は用語集の該当アンカーである"
+        "用語リンクの遷移先は domain-glossary.html の該当アンカーである"
       ]
     },
     {
@@ -105,7 +105,7 @@
       "id": "source_articles",
       "title": "対象記事・出典リンク",
       "checks": [
-        "対象記事タイトルは articles.csv のタイトルを使っている",
+        "対象記事タイトルは sources/articles.csv のタイトルを使っている",
         "対象記事タイトルにはドメイン用語置換が適用されていない",
         "対象記事タイトルは該当URLへのリンクである",
         "出典リンクが壊れていない"

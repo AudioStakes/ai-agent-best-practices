@@ -7,8 +7,8 @@ import { parse } from "csv-parse/sync";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
-const csvPath = join(repoRoot, "articles.csv");
-const singlefileRoot = join(repoRoot, "singlefile");
+const csvPath = join(repoRoot, "sources/articles.csv");
+const singlefileRoot = join(repoRoot, "archive/singlefile");
 const indexPath = join(singlefileRoot, "index.html");
 
 function normalizeSource(source) {
@@ -49,7 +49,7 @@ function resolveSinglefilePath(row) {
   }
 
   const sourceDir = normalizeSource(row.source);
-  return `singlefile/${sourceDir}/${row.id}.html`;
+  return `archive/singlefile/${sourceDir}/${row.id}.html`;
 }
 
 function pathFromIndex(relativePathFromRepoRoot) {
@@ -158,7 +158,7 @@ function buildIndex(rows) {
     </div>
   </header>
   <main id="content">${sections}</main>
-  <footer>Open this file locally: singlefile/index.html</footer>
+  <footer>Open this file locally: archive/singlefile/index.html</footer>
   <script>
     const input = document.getElementById('filter');
     const articles = [...document.querySelectorAll('.article')];

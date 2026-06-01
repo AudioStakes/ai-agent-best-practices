@@ -1,15 +1,31 @@
 node_modules/
 
-# Local article archives
-singlefile/
-html/
-raw/
-markdown/
-content/
-assets/
-knowledge/
+# Generated site output
+/dist/
+/docs/
+/tag-guides/
+/index.html
+/domain-glossary.html
+/README.html
+
+# Captured and extracted source archives
+/archive/singlefile/
+/archive/extracted/
+/archive/assets/
+
+# Legacy generated or archive paths
+/singlefile/
+/html/
+/raw/
+/markdown/
+/assets/
+/knowledge/
+/knowledge_templated/
+/domain-glossary/
+/ai-agent-best-practices-linked-glossary/
 
 # Logs
 *.log
 npm-debug.log*
 .DS_Store
+test-results/

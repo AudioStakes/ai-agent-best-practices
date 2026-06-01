@@ -8,8 +8,17 @@ set -euo pipefail
 
 PORT="${1:-8000}"
 HOST="${2:-0.0.0.0}"
+ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SITE_DIR="${ROOT_DIR}/dist"
+if [ ! -d "${SITE_DIR}" ]; then
+  echo "dist/ was not found."
+  echo "Run \`npm run build\` before \`./serve.sh\`."
+  exit 1
+fi
 
-python3 - <<PY
+cd "${SITE_DIR}"
+
+exec python3 - <<PY
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 host = "${HOST}"

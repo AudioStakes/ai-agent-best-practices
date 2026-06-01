@@ -1,0 +1,73 @@
+# AI Agent Best Practices Linked Glossary
+
+AIエージェント関連記事をタグ別に統合し、ドメイン用語を用語集へリンクしたローカル閲覧用ナレッジベースです。
+
+<div class="container">
+  <div class="badges">
+    <a class="badge" href="domain-glossary.html">用語集を見る</a>
+    <a class="badge" href="tag-guides/11-markdown-code-block-gallery.html">コードブロック見本</a>
+  </div>
+
+  <h2>Tag Guides</h2>
+  <p class="small">各項目は、読みやすいHTML版にリンクしています。</p>
+
+  <ul class="article-list">
+    <li>
+      <strong><a href="tag-guides/01-agent-design.html">01. エージェント設計系</a></strong>
+      <div class="meta">tag: <code>agent_design</code></div>
+      <div class="badges"><a class="badge" href="tag-guides/01-agent-design.html">ブラウザで読む</a></div>
+    </li>
+    <li>
+      <strong><a href="tag-guides/02-workflow-design.html">02. ワークフロー設計系</a></strong>
+      <div class="meta">tag: <code>workflow_design</code></div>
+      <div class="badges"><a class="badge" href="tag-guides/02-workflow-design.html">ブラウザで読む</a></div>
+    </li>
+    <li>
+      <strong><a href="tag-guides/03-tool-use.html">03. ツール利用系</a></strong>
+      <div class="meta">tag: <code>tool_use</code></div>
+      <div class="badges"><a class="badge" href="tag-guides/03-tool-use.html">ブラウザで読む</a></div>
+    </li>
+    <li>
+      <strong><a href="tag-guides/04-context-engineering.html">04. コンテキスト設計系</a></strong>
+      <div class="meta">tag: <code>context_engineering</code></div>
+      <div class="badges"><a class="badge" href="tag-guides/04-context-engineering.html">ブラウザで読む</a></div>
+    </li>
+    <li>
+      <strong><a href="tag-guides/05-evals.html">05. 評価系</a></strong>
+      <div class="meta">tag: <code>evals</code></div>
+      <div class="badges"><a class="badge" href="tag-guides/05-evals.html">ブラウザで読む</a></div>
+    </li>
+    <li>
+      <strong><a href="tag-guides/06-coding-agents.html">06. コーディングエージェント系</a></strong>
+      <div class="meta">tag: <code>coding_agents</code></div>
+      <div class="badges"><a class="badge" href="tag-guides/06-coding-agents.html">ブラウザで読む</a></div>
+    </li>
+    <li>
+      <strong><a href="tag-guides/07-production-operations.html">07. 本番運用系</a></strong>
+      <div class="meta">tag: <code>production_operations</code></div>
+      <div class="badges"><a class="badge" href="tag-guides/07-production-operations.html">ブラウザで読む</a></div>
+    </li>
+    <li>
+      <strong><a href="tag-guides/08-security-sandboxing.html">08. セキュリティ・サンドボックス系</a></strong>
+      <div class="meta">tag: <code>security_sandboxing</code></div>
+      <div class="badges"><a class="badge" href="tag-guides/08-security-sandboxing.html">ブラウザで読む</a></div>
+    </li>
+    <li>
+      <strong><a href="tag-guides/09-multi-agent.html">09. マルチエージェント系</a></strong>
+      <div class="meta">tag: <code>multi_agent</code></div>
+      <div class="badges"><a class="badge" href="tag-guides/09-multi-agent.html">ブラウザで読む</a></div>
+    </li>
+    <li>
+      <strong><a href="tag-guides/10-governance.html">10. ガバナンス系</a></strong>
+      <div class="meta">tag: <code>governance</code></div>
+      <div class="badges"><a class="badge" href="tag-guides/10-governance.html">ブラウザで読む</a></div>
+    </li>
+  </ul>
+
+  <section class="article" style="margin-top: 28px;">
+    <h2>ローカルで起動する</h2>
+    <p>先に <code>npm run build</code> を実行し、その後 <code>./serve.sh</code> で <code>dist/</code> を配信してください。</p>
+    <pre><code>npm run build
+./serve.sh</code></pre>
+  </section>
+</div>

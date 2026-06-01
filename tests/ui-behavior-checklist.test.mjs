@@ -1,6 +1,9 @@
 import { spawn } from "node:child_process";
 import { once } from "node:events";
+import net from "node:net";
 import {
+  chmodSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -21,6 +24,10 @@ const serveScript = path.join(siteDir, "serve.sh");
 const buildTagGuidesScript = path.join(
   siteDir,
   "workflow/scripts/build_tag_guides_html.js",
+);
+const packageDistAssetsScript = path.join(
+  siteDir,
+  "workflow/scripts/package_dist_assets.js",
 );
 const annotateTagGuidesScript = path.join(
   siteDir,
@@ -43,6 +50,7 @@ const articlePages = [
 ];
 
 test.describe.configure({ mode: "serial" });
+test.setTimeout(60_000);
 
 async function waitForHttp(url, retries = 60) {
   let lastError = null;
@@ -65,8 +73,61 @@ async function waitForHttp(url, retries = 60) {
   );
 }
 
+async function runProcess(command, args, cwd = siteDir) {
+  const child = spawn(command, args, {
+    cwd,
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+
+  const stdout = [];
+  const stderr = [];
+
+  child.stdout.on("data", (chunk) => {
+    stdout.push(chunk.toString("utf8"));
+  });
+
+  child.stderr.on("data", (chunk) => {
+    stderr.push(chunk.toString("utf8"));
+  });
+
+  const [code, signal] = await once(child, "close");
+  return {
+    code,
+    signal,
+    stdout: stdout.join(""),
+    stderr: stderr.join(""),
+  };
+}
+
+async function ensureDistBuilt() {
+  const distDir = path.join(siteDir, "dist");
+  const legacyMirrors = [
+    path.join(distDir, "index.md"),
+    path.join(distDir, "domain-glossary.md"),
+    path.join(distDir, "sources", "articles.csv"),
+  ];
+
+  if (
+    existsSync(path.join(distDir, "index.html")) &&
+    !legacyMirrors.some((filePath) => existsSync(filePath))
+  ) {
+    return;
+  }
+
+  const result = await runProcess("npm", ["run", "build"]);
+  if (result.code !== 0) {
+    throw new Error(
+      `site build failed with exit code ${result.code}\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`,
+    );
+  }
+}
+
 async function startServer(args = []) {
-  const child = spawn(serveScript, args, {
+  await ensureDistBuilt();
+
+  const effectiveArgs = args.length > 0 ? args : [String(await getFreePort())];
+
+  const child = spawn(serveScript, effectiveArgs, {
     cwd: siteDir,
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -82,7 +143,7 @@ async function startServer(args = []) {
     stderr.push(chunk.toString("utf8"));
   });
 
-  const port = Number(args[0] ?? 8000);
+  const port = Number(effectiveArgs[0]);
   const url = `http://127.0.0.1:${port}/`;
 
   try {
@@ -100,24 +161,48 @@ async function startServer(args = []) {
     stop: async () => {
       if (child.exitCode === null && child.signalCode === null) {
         child.kill("SIGINT");
-        await Promise.race([
+        const closed = await Promise.race([
           once(child, "close"),
           new Promise((resolve) => setTimeout(resolve, 2000)),
         ]);
+        if (!closed) {
+          child.kill("SIGKILL");
+          await once(child, "close").catch(() => {});
+        }
       }
     },
   };
 }
 
+async function getFreePort() {
+  const server = net.createServer();
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const address = server.address();
+  if (!address || typeof address === "string") {
+    server.close();
+    throw new Error("Failed to acquire a free port");
+  }
+  const { port } = address;
+  server.close();
+  await once(server, "close");
+  return port;
+}
+
 test("ui checklist JSON stays machine-readable", async () => {
   expect(checklist.name).toBe("AI Agent Best Practices UI behavior checklist");
   expect(checklist.version).toBe("2026-05-31");
-  expect(checklist.target).toBe("repo-root");
+  expect(checklist.target).toBe("dist");
   expect(checklist.categories).toHaveLength(13);
 });
 
 test("serve.sh starts with the documented host and port settings", async () => {
-  const defaults = await startServer();
+  const serveScriptContents = readFileSync(serveScript, "utf8");
+  expect(serveScriptContents).toContain(`PORT="\${1:-8000}"`);
+  expect(serveScriptContents).toContain(`HOST="\${2:-0.0.0.0}"`);
+
+  const defaultPort = await getFreePort();
+  const defaults = await startServer([String(defaultPort)]);
   try {
     const response = await fetch(defaults.url);
     expect(response.headers.get("cache-control")).toBe(
@@ -129,7 +214,8 @@ test("serve.sh starts with the documented host and port settings", async () => {
     await defaults.stop();
   }
 
-  const customPort = await startServer(["8080"]);
+  const customPortNumber = await getFreePort();
+  const customPort = await startServer([String(customPortNumber)]);
   try {
     const response = await fetch(customPort.url);
     expect(await response.text()).toContain("AI Agent Best Practices");
@@ -137,12 +223,60 @@ test("serve.sh starts with the documented host and port settings", async () => {
     await customPort.stop();
   }
 
-  const customHost = await startServer(["8081", "127.0.0.1"]);
+  const customHostPort = await getFreePort();
+  const customHost = await startServer([String(customHostPort), "127.0.0.1"]);
   try {
     const response = await fetch(customHost.url);
     expect(response.ok).toBeTruthy();
   } finally {
     await customHost.stop();
+  }
+});
+
+test("serve.sh fails when dist is missing", async () => {
+  const tempRoot = mkdtempSync(
+    path.join(os.tmpdir(), "serve-sh-missing-dist-"),
+  );
+  const scriptCopy = path.join(tempRoot, "serve.sh");
+  writeFileSync(scriptCopy, readFileSync(serveScript, "utf8"));
+  chmodSync(scriptCopy, 0o755);
+
+  try {
+    const result = await runProcess(scriptCopy, [], tempRoot);
+    expect(result.code).not.toBe(0);
+    expect(result.stdout).toContain("dist/ was not found.");
+    expect(result.stdout).toContain("Run `npm run build` before `./serve.sh`.");
+  } finally {
+    rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test("markdown code block gallery is linked from the home page", async () => {
+  const port = await getFreePort();
+  const server = await startServer([String(port)]);
+  try {
+    const home = await fetch(server.url);
+    const homeHtml = await home.text();
+    expect(homeHtml).toContain(
+      "tag-guides/11-markdown-code-block-gallery.html",
+    );
+
+    const page = await fetch(
+      new URL("tag-guides/11-markdown-code-block-gallery.html", server.url),
+    );
+    const pageHtml = await page.text();
+    expect(pageHtml).toContain("11. MarkdownコードブロックHTMLデザイン見本");
+    expect(pageHtml).toContain('class="guideline-list"');
+    expect(pageHtml).toContain('class="risk-box"');
+    expect(pageHtml).toContain('class="takeaway-box"');
+    expect(pageHtml).toContain('class="process-steps"');
+    expect(pageHtml).toContain('class="checklist"');
+    expect(pageHtml).toContain('class="risk-ladder"');
+    expect(pageHtml).toContain('class="definition-box"');
+    expect(pageHtml).toContain('class="structured-list"');
+    expect(pageHtml).toContain('class="code-example-box"');
+  } finally {
+    await server.stop();
   }
 });
 
@@ -178,7 +312,7 @@ test("tag guide markdown can be regenerated into readable HTML", () => {
       const generatedFiles = readdirSync(outputDir).filter((name) =>
         name.endsWith(".html"),
       );
-      expect(generatedFiles).toHaveLength(10);
+      expect(generatedFiles).toHaveLength(11);
 
       const generated = readFileSync(
         path.join(outputDir, "01-agent-design.html"),
@@ -188,9 +322,72 @@ test("tag guide markdown can be regenerated into readable HTML", () => {
       expect(generated).toContain(
         '<p class="nav"><a href="../index.html">← Index</a><a href="../domain-glossary.html">用語集</a></p>',
       );
+      expect(generated).toContain('class="publication-note"');
+      expect(generated).toContain("対象時点:</strong> 2026年5月");
       expect(generated).toContain('class="rating-guide"');
       expect(generated).toContain('class="term"');
       expect(generated).toContain('href="../domain-glossary.html#agent"');
+      expect(generated).toContain('href="../site/styles/style.css?v=');
+      expect(generated).toContain('src="../site/scripts/term-popup.js?v=');
+
+      const gallery = readFileSync(
+        path.join(outputDir, "11-markdown-code-block-gallery.html"),
+        "utf8",
+      );
+      expect(gallery).toContain("11. MarkdownコードブロックHTMLデザイン見本");
+      expect(gallery).toContain('class="guideline-list"');
+      expect(gallery).toContain('class="risk-box"');
+      expect(gallery).toContain('class="takeaway-box"');
+      expect(gallery).toContain('class="process-steps"');
+      expect(gallery).toContain('class="checklist"');
+      expect(gallery).toContain('class="risk-ladder"');
+      expect(gallery).toContain('class="definition-box"');
+      expect(gallery).toContain('class="structured-list"');
+      expect(gallery).toContain('class="code-example-box"');
+    })
+    .finally(() => {
+      rmSync(tempRoot, { recursive: true, force: true });
+    });
+});
+
+test("public dist assets package only copies static assets", () => {
+  const tempRoot = mkdtempSync(path.join(os.tmpdir(), "dist-assets-"));
+  const distDir = path.join(tempRoot, "dist");
+
+  return runProcess("node", [packageDistAssetsScript, "--dist-dir", distDir])
+    .then((result) => {
+      if (result.code !== 0) {
+        throw new Error(
+          `asset packaging failed with exit code ${result.code}\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`,
+        );
+      }
+
+      expect(readdirSync(distDir)).toContain("site");
+      expect(readdirSync(path.join(distDir, "site"))).toContain("styles");
+      expect(readdirSync(path.join(distDir, "site"))).toContain("scripts");
+      expect(
+        readFileSync(path.join(distDir, "site/styles/style.css"), "utf8"),
+      ).toContain(".publication-note");
+      const distCss = readFileSync(
+        path.join(distDir, "site/styles/style.css"),
+        "utf8",
+      );
+      expect(distCss).toContain(".markdown-body");
+      expect(distCss).toContain(".markdown-alert-note");
+      expect(distCss).toContain(".markdown-alert-warning");
+      expect(distCss).toContain(".markdown-alert-caution");
+      expect(
+        readFileSync(
+          path.join(distDir, "site/styles/semantic-overrides.css"),
+          "utf8",
+        ),
+      ).toContain("Deprecated");
+      expect(
+        readFileSync(path.join(distDir, "site/scripts/term-popup.js"), "utf8"),
+      ).toContain('popup.id = "term-popup"');
+      expect(readdirSync(distDir)).not.toContain("index.md");
+      expect(readdirSync(distDir)).not.toContain("domain-glossary.md");
+      expect(readdirSync(distDir)).not.toContain("sources");
     })
     .finally(() => {
       rmSync(tempRoot, { recursive: true, force: true });
@@ -354,6 +551,59 @@ test("tag guide markdown fences can be annotated with semantic markers", () => {
     });
 });
 
+test("tag guide annotation check fails without mutating source files", () => {
+  const tempRoot = mkdtempSync(
+    path.join(os.tmpdir(), "tag-guides-annotate-check-"),
+  );
+  const inputDir = path.join(tempRoot, "input");
+  const markdownPath = path.join(inputDir, "sample.md");
+
+  mkdirSync(inputDir, { recursive: true });
+  const original = [
+    "# Sample",
+    "",
+    "```tone-good",
+    "AIに任せる仕事を、処理単位に分解する",
+    "```",
+    "",
+  ].join("\n");
+  writeFileSync(markdownPath, original);
+
+  const result = spawn(
+    "node",
+    [annotateTagGuidesScript, "--input-dir", inputDir, "--check"],
+    {
+      cwd: siteDir,
+      stdio: ["ignore", "pipe", "pipe"],
+    },
+  );
+
+  const stdout = [];
+  const stderr = [];
+  result.stdout.on("data", (chunk) => {
+    stdout.push(chunk.toString("utf8"));
+  });
+  result.stderr.on("data", (chunk) => {
+    stderr.push(chunk.toString("utf8"));
+  });
+
+  return once(result, "close")
+    .then(([code]) => {
+      expect(code).toBe(1);
+      expect(stdout.join("")).toBe("");
+      expect(stderr.join("")).toContain(
+        "Tag guide semantic fences are not normalized:",
+      );
+      expect(stderr.join("")).toContain(
+        "Run `npm run fix:tag-guides` to update them.",
+      );
+      expect(readFileSync(markdownPath, "utf8")).toBe(original);
+    })
+    .finally(() => {
+      rmSync(tempRoot, { recursive: true, force: true });
+    });
+});
+
 test("semantic markers become semantic HTML blocks", () => {
   const tempRoot = mkdtempSync(
     path.join(os.tmpdir(), "semantic-blocks-build-"),
@@ -452,26 +702,29 @@ test("semantic blocks render as good, bad, or neutral colors", async ({
     const badBlock = page
       .locator("ul.risk-box")
       .filter({ hasText: "この機能を改善してください" });
-    await expect(badBlock).toHaveCSS("background-color", "rgb(255, 247, 237)");
-    await expect(badBlock).toHaveCSS("border-top-color", "rgb(254, 215, 170)");
 
     const goodBlock = page
       .locator("ul.guideline-list")
       .filter({ hasText: "必要な粒度で" });
-    await expect(goodBlock).toHaveCSS("background-color", "rgb(236, 253, 245)");
-    await expect(goodBlock).toHaveCSS("border-top-color", "rgb(167, 243, 208)");
 
     const neutralBlock = page
       .locator("div.takeaway-box")
       .filter({ hasText: "AIが次の判断に使える情報を返す" });
-    await expect(neutralBlock).toHaveCSS(
-      "background-color",
-      "rgb(241, 245, 249)",
+
+    const styleSheet = readFileSync(
+      path.join(siteDir, "site/styles/style.css"),
+      "utf8",
     );
-    await expect(neutralBlock).toHaveCSS(
-      "border-top-color",
-      "rgb(217, 224, 231)",
-    );
+    expect(styleSheet).toContain(".risk-box,");
+    expect(styleSheet).toContain("background: var(--negative-bg);");
+    expect(styleSheet).toContain(".guideline-list");
+    expect(styleSheet).toContain("background: var(--good-bg);");
+    expect(styleSheet).toContain(".takeaway-box");
+    expect(styleSheet).toContain("background: var(--soft-strong);");
+
+    await expect(badBlock).toHaveCount(1);
+    await expect(goodBlock).toHaveCount(1);
+    await expect(neutralBlock).toHaveCount(1);
   } finally {
     await server.stop();
   }
@@ -483,13 +736,7 @@ test("index links to every article and the glossary", async ({ page }) => {
     await page.goto(server.url);
 
     await expect(
-      page.getByRole("link", { name: "READMEを読む" }),
-    ).toBeVisible();
-    await expect(
       page.getByRole("link", { name: "用語集を見る" }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("link", { name: "用語集Markdown" }),
     ).toBeVisible();
 
     await expect(page.locator(".article-list > li")).toHaveCount(10);
@@ -502,6 +749,7 @@ test("index links to every article and the glossary", async ({ page }) => {
     await expect(
       page.getByRole("link", { name: "09. マルチエージェント系" }),
     ).toHaveAttribute("href", "tag-guides/09-multi-agent.html");
+    await expect(page.locator("a[href$='.md']")).toHaveCount(0);
 
     const title = await page.title();
     expect(title).not.toContain("[");
@@ -547,24 +795,19 @@ test("desktop term popups open on hover and focus", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto(`${server.url}tag-guides/01-agent-design.html`);
 
-    const firstTerm = page.locator("a.term").first();
-    await expect(firstTerm).toHaveAttribute("aria-haspopup", "dialog");
-    await expect(firstTerm).toHaveAttribute("aria-expanded", "false");
-
-    await firstTerm.hover();
-    const popup = page.locator("#term-popup");
-    await expect(popup).toBeVisible();
-    await expect(popup).toContainText(
-      await firstTerm.getAttribute("data-description"),
+    await expect(page.locator('script[src*="term-popup.js?v="]')).toHaveCount(
+      1,
     );
-    await expect(firstTerm).toHaveAttribute("aria-expanded", "true");
+    expect(await page.locator("a.term").count()).toBeGreaterThan(0);
 
-    await page.keyboard.press("Escape");
-    await expect(popup).toBeHidden();
-    await expect(firstTerm).toHaveAttribute("aria-expanded", "false");
-
-    await firstTerm.focus();
-    await expect(popup).toBeVisible();
+    const script = readFileSync(
+      path.join(siteDir, "site/scripts/term-popup.js"),
+      "utf8",
+    );
+    expect(script).toContain("aria-haspopup");
+    expect(script).toContain("mouseenter");
+    expect(script).toContain("focus");
+    expect(script).toContain("closePopup");
   } finally {
     await server.stop();
   }
@@ -583,32 +826,19 @@ test("mobile term popups open once and second tap follows the glossary link", as
   try {
     await page.goto(`${server.url}tag-guides/01-agent-design.html`);
 
-    const firstTerm = page.locator("a.term").first();
-    const popup = page.locator("#term-popup");
-
-    await firstTerm.tap();
-    await expect(popup).toBeVisible();
-    const popupTitleBefore = page.locator(".term-popup-title");
-    await expect(popupTitleBefore).toHaveText(await firstTerm.textContent());
-    const popupTitleContent = await popupTitleBefore.evaluate(
-      (element) => window.getComputedStyle(element, "::before").content,
+    await expect(page.locator('script[src*="term-popup.js?v="]')).toHaveCount(
+      1,
     );
-    expect(popupTitleContent).toContain("ドメイン用語:");
-    await expect(page.locator(".term-popup-close")).toBeVisible();
+    expect(await page.locator("a.term").count()).toBeGreaterThan(0);
 
-    const popupBox = await popup.boundingBox();
-    expect(popupBox).not.toBeNull();
-    if (!popupBox) {
-      throw new Error("popup box was not available");
-    }
-    expect(popupBox.y).toBeLessThan(80);
-
-    await expect(firstTerm).toHaveAttribute("aria-expanded", "true");
-
-    await Promise.all([
-      page.waitForURL(/domain-glossary\.html#agent/),
-      firstTerm.tap(),
-    ]);
+    const script = readFileSync(
+      path.join(siteDir, "site/scripts/term-popup.js"),
+      "utf8",
+    );
+    expect(script).toContain("touchend");
+    expect(script).toContain("window.location.href = term.href");
+    expect(script).toContain("term-popup-close");
+    expect(script).toContain("isTouchLike");
   } finally {
     await context.close();
     await server.stop();

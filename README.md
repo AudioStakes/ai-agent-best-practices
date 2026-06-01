@@ -1,129 +1,76 @@
 # AI Agent Best Practices Knowledge Base
 
-AIエージェントを使った開発経験がある人向けに、OpenAI / Anthropic / Google / Microsoft / LangChain などの主要な公式ドキュメントを横断整理したナレッジベースです。
+A curated knowledge base of AI agent best practices based on primary sources such as official documentation from OpenAI, Anthropic, Google, Microsoft, LangChain, and related providers.
 
-単なるリンク集ではなく、エージェントの設計・評価・運用・コーディング活用に関するベストプラクティスをテーマ別に整理し、自分の開発フローを見直すための観点を提供します。
+The repository is organized so it is easy to tell what is source, what is intermediate capture, what is editorial Markdown, and what is generated site output.
 
-> **対象時点: 2026年5月**  
-> このナレッジベースは、2026年5月時点で公開されている主要な公式ドキュメントをもとに整理しています。最新の仕様や推奨事項は、各公式ドキュメントを確認してください。
+> **Reference period:** May 2026  
+> Always check the original sources for the latest specifications and recommendations.
 
-## 公開ページ
+## How This Repository Works
 
-GitHub Pages で公開するトップページは、次のファイルです。
+| Step | Stage | Owner | Output |
+|---:|---|---|---|
+| 1 | Collect source URLs | Human / ChatGPT | `sources/articles.csv` |
+| 2 | Save source pages | Automation | `archive/singlefile/` |
+| 3 | Extract article content | Automation | `archive/extracted/` |
+| 4 | Read and synthesize sources | ChatGPT | `notes/` |
+| 5 | Draft guide Markdown | ChatGPT | `content/tag-guides/*.md` |
+| 6 | Normalize structure and terms | ChatGPT / Automation | Source Markdown under `content/` |
+| 7 | Generate HTML and package public assets | Automation | `dist/` |
+| 8 | Verify and publish | Automation / Human | Checked public site |
 
-- [docs/index.md](./docs/index.md)
+## Source of Truth
 
-GitHub Pages を有効化した後は、次の形式のURLで公開される想定です。
+Markdown files under `content/` are the source of truth.
 
-```text
-https://audiostakes.github.io/ai-agent-best-practices/
-```
+Generated HTML and static assets live under `dist/`. Do not edit generated output directly. Fix the Markdown source, glossary source, semantic markers, or build scripts instead.
 
-## 対象読者
-
-AIエージェントを使った開発経験があり、自己流の使い方から一歩進んで、主要な公式ドキュメントに基づいてエージェント活用を改善したい人向けです。
-
-具体的には、次のような人を想定しています。
-
-- AIエージェントと一緒にコーディングしている人
-- AIエージェントを使ってアプリやツールを作ったことがある人
-- エージェントだけに任せて、自分はコーディングしない形で開発したことがある人
-- 特定ツールの経験に閉じず、エージェント設計・評価・運用の考え方を横断的に知りたい人
-- 自分の開発フローを、主要な公式ドキュメントに基づいて見直したい人
-
-## このナレッジベースで得られること
-
-OpenAI / Anthropic / Google / Microsoft / LangChain などの主要な公式ドキュメントを横断し、エージェントの設計・評価・運用・コーディング活用に共通するベストプラクティスを整理できます。
-
-読み終えることで、自分のエージェント活用を、思いつきや経験則だけでなく、公式ドキュメントに基づいて見直せるようになります。
-
-## 読み方
-
-このナレッジベースは、最初から順番に読む必要はありません。
-
-章ごとにテーマを分けているため、いま知りたい内容や、自分の開発で見直したい領域から読めます。
-
-## 対象外
-
-このナレッジベースは、次の目的には向いていません。
-
-- AIエージェントをまだ使ったことがない人向けの入門
-- AIエージェントを使い始めたばかりの人向けのチュートリアル
-- AIエージェント関連の最新ニュースの収集
-- 特定ツールの詳しい使い方や操作手順の解説
-
-## コンテンツ構成
-
-現在のメインコンテンツは、ルート配下に置いた静的サイトです。AIエージェント関連のベストプラクティス記事をタグ別にまとめ、用語集へのリンクとポップアップを付けて閲覧しやすくしています。
-
-主な入口:
-
-- [index.html](./index.html)
-- [用語集](./domain-glossary.html)
-- [README.html](./README.html)
-
-主なファイルとディレクトリ:
+## Key Paths
 
 ```text
-.
-├── index.html
-├── domain-glossary.html
-├── domain-glossary.md
-├── tag-guides/
-├── tests/
-├── style.css
-├── term-popup.js
-├── serve.sh
-├── articles.csv
-├── docs/
-└── README.md
+sources/articles.csv                 # Primary-source URL list and capture metadata
+archive/singlefile/                  # Saved full-page HTML captures, ignored by Git
+archive/extracted/                   # Extracted Markdown from source articles, ignored by Git
+notes/                               # ChatGPT reading notes and synthesis drafts
+content/index.md                     # Source Markdown for the top page
+content/domain-glossary.md           # Source Markdown for the glossary
+content/tag-guides/                  # Source Markdown for tag guides
+site/styles/                         # Site CSS
+site/scripts/                        # Site JavaScript
+workflow/                            # Capture, extraction, and build scripts
+dist/                                # Generated publishable site output, ignored by Git
 ```
 
-- `tag-guides/`: タグ別の記事 HTML と Markdown
-- `domain-glossary.md` / `domain-glossary.html`: 用語集の原本と閲覧版
-- `docs/`: GitHub Pages 公開用トップページと公開方針ドキュメント
-- `tests/`: ローカル表示の UI 挙動を確認する Playwright テスト
-- `style.css` / `term-popup.js`: 共通の見た目と用語ポップアップ
-
-## ローカルで見る
+## Common Commands
 
 ```bash
+npm install
+npm run save:singlefile
+npm run save:content
+npm run build
+npm run verify
+```
+
+More detailed regeneration steps are documented in [`workflow/README.md`](./workflow/README.md).
+
+## Local Preview
+
+```bash
+npm run build
 ./serve.sh
 ```
 
-ブラウザで次を開きます。
+Then open:
 
 ```text
 http://localhost:8000/
 ```
 
-## GitHub Pages で公開する
+Run `npm run build` before `./serve.sh`. The local server only serves `dist/`.
 
-GitHub Pages で公開する場合は、リポジトリ設定で次のように指定します。
+## Publish
 
-```text
-Settings
-→ Pages
-→ Build and deployment
-→ Source: Deploy from a branch
-→ Branch: main
-→ Folder: /docs
-```
+GitHub Pages is intended to publish the generated `dist/` output from CI. Generated output is not committed.
 
-この設定により、`docs/index.md` が公開トップになります。
-
-## 品質確認
-
-このサイトに対する lint, format, test は一つのコマンドで実行できます。
-
-```bash
-npm run verify
-```
-
-## 再生成手順
-
-記事の保存や抽出の手順は、[workflow/README.md](./workflow/README.md) にまとめています。
-
-## 公開ページの設計メモ
-
-公開ページの問題設定は、[docs/public-page-problem-statement.md](./docs/public-page-problem-statement.md) にまとめています。
+Publish by running `npm run build` and `npm run verify`, then deploying the `dist/` artifact.
