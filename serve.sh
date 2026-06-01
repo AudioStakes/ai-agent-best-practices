@@ -8,8 +8,15 @@ set -euo pipefail
 
 PORT="${1:-8000}"
 HOST="${2:-0.0.0.0}"
+ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SITE_DIR="${ROOT_DIR}/dist"
+if [ ! -d "${SITE_DIR}" ]; then
+  SITE_DIR="${ROOT_DIR}"
+fi
 
-python3 - <<PY
+cd "${SITE_DIR}"
+
+exec python3 - <<PY
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 host = "${HOST}"

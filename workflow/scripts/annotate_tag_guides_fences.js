@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
-const defaultInputDir = join(repoRoot, "knowledge_templated/tag-guides");
+const defaultInputDir = join(repoRoot, "content/tag-guides");
 
 function parseArgs(argv) {
   const options = {

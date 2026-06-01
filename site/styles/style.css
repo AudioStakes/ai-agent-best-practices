@@ -838,13 +838,13 @@ h2#一言でいうと + p + .guideline-list li + li::before {
     font-size: 1.15rem;
     margin-top: 1.4em;
   }
-  p,
-  li {
+  .article p,
+  .article li {
     word-break: normal;
     overflow-wrap: anywhere;
   }
-  ul,
-  ol {
+  .article ul,
+  .article ol {
     padding-left: 1.25em;
   }
   pre {
@@ -880,12 +880,12 @@ h2#一言でいうと + p + .guideline-list li + li::before {
     margin-bottom: 0.4rem;
   }
   .term-popup {
-    left: 10px !important;
-    right: 10px !important;
-    top: max(12px, calc(env(safe-area-inset-top, 0px) + 12px)) !important;
-    bottom: auto !important;
-    width: auto !important;
-    max-width: none !important;
+    left: 10px;
+    right: 10px;
+    top: max(12px, calc(env(safe-area-inset-top, 0px) + 12px));
+    bottom: auto;
+    width: auto;
+    max-width: none;
     padding: 11px 12px 12px;
     pointer-events: none;
   }

@@ -2,7 +2,7 @@
 
 A curated knowledge base of AI agent best practices based on primary sources such as official documentation from OpenAI, Anthropic, Google, Microsoft, LangChain, and related providers.
 
-The goal is to turn reliable source material into practical, theme-based guides for improving AI agent design, evaluation, operations, coding workflows, and production readiness.
+The repository is organized so it is easy to tell what is source, what is intermediate capture, what is editorial Markdown, and what is generated site output.
 
 > **Reference period:** May 2026  
 > Always check the original sources for the latest specifications and recommendations.
@@ -11,35 +11,36 @@ The goal is to turn reliable source material into practical, theme-based guides 
 
 | Step | Stage | Owner | Output |
 |---:|---|---|---|
-| 1 | Collect source URLs | Human / ChatGPT | `articles.csv` |
-| 2 | Save source pages | Automation | `singlefile/` |
-| 3 | Extract article content | Automation | `content/` |
-| 4 | Read and synthesize sources | ChatGPT | Notes and article plans |
-| 5 | Draft guide Markdown | ChatGPT | `knowledge_templated/tag-guides/*.md` |
-| 6 | Normalize structure and terms | ChatGPT / Automation | Clean Markdown sources |
-| 7 | Generate HTML | Automation | Generated site files |
+| 1 | Collect source URLs | Human / ChatGPT | `sources/articles.csv` |
+| 2 | Save source pages | Automation | `archive/singlefile/` |
+| 3 | Extract article content | Automation | `archive/extracted/` |
+| 4 | Read and synthesize sources | ChatGPT | `notes/` |
+| 5 | Draft guide Markdown | ChatGPT | `content/tag-guides/*.md` |
+| 6 | Normalize structure and terms | ChatGPT / Automation | Source Markdown under `content/` |
+| 7 | Generate HTML | Automation | `dist/` |
 | 8 | Verify and publish | Automation / Human | Checked public site |
-
-In short: source URLs are captured and converted into Markdown, ChatGPT helps synthesize them into guides, and automation generates and verifies the site.
 
 ## Source of Truth
 
-Markdown files are the source of truth.
+Markdown files under `content/` are the source of truth.
 
-Generated HTML is build output. Do not edit generated HTML directly. Fix the Markdown source, glossary source, semantic markers, or build scripts instead.
+Generated HTML lives under `dist/`. Do not edit generated HTML directly. Fix the Markdown source, glossary source, semantic markers, or build scripts instead.
 
 ## Key Paths
 
 ```text
-articles.csv                         # Primary-source URL list and capture metadata
-content/                             # Extracted Markdown from source articles
-singlefile/                          # Saved full-page HTML captures
-knowledge_templated/tag-guides/       # Source Markdown for tag guides
-index.md                             # Source Markdown for the top page
-domain-glossary.md                   # Source Markdown for the glossary
+sources/articles.csv                 # Primary-source URL list and capture metadata
+archive/singlefile/                  # Saved full-page HTML captures, ignored by Git
+archive/extracted/                   # Extracted Markdown from source articles, ignored by Git
+notes/                               # ChatGPT reading notes and synthesis drafts
+content/index.md                     # Source Markdown for the top page
+content/domain-glossary.md           # Source Markdown for the glossary
+content/tag-guides/                  # Source Markdown for tag guides
+site/styles/                         # Site CSS
+site/scripts/                        # Site JavaScript
 workflow/                            # Capture, extraction, and build scripts
-docs/                                # GitHub Pages output
-````
+dist/                                # Generated site output, ignored by Git
+```
 
 ## Common Commands
 
@@ -66,12 +67,10 @@ Then open:
 http://localhost:8000/
 ```
 
+The local server serves `dist/` when it exists.
+
 ## Publish
 
-The site is intended to be published with GitHub Pages.
+GitHub Pages is intended to publish the generated `dist/` output from CI. Generated output is not committed.
 
-`index.md` and `domain-glossary.md` are the source Markdown. `npm run build` regenerates the HTML and the mirrored `docs/` output, including `docs/index.md`, `docs/domain-glossary.md`, `docs/index.html`, `docs/domain-glossary.html`, and `docs/tag-guides/*.html`.
-
-Do not edit generated files directly. Fix the source Markdown or build scripts instead, then run `npm run build` and `npm run verify` before handing off.
-
-If generated HTML is not committed, publish through CI by building the site and deploying the generated output as a Pages artifact.
+Publish by running `npm run build` and `npm run verify`, then deploying the `dist/` artifact.

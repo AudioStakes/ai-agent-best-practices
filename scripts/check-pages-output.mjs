@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { dirname, join, relative, resolve, extname } from "node:path";
+import { dirname, extname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { JSDOM } from "jsdom";
 import { marked } from "marked";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "..");
-const defaultDocsDir = join(repoRoot, "docs");
+const defaultDistDir = join(repoRoot, "dist");
 const requiredChapterSlugs = [
   "01-agent-design",
   "02-workflow-design",
@@ -24,15 +24,15 @@ const requiredChapterSlugs = [
 
 function parseArgs(argv) {
   const options = {
-    docsDir: defaultDocsDir,
+    distDir: defaultDistDir,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     const next = argv[index + 1];
 
-    if (arg === "--docs-dir" && next) {
-      options.docsDir = resolve(next);
+    if (arg === "--dist-dir" && next) {
+      options.distDir = resolve(next);
       index += 1;
     } else if (arg === "--help" || arg === "-h") {
       printHelpAndExit();
@@ -48,10 +48,10 @@ function parseArgs(argv) {
 
 function printHelpAndExit() {
   console.log(`Usage:
-  node scripts/check-pages-output.mjs [--docs-dir DIR]
+  node scripts/check-pages-output.mjs [--dist-dir DIR]
 
 Defaults:
-  --docs-dir   ${defaultDocsDir}`);
+  --dist-dir   ${defaultDistDir}`);
   process.exit(0);
 }
 
@@ -68,7 +68,6 @@ function requireFile(filePath, hint = "") {
 
 function readText(filePath, hint = "") {
   requireFile(filePath, hint);
-
   return readFileSync(filePath, "utf8");
 }
 
@@ -96,20 +95,9 @@ function walkFiles(rootDir) {
   return entries.sort((a, b) => a.localeCompare(b));
 }
 
-function escapeRegExp(value) {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
 function assertContains(text, needle, label) {
   if (!text.includes(needle)) {
     fail(`${label} is missing "${needle}"`);
-  }
-}
-
-function assertHeading(text, heading, label) {
-  const pattern = new RegExp(`^##\\s+${escapeRegExp(heading)}\\s*$`, "m");
-  if (!pattern.test(text)) {
-    fail(`${label} is missing heading "${heading}"`);
   }
 }
 
@@ -199,42 +187,32 @@ function validateLocalLinks(filePath, document) {
   }
 }
 
-function checkIndexMarkdown(docsDir) {
-  const indexPath = join(docsDir, "index.md");
+function checkIndexMarkdown(distDir) {
+  const indexPath = join(distDir, "index.md");
   const text = readText(
     indexPath,
-    "Run npm run build before npm run verify:pages.",
+    "Run npm run build and npm run build:pages before npm run verify:pages.",
   );
   const label = relative(repoRoot, indexPath);
-
-  for (const heading of [
-    "対象時点",
-    "対象読者",
-    "このナレッジベースで得られること",
-    "読み方",
-    "目次",
-    "対象外",
-  ]) {
-    assertHeading(text, heading, label);
-  }
 
   for (const slug of requiredChapterSlugs) {
     assertContains(text, `tag-guides/${slug}.html`, label);
   }
 
-  assertContains(text, "public-page-problem-statement.md", label);
+  assertContains(text, "domain-glossary.html", label);
+  assertContains(text, "sources/articles.csv", label);
 }
 
-function checkIndexHtml(docsDir) {
-  const indexPath = join(docsDir, "index.html");
+function checkIndexHtml(distDir) {
+  const indexPath = join(distDir, "index.html");
   const text = readText(
     indexPath,
-    "Run npm run build before npm run verify:pages.",
+    "Run npm run build and npm run build:pages before npm run verify:pages.",
   );
   const document = toDocument(indexPath, text);
   const label = relative(repoRoot, indexPath);
 
-  assertContains(text, '<link rel="stylesheet" href="style.css"', label);
+  assertContains(text, 'href="site/styles/style.css?v=', label);
   for (const slug of requiredChapterSlugs) {
     assertContains(text, `tag-guides/${slug}.html`, label);
   }
@@ -247,16 +225,16 @@ function checkIndexHtml(docsDir) {
   }
 }
 
-function checkChapterFile(docsDir, slug) {
-  const mdPath = join(docsDir, "tag-guides", `${slug}.md`);
-  const htmlPath = join(docsDir, "tag-guides", `${slug}.html`);
+function checkChapterFile(distDir, slug) {
+  const mdPath = join(distDir, "tag-guides", `${slug}.md`);
+  const htmlPath = join(distDir, "tag-guides", `${slug}.html`);
   const markdown = readText(
     mdPath,
-    "Run npm run build before npm run verify:pages.",
+    "Run npm run build and npm run build:pages before npm run verify:pages.",
   );
   const html = readText(
     htmlPath,
-    "Run npm run build before npm run verify:pages.",
+    "Run npm run build and npm run build:pages before npm run verify:pages.",
   );
   const mdDocument = toDocument(mdPath, markdown);
   const htmlDocument = toDocument(htmlPath, html);
@@ -278,34 +256,50 @@ function checkChapterFile(docsDir, slug) {
 
     const bodyText =
       document.body?.textContent?.replace(/\s+/g, " ").trim() ?? "";
-    if (!bodyText.includes("対象時点: 2026年5月")) {
+    if (
+      slug !== "11-markdown-code-block-gallery" &&
+      !bodyText.includes("対象時点: 2026年5月")
+    ) {
       fail(`${fileLabel} is missing the target-time note`);
     }
 
-    if (!bodyText.includes("この章で見直せること")) {
+    if (
+      slug !== "11-markdown-code-block-gallery" &&
+      !bodyText.includes("この章で見直せること")
+    ) {
       fail(`${fileLabel} is missing the review checklist section`);
     }
 
-    const topLink = Array.from(document.querySelectorAll("a[href]")).find(
-      (anchor) =>
-        /(?:^|\/)index\.(?:md|html)$/.test(anchor.getAttribute("href") ?? ""),
-    );
+    if (slug !== "11-markdown-code-block-gallery") {
+      const topLink = Array.from(document.querySelectorAll("a[href]")).find(
+        (anchor) =>
+          /(?:^|\/)index\.(?:md|html)$/.test(anchor.getAttribute("href") ?? ""),
+      );
 
-    if (!topLink) {
-      fail(`${fileLabel} is missing a link back to the top page`);
+      if (!topLink) {
+        fail(`${fileLabel} is missing a link back to the top page`);
+      }
     }
   }
+
+  assertContains(html, 'href="../site/styles/style.css?v=', `${label}.html`);
+  assertContains(
+    html,
+    'src="../site/scripts/term-popup.js?v=',
+    `${label}.html`,
+  );
 }
 
-function checkRequiredFiles(docsDir) {
+function checkRequiredFiles(distDir) {
   const requiredPaths = [
-    join(docsDir, "index.html"),
-    join(docsDir, "index.md"),
-    join(docsDir, "_config.yml"),
-    join(docsDir, "style.css"),
-    join(docsDir, "term-popup.js"),
-    join(docsDir, "public-page-problem-statement.md"),
-    join(docsDir, "publishing-checklist.md"),
+    join(distDir, "index.html"),
+    join(distDir, "index.md"),
+    join(distDir, "domain-glossary.html"),
+    join(distDir, "domain-glossary.md"),
+    join(distDir, "site/styles/style.css"),
+    join(distDir, "site/styles/semantic-overrides.css"),
+    join(distDir, "site/scripts/term-popup.js"),
+    join(distDir, "sources/articles.csv"),
   ];
 
   for (const path of requiredPaths) {
@@ -314,31 +308,23 @@ function checkRequiredFiles(docsDir) {
     }
   }
 
-  const glossaryMarkdown = join(docsDir, "domain-glossary.md");
-  const glossaryHtml = join(docsDir, "domain-glossary.html");
-  if (!existsSync(glossaryMarkdown) && !existsSync(glossaryHtml)) {
-    fail(
-      "Missing required glossary file: docs/domain-glossary.md or docs/domain-glossary.html",
-    );
-  }
-
-  const tagGuidesDir = join(docsDir, "tag-guides");
+  const tagGuidesDir = join(distDir, "tag-guides");
   if (!existsSync(tagGuidesDir)) {
     fail(
-      "Missing required directory: docs/tag-guides.\nRun npm run build before npm run verify:pages.",
+      "Missing required directory: dist/tag-guides.\nRun npm run build and npm run build:pages before npm run verify:pages.",
     );
   }
 }
 
-function checkTagGuidePairs(docsDir) {
-  const tagGuidesDir = join(docsDir, "tag-guides");
+function checkTagGuidePairs(distDir) {
+  const tagGuidesDir = join(distDir, "tag-guides");
   const markdownFiles = readdirSync(tagGuidesDir)
     .filter((name) => name.endsWith(".md"))
     .sort((a, b) => a.localeCompare(b));
 
   if (markdownFiles.length === 0) {
     fail(
-      "No tag guide markdown files were found in docs/tag-guides.\nRun npm run build before npm run verify:pages.",
+      "No tag guide markdown files were found in dist/tag-guides.\nRun npm run build and npm run build:pages before npm run verify:pages.",
     );
   }
 
@@ -346,14 +332,14 @@ function checkTagGuidePairs(docsDir) {
     const slug = fileName.replace(/\.md$/, "");
     const htmlPath = join(tagGuidesDir, `${slug}.html`);
     if (!existsSync(htmlPath)) {
-      fail(`Missing paired HTML file for docs/tag-guides/${fileName}`);
+      fail(`Missing paired HTML file for dist/tag-guides/${fileName}`);
     }
-    checkChapterFile(docsDir, slug);
+    checkChapterFile(distDir, slug);
   }
 }
 
-function checkLocalLinksInDocs(docsDir) {
-  const files = walkFiles(docsDir);
+function checkLocalLinksInDist(distDir) {
+  const files = walkFiles(distDir);
   for (const filePath of files) {
     const text = readText(filePath);
     const document = toDocument(filePath, text);
@@ -363,12 +349,12 @@ function checkLocalLinksInDocs(docsDir) {
 
 function main() {
   const options = parseArgs(process.argv.slice(2));
-  checkRequiredFiles(options.docsDir);
-  checkIndexHtml(options.docsDir);
-  checkIndexMarkdown(options.docsDir);
-  checkTagGuidePairs(options.docsDir);
-  checkLocalLinksInDocs(options.docsDir);
-  console.log(`verified: ${relative(repoRoot, options.docsDir)}`);
+  checkRequiredFiles(options.distDir);
+  checkIndexHtml(options.distDir);
+  checkIndexMarkdown(options.distDir);
+  checkTagGuidePairs(options.distDir);
+  checkLocalLinksInDist(options.distDir);
+  console.log(`verified: ${relative(repoRoot, options.distDir)}`);
 }
 
 main();

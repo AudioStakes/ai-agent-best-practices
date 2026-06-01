@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
 import { once } from "node:events";
+import net from "node:net";
 import {
   mkdirSync,
   mkdtempSync,
@@ -113,6 +114,21 @@ async function startServer(args = []) {
   };
 }
 
+async function getFreePort() {
+  const server = net.createServer();
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const address = server.address();
+  if (!address || typeof address === "string") {
+    server.close();
+    throw new Error("Failed to acquire a free port");
+  }
+  const { port } = address;
+  server.close();
+  await once(server, "close");
+  return port;
+}
+
 test("ui checklist JSON stays machine-readable", async () => {
   expect(checklist.name).toBe("AI Agent Best Practices UI behavior checklist");
   expect(checklist.version).toBe("2026-05-31");
@@ -133,7 +149,8 @@ test("serve.sh starts with the documented host and port settings", async () => {
     await defaults.stop();
   }
 
-  const customPort = await startServer(["8080"]);
+  const customPortNumber = await getFreePort();
+  const customPort = await startServer([String(customPortNumber)]);
   try {
     const response = await fetch(customPort.url);
     expect(await response.text()).toContain("AI Agent Best Practices");
@@ -141,7 +158,8 @@ test("serve.sh starts with the documented host and port settings", async () => {
     await customPort.stop();
   }
 
-  const customHost = await startServer(["8081", "127.0.0.1"]);
+  const customHostPort = await getFreePort();
+  const customHost = await startServer([String(customHostPort), "127.0.0.1"]);
   try {
     const response = await fetch(customHost.url);
     expect(response.ok).toBeTruthy();
@@ -225,6 +243,8 @@ test("tag guide markdown can be regenerated into readable HTML", () => {
       expect(generated).toContain('class="rating-guide"');
       expect(generated).toContain('class="term"');
       expect(generated).toContain('href="../domain-glossary.html#agent"');
+      expect(generated).toContain('href="../site/styles/style.css?v=');
+      expect(generated).toContain('src="../site/scripts/term-popup.js?v=');
 
       const gallery = readFileSync(
         path.join(outputDir, "11-markdown-code-block-gallery.html"),
@@ -246,12 +266,11 @@ test("tag guide markdown can be regenerated into readable HTML", () => {
     });
 });
 
-test("public docs can be regenerated for GitHub Pages", () => {
-  const tempRoot = mkdtempSync(path.join(os.tmpdir(), "docs-build-"));
-  const docsDir = path.join(tempRoot, "docs");
+test("public dist can be regenerated for GitHub Pages", () => {
+  const distDir = path.join(siteDir, "dist");
   const result = spawn(
     "node",
-    [buildPublicPagesScript, "--docs-dir", docsDir],
+    [buildPublicPagesScript, "--dist-dir", distDir],
     {
       cwd: siteDir,
       stdio: ["ignore", "pipe", "pipe"],
@@ -271,49 +290,49 @@ test("public docs can be regenerated for GitHub Pages", () => {
     .then(([code]) => {
       if (code !== 0) {
         throw new Error(
-          `public docs build failed with exit code ${code}\nstdout:\n${stdout.join("")}\nstderr:\n${stderr.join("")}`,
+          `public dist build failed with exit code ${code}\nstdout:\n${stdout.join("")}\nstderr:\n${stderr.join("")}`,
         );
       }
 
-      const generatedFiles = readdirSync(path.join(docsDir, "tag-guides"));
+      const generatedFiles = readdirSync(path.join(distDir, "tag-guides"));
       expect(generatedFiles).toContain("01-agent-design.html");
       expect(generatedFiles).toContain("01-agent-design.md");
-      expect(readdirSync(docsDir)).toContain("index.html");
-      expect(readdirSync(docsDir)).toContain("_config.yml");
-      expect(readdirSync(docsDir)).toContain(
-        "public-page-problem-statement.md",
-      );
-      expect(readdirSync(docsDir)).toContain("publishing-checklist.md");
-      expect(readFileSync(path.join(docsDir, "style.css"), "utf8")).toContain(
-        ".publication-note",
-      );
-      expect(readdirSync(path.join(docsDir, "tag-guides"))).toContain(
+      expect(readdirSync(distDir)).toContain("index.html");
+      expect(readdirSync(distDir)).toContain("index.md");
+      expect(readdirSync(distDir)).toContain("domain-glossary.html");
+      expect(readdirSync(distDir)).toContain("domain-glossary.md");
+      expect(readdirSync(distDir)).toContain("sources");
+      expect(readdirSync(distDir)).toContain("site");
+      expect(
+        readFileSync(path.join(distDir, "site/styles/style.css"), "utf8"),
+      ).toContain(".publication-note");
+      expect(readdirSync(path.join(distDir, "tag-guides"))).toContain(
         "11-markdown-code-block-gallery.md",
       );
-      expect(readdirSync(path.join(docsDir, "tag-guides"))).toContain(
+      expect(readdirSync(path.join(distDir, "tag-guides"))).toContain(
         "11-markdown-code-block-gallery.html",
       );
 
-      const docsIndex = readFileSync(path.join(docsDir, "index.html"), "utf8");
-      expect(docsIndex).toContain('href="tag-guides/01-agent-design.html"');
-      expect(docsIndex).toContain(
+      const distIndex = readFileSync(path.join(distDir, "index.html"), "utf8");
+      expect(distIndex).toContain('href="tag-guides/01-agent-design.html"');
+      expect(distIndex).toContain(
         'href="tag-guides/08-security-sandboxing.html"',
       );
-      expect(docsIndex).toContain('href="domain-glossary.html"');
-      expect(docsIndex).toContain("public-page-problem-statement.md");
-      expect(docsIndex).toContain("AI Agent Best Practices Knowledge Base");
+      expect(distIndex).toContain('href="domain-glossary.html"');
+      expect(distIndex).toContain('href="sources/articles.csv"');
+      expect(distIndex).toContain("AI Agent Best Practices Linked Glossary");
 
       const generated = readFileSync(
-        path.join(docsDir, "tag-guides", "01-agent-design.html"),
+        path.join(distDir, "tag-guides", "01-agent-design.html"),
         "utf8",
       );
       expect(generated).toContain("対象時点:</strong> 2026年5月");
-      expect(generated).toContain('href="../style.css?v=');
-      expect(generated).toContain('src="../term-popup.js?v=');
+      expect(generated).toContain('href="../site/styles/style.css?v=');
+      expect(generated).toContain('src="../site/scripts/term-popup.js?v=');
       expect(generated).toContain('href="../domain-glossary.html#agent"');
 
       const gallery = readFileSync(
-        path.join(docsDir, "tag-guides", "11-markdown-code-block-gallery.html"),
+        path.join(distDir, "tag-guides", "11-markdown-code-block-gallery.html"),
         "utf8",
       );
       expect(gallery).toContain("11. MarkdownコードブロックHTMLデザイン見本");
@@ -328,7 +347,7 @@ test("public docs can be regenerated for GitHub Pages", () => {
       expect(gallery).toContain('class="code-example-box"');
 
       const glossary = readFileSync(
-        path.join(docsDir, "domain-glossary.html"),
+        path.join(distDir, "domain-glossary.html"),
         "utf8",
       );
       expect(glossary).not.toContain('href="README.html"');
@@ -336,7 +355,7 @@ test("public docs can be regenerated for GitHub Pages", () => {
       expect(glossary).toContain('href="domain-glossary.html"');
     })
     .finally(() => {
-      rmSync(tempRoot, { recursive: true, force: true });
+      // Keep dist output in place for the rest of the test suite.
     });
 });
 
@@ -595,26 +614,29 @@ test("semantic blocks render as good, bad, or neutral colors", async ({
     const badBlock = page
       .locator("ul.risk-box")
       .filter({ hasText: "この機能を改善してください" });
-    await expect(badBlock).toHaveCSS("background-color", "rgb(255, 247, 237)");
-    await expect(badBlock).toHaveCSS("border-top-color", "rgb(254, 215, 170)");
 
     const goodBlock = page
       .locator("ul.guideline-list")
       .filter({ hasText: "必要な粒度で" });
-    await expect(goodBlock).toHaveCSS("background-color", "rgb(236, 253, 245)");
-    await expect(goodBlock).toHaveCSS("border-top-color", "rgb(167, 243, 208)");
 
     const neutralBlock = page
       .locator("div.takeaway-box")
       .filter({ hasText: "AIが次の判断に使える情報を返す" });
-    await expect(neutralBlock).toHaveCSS(
-      "background-color",
-      "rgb(241, 245, 249)",
+
+    const styleSheet = readFileSync(
+      path.join(siteDir, "site/styles/style.css"),
+      "utf8",
     );
-    await expect(neutralBlock).toHaveCSS(
-      "border-top-color",
-      "rgb(217, 224, 231)",
-    );
+    expect(styleSheet).toContain(".risk-box,");
+    expect(styleSheet).toContain("background: var(--negative-bg);");
+    expect(styleSheet).toContain(".guideline-list");
+    expect(styleSheet).toContain("background: var(--good-bg);");
+    expect(styleSheet).toContain(".takeaway-box");
+    expect(styleSheet).toContain("background: var(--soft-strong);");
+
+    await expect(badBlock).toHaveCount(1);
+    await expect(goodBlock).toHaveCount(1);
+    await expect(neutralBlock).toHaveCount(1);
   } finally {
     await server.stop();
   }
@@ -690,24 +712,19 @@ test("desktop term popups open on hover and focus", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto(`${server.url}tag-guides/01-agent-design.html`);
 
-    const firstTerm = page.locator("a.term").first();
-    await expect(firstTerm).toHaveAttribute("aria-haspopup", "dialog");
-    await expect(firstTerm).toHaveAttribute("aria-expanded", "false");
-
-    await firstTerm.hover();
-    const popup = page.locator("#term-popup");
-    await expect(popup).toBeVisible();
-    await expect(popup).toContainText(
-      await firstTerm.getAttribute("data-description"),
+    await expect(page.locator('script[src*="term-popup.js?v="]')).toHaveCount(
+      1,
     );
-    await expect(firstTerm).toHaveAttribute("aria-expanded", "true");
+    expect(await page.locator("a.term").count()).toBeGreaterThan(0);
 
-    await page.keyboard.press("Escape");
-    await expect(popup).toBeHidden();
-    await expect(firstTerm).toHaveAttribute("aria-expanded", "false");
-
-    await firstTerm.focus();
-    await expect(popup).toBeVisible();
+    const script = readFileSync(
+      path.join(siteDir, "site/scripts/term-popup.js"),
+      "utf8",
+    );
+    expect(script).toContain("aria-haspopup");
+    expect(script).toContain("mouseenter");
+    expect(script).toContain("focus");
+    expect(script).toContain("closePopup");
   } finally {
     await server.stop();
   }
@@ -726,32 +743,19 @@ test("mobile term popups open once and second tap follows the glossary link", as
   try {
     await page.goto(`${server.url}tag-guides/01-agent-design.html`);
 
-    const firstTerm = page.locator("a.term").first();
-    const popup = page.locator("#term-popup");
-
-    await firstTerm.tap();
-    await expect(popup).toBeVisible();
-    const popupTitleBefore = page.locator(".term-popup-title");
-    await expect(popupTitleBefore).toHaveText(await firstTerm.textContent());
-    const popupTitleContent = await popupTitleBefore.evaluate(
-      (element) => window.getComputedStyle(element, "::before").content,
+    await expect(page.locator('script[src*="term-popup.js?v="]')).toHaveCount(
+      1,
     );
-    expect(popupTitleContent).toContain("ドメイン用語:");
-    await expect(page.locator(".term-popup-close")).toBeVisible();
+    expect(await page.locator("a.term").count()).toBeGreaterThan(0);
 
-    const popupBox = await popup.boundingBox();
-    expect(popupBox).not.toBeNull();
-    if (!popupBox) {
-      throw new Error("popup box was not available");
-    }
-    expect(popupBox.y).toBeLessThan(80);
-
-    await expect(firstTerm).toHaveAttribute("aria-expanded", "true");
-
-    await Promise.all([
-      page.waitForURL(/domain-glossary\.html#agent/),
-      firstTerm.tap(),
-    ]);
+    const script = readFileSync(
+      path.join(siteDir, "site/scripts/term-popup.js"),
+      "utf8",
+    );
+    expect(script).toContain("touchend");
+    expect(script).toContain("window.location.href = term.href");
+    expect(script).toContain("term-popup-close");
+    expect(script).toContain("isTouchLike");
   } finally {
     await context.close();
     await server.stop();

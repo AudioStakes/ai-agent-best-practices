@@ -4,10 +4,9 @@ AIエージェント関連記事をタグ別に統合し、ドメイン用語を
 
 <div class="container">
   <div class="badges">
-    <a class="badge" href="README.md">READMEを読む</a>
     <a class="badge" href="domain-glossary.html">用語集を見る</a>
     <a class="badge" href="domain-glossary.md">用語集Markdown</a>
-    <a class="badge" href="articles.csv">articles.csv</a>
+    <a class="badge" href="sources/articles.csv">sources/articles.csv</a>
     <a class="badge" href="tag-guides/11-markdown-code-block-gallery.html">コードブロック見本</a>
   </div>
 

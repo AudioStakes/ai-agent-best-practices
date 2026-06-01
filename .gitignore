@@ -1,27 +1,28 @@
 node_modules/
 
-# Generated from Markdown. Do not commit generated HTML.
+# Generated site output
+/dist/
+/docs/
+/tag-guides/
 /index.html
 /domain-glossary.html
 /README.html
-/tag-guides/
-/docs/index.html
-/docs/index.md
-/docs/domain-glossary.html
-/docs/domain-glossary.md
-/docs/tag-guides/
-/docs/markdown-style-guide.md
-/knowledge/
-/ai-agent-best-practices-linked-glossary/
 
-# Local article archives
-singlefile/
-html/
-raw/
-markdown/
-content/
-assets/
-knowledge/
+# Captured and extracted source archives
+/archive/singlefile/
+/archive/extracted/
+/archive/assets/
+
+# Legacy generated or archive paths
+/singlefile/
+/html/
+/raw/
+/markdown/
+/assets/
+/knowledge/
+/knowledge_templated/
+/domain-glossary/
+/ai-agent-best-practices-linked-glossary/
 
 # Logs
 *.log

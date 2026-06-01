@@ -1,16 +1,17 @@
 #!/usr/bin/env node
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { marked } from "marked";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
-const indexMarkdownPath = join(repoRoot, "index.md");
-const glossaryMarkdownPath = join(repoRoot, "domain-glossary.md");
-const stylesheetVersion = "20260531-semantic-tone-2";
-const popupScriptVersion = "20260531-semantic-tone-2";
+const distRoot = join(repoRoot, "dist");
+const indexMarkdownPath = join(repoRoot, "content/index.md");
+const glossaryMarkdownPath = join(repoRoot, "content/domain-glossary.md");
+const stylesheetVersion = "20260601-site-shell-3";
+const popupScriptVersion = "20260601-site-shell-3";
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -92,7 +93,7 @@ function buildIndexHtml() {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AI Agent Best Practices Linked Glossary</title>
-  <link rel="stylesheet" href="style.css?v=${stylesheetVersion}">
+  <link rel="stylesheet" href="site/styles/style.css?v=${stylesheetVersion}">
 </head>
 <body>
 ${body}
@@ -135,7 +136,7 @@ function buildGlossaryHtml() {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Agent Domain Glossary</title>
-  <link rel="stylesheet" href="style.css?v=${stylesheetVersion}" />
+  <link rel="stylesheet" href="site/styles/style.css?v=${stylesheetVersion}" />
   <style>
 /* Force glossary mobile layout: desktop keeps a table; mobile uses card/list items. */
 .glossary-cards { display: none; }
@@ -179,7 +180,7 @@ function buildGlossaryHtml() {
   body.glossary-page .glossary-label { font-weight: 700; color: var(--muted); }
 }
   </style>
-  <script src="term-popup.js?v=${popupScriptVersion}" defer></script>
+  <script src="site/scripts/term-popup.js?v=${popupScriptVersion}" defer></script>
 </head>
 <body class="glossary-page">
 <div class="container">
@@ -208,15 +209,16 @@ ${cards}
 }
 
 function main() {
-  writeFileSync(join(repoRoot, "index.html"), buildIndexHtml(), "utf8");
+  mkdirSync(distRoot, { recursive: true });
+  writeFileSync(join(distRoot, "index.html"), buildIndexHtml(), "utf8");
   writeFileSync(
-    join(repoRoot, "domain-glossary.html"),
+    join(distRoot, "domain-glossary.html"),
     buildGlossaryHtml(),
     "utf8",
   );
 
-  console.log(`generated: ${join(repoRoot, "index.html")}`);
-  console.log(`generated: ${join(repoRoot, "domain-glossary.html")}`);
+  console.log(`generated: ${join(distRoot, "index.html")}`);
+  console.log(`generated: ${join(distRoot, "domain-glossary.html")}`);
 }
 
 main();

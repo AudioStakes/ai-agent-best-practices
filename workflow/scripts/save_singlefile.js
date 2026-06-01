@@ -24,8 +24,8 @@ const dryRun = args.has("--dry-run");
 const overwrite = args.has("--overwrite");
 const pendingOnly = !args.has("--all");
 
-const csvPath = join(repoRoot, "articles.csv");
-const outputRoot = join(repoRoot, "singlefile");
+const csvPath = join(repoRoot, "sources/articles.csv");
+const outputRoot = join(repoRoot, "archive/singlefile");
 const defaultTimeoutSeconds = 120;
 
 function usage() {
@@ -45,7 +45,7 @@ Examples:
   node workflow/scripts/save_singlefile.js --all --overwrite
 
 Output:
-  singlefile/<source>/<id>.html
+  archive/singlefile/<source>/<id>.html
 `);
 }
 
@@ -236,7 +236,7 @@ async function saveArticle(row) {
   const outputDir = join(outputRoot, sourceDir);
   const outputPath = join(outputDir, `${id}.html`);
   const tempOutputPath = join(outputDir, `${id}.tmp.html`);
-  const relativeOutputPath = `singlefile/${sourceDir}/${id}.html`;
+  const relativeOutputPath = `archive/singlefile/${sourceDir}/${id}.html`;
 
   if (existsSync(outputPath)) {
     const { refresh, reason } = shouldRefreshExistingFile(outputPath);
