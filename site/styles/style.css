@@ -23,6 +23,14 @@
   --neutral: #475569;
   --neutral-bg: #f8fafc;
   --neutral-border: #d9e0e7;
+  --color-canvas-default: #ffffff;
+  --color-canvas-subtle: #f6f8fa;
+  --color-fg-default: #1f2328;
+  --color-fg-muted: #59636e;
+  --color-border-default: #d0d7de;
+  --color-border-muted: #d8dee4;
+  --color-accent-fg: #0969da;
+  --color-neutral-muted: rgba(175, 184, 193, 0.2);
   --tone-good: var(--good);
   --tone-good-bg: var(--good-bg);
   --tone-good-border: var(--good-border);
@@ -206,6 +214,306 @@ pre code {
   background: transparent;
   padding: 0;
   color: inherit;
+}
+
+/* GitHub Markdown content */
+.markdown-document {
+  width: min(980px, calc(100% - 40px));
+  margin: 32px auto 64px;
+  padding: 32px;
+  background: var(--color-canvas-default);
+  border: 1px solid var(--color-border-default);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+:where(.markdown-document, .article) {
+  color: var(--color-fg-default);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica,
+    Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-size: 16px;
+  line-height: 1.5;
+  word-wrap: break-word;
+}
+
+:where(.markdown-document, .article) h1,
+:where(.markdown-document, .article) h2,
+:where(.markdown-document, .article) h3,
+:where(.markdown-document, .article) h4,
+:where(.markdown-document, .article) h5,
+:where(.markdown-document, .article) h6 {
+  margin: 24px 0 16px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+:where(.markdown-document, .article) h1,
+:where(.markdown-document, .article) h2 {
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--color-border-muted);
+}
+
+:where(.markdown-document, .article) h1 {
+  font-size: 2em;
+}
+
+:where(.markdown-document, .article) h2 {
+  font-size: 1.5em;
+}
+
+:where(.markdown-document, .article) h3 {
+  font-size: 1.25em;
+}
+
+:where(.markdown-document, .article) h4 {
+  font-size: 1em;
+}
+
+:where(.markdown-document, .article) h5 {
+  font-size: 0.875em;
+}
+
+:where(.markdown-document, .article) h6 {
+  color: var(--color-fg-muted);
+  font-size: 0.85em;
+}
+
+:where(.markdown-document, .article) p {
+  margin: 0 0 16px;
+}
+
+:where(.markdown-document, .article) a {
+  color: var(--color-accent-fg);
+  text-decoration: none;
+}
+
+:where(.markdown-document, .article) a:hover {
+  text-decoration: underline;
+}
+
+:where(.markdown-document, .article) ul,
+:where(.markdown-document, .article) ol {
+  margin: 0 0 16px;
+  padding-left: 2em;
+}
+
+:where(.markdown-document, .article) blockquote {
+  margin: 0 0 16px;
+  padding: 0 1em;
+  color: var(--color-fg-muted);
+  border-left: 0.25em solid var(--color-border-default);
+}
+
+:where(.markdown-document, .article) hr {
+  height: 0.25em;
+  margin: 24px 0;
+  padding: 0;
+  background-color: var(--color-border-default);
+  border: 0;
+}
+
+:where(.markdown-document, .article) code {
+  padding: 0.2em 0.4em;
+  font-size: 85%;
+  background-color: var(--color-neutral-muted);
+  border-radius: 6px;
+}
+
+:where(.markdown-document, .article) pre {
+  margin: 0 0 16px;
+  padding: 16px;
+  overflow: auto;
+  font-size: 85%;
+  line-height: 1.45;
+  background-color: var(--color-canvas-subtle);
+  border-radius: 6px;
+}
+
+:where(.markdown-document, .article) pre > code {
+  padding: 0;
+  font-size: inherit;
+  background-color: transparent;
+  border: 0;
+  white-space: pre;
+}
+
+:where(.markdown-document, .article) table {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  margin: 0 0 16px;
+  overflow: auto;
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+
+:where(.markdown-document, .article) table th,
+:where(.markdown-document, .article) table td {
+  padding: 6px 13px;
+  border: 1px solid var(--color-border-default);
+}
+
+:where(.markdown-document, .article) table tr:nth-child(2n) {
+  background-color: var(--color-canvas-subtle);
+}
+
+:where(.markdown-document, .article) img {
+  max-width: 100%;
+  box-sizing: content-box;
+  background-color: transparent;
+}
+
+:where(.markdown-document, .article) kbd {
+  display: inline-block;
+  padding: 0.2em 0.4em;
+  font-size: 85%;
+  font-family: inherit;
+  line-height: 1;
+  color: var(--color-fg-default);
+  vertical-align: middle;
+  background-color: var(--color-canvas-default);
+  border: 1px solid var(--color-border-default);
+  border-radius: 6px;
+  box-shadow: inset 0 -1px 0 var(--color-border-default);
+}
+
+:where(.markdown-document, .article) details {
+  margin: 0 0 16px;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border-default);
+  border-radius: 6px;
+  background: var(--color-canvas-default);
+}
+
+:where(.markdown-document, .article) summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+:where(.markdown-document, .article) details > :not(summary) {
+  margin-top: 0.75rem;
+}
+
+:where(.markdown-document, .article) li.task-list-item {
+  list-style: none;
+}
+
+:where(.markdown-document, .article) input[type="checkbox"] {
+  margin: 0.2em 0.4em 0.25em 0;
+  vertical-align: middle;
+}
+
+:where(.markdown-document, .article) .markdown-alert {
+  padding: 8px 16px;
+  margin: 0 0 16px;
+  color: inherit;
+  border-left: 0.25em solid var(--color-border-default);
+}
+
+:where(.markdown-document, .article) .markdown-alert > :first-child {
+  margin-top: 0;
+}
+
+:where(.markdown-document, .article) .markdown-alert > :last-child {
+  margin-bottom: 0;
+}
+
+:where(.markdown-document, .article) .markdown-alert-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+:where(.markdown-document, .article) .markdown-alert-title::before {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  line-height: 1;
+}
+
+:where(.markdown-document, .article) .markdown-alert-note {
+  border-left-color: #0969da;
+}
+
+:where(.markdown-document, .article)
+  .markdown-alert-note
+  .markdown-alert-title {
+  color: #0969da;
+}
+
+:where(.markdown-document, .article)
+  .markdown-alert-note
+  .markdown-alert-title::before {
+  content: "ⓘ";
+}
+
+:where(.markdown-document, .article) .markdown-alert-tip {
+  border-left-color: #1a7f37;
+}
+
+:where(.markdown-document, .article) .markdown-alert-tip .markdown-alert-title {
+  color: #1a7f37;
+}
+
+:where(.markdown-document, .article)
+  .markdown-alert-tip
+  .markdown-alert-title::before {
+  content: "✓";
+}
+
+:where(.markdown-document, .article) .markdown-alert-important {
+  border-left-color: #8250df;
+}
+
+:where(.markdown-document, .article)
+  .markdown-alert-important
+  .markdown-alert-title {
+  color: #8250df;
+}
+
+:where(.markdown-document, .article)
+  .markdown-alert-important
+  .markdown-alert-title::before {
+  content: "◆";
+}
+
+:where(.markdown-document, .article) .markdown-alert-warning {
+  border-left-color: #9a6700;
+}
+
+:where(.markdown-document, .article)
+  .markdown-alert-warning
+  .markdown-alert-title {
+  color: #9a6700;
+}
+
+:where(.markdown-document, .article)
+  .markdown-alert-warning
+  .markdown-alert-title::before {
+  content: "⚠";
+}
+
+:where(.markdown-document, .article) .markdown-alert-caution {
+  border-left-color: #d1242f;
+}
+
+:where(.markdown-document, .article)
+  .markdown-alert-caution
+  .markdown-alert-title {
+  color: #d1242f;
+}
+
+:where(.markdown-document, .article)
+  .markdown-alert-caution
+  .markdown-alert-title::before {
+  content: "⛔";
 }
 
 .sourceCode {

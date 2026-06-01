@@ -48,6 +48,7 @@ test("render_markdown_file.js converts markdown into standalone HTML", async () 
     const html = readFileSync(outputPath, "utf8");
     expect(html).toContain("<!doctype html>");
     expect(html).toContain("GitHub Markdown Style Guide");
+    expect(html).toContain("style.css");
     expect(html).toContain("<table>");
     expect(html).toContain('type="checkbox"');
   } finally {

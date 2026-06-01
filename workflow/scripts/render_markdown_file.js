@@ -1,9 +1,19 @@
 #!/usr/bin/env node
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { basename, dirname, extname, join, resolve } from "node:path";
+import {
+  basename,
+  dirname,
+  extname,
+  join,
+  relative,
+  resolve,
+  sep,
+} from "node:path";
 import { fileURLToPath } from "node:url";
+import { JSDOM } from "jsdom";
 import { marked } from "marked";
+import { transformMarkdownAlerts } from "./markdown_alerts.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
@@ -57,10 +67,22 @@ const renderedBody = marked.parse(markdown, {
   gfm: true,
   breaks: false,
 });
+const renderedDom = new JSDOM(
+  `<main class="markdown-document">${renderedBody}</main>`,
+);
+transformMarkdownAlerts(renderedDom.window.document);
+const renderedMain = renderedDom.window.document.querySelector("main");
+const renderedHtml = renderedMain?.innerHTML ?? renderedBody;
 const title = extractTitle(
   markdown,
   basename(inputPath, extname(inputPath)) || "Document",
 );
+const stylesheetHref = relative(
+  dirname(outputPath),
+  join(repoRoot, "site/styles/style.css"),
+)
+  .split(sep)
+  .join("/");
 
 mkdirSync(dirname(outputPath), { recursive: true });
 
@@ -70,10 +92,11 @@ const html = `<!doctype html>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>${escapeHtml(title)}</title>
+    <link rel="stylesheet" href="${escapeHtml(stylesheetHref)}">
   </head>
   <body>
     <main class="markdown-document">
-      ${renderedBody}
+      ${renderedHtml}
     </main>
   </body>
 </html>

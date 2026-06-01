@@ -3,7 +3,9 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { JSDOM } from "jsdom";
 import { marked } from "marked";
+import { transformMarkdownAlerts } from "./markdown_alerts.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
@@ -26,6 +28,18 @@ function readMarkdown(filePath) {
   return readFileSync(filePath, "utf8");
 }
 
+function renderMarkdown(markdown) {
+  const rendered = marked.parse(markdown, {
+    gfm: true,
+    breaks: false,
+  });
+  const dom = new JSDOM(`<article>${rendered}</article>`);
+  const { document } = dom.window;
+  transformMarkdownAlerts(document);
+
+  return document.querySelector("article")?.innerHTML ?? rendered;
+}
+
 function splitGlossaryMarkdown(markdown) {
   const lines = markdown.split(/\r?\n/);
   const headerLines = [];
@@ -45,7 +59,7 @@ function splitGlossaryMarkdown(markdown) {
   }
 
   return {
-    headerHtml: marked.parse(headerLines.join("\n")),
+    headerHtml: renderMarkdown(headerLines.join("\n")),
     tableLines,
   };
 }
@@ -85,7 +99,7 @@ function parseGlossaryEntries(tableLines) {
 
 function buildIndexHtml() {
   const markdown = readMarkdown(indexMarkdownPath);
-  const body = marked.parse(markdown);
+  const body = renderMarkdown(markdown);
 
   return `<!doctype html>
 <html lang="ja">

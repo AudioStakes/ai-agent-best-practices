@@ -368,6 +368,13 @@ test("public dist assets package only copies static assets", () => {
       expect(
         readFileSync(path.join(distDir, "site/styles/style.css"), "utf8"),
       ).toContain(".publication-note");
+      const distCss = readFileSync(
+        path.join(distDir, "site/styles/style.css"),
+        "utf8",
+      );
+      expect(distCss).toContain(".markdown-alert-note");
+      expect(distCss).toContain(".markdown-alert-warning");
+      expect(distCss).toContain(".markdown-alert-caution");
       expect(
         readFileSync(
           path.join(distDir, "site/styles/semantic-overrides.css"),

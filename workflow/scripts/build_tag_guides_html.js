@@ -11,6 +11,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { JSDOM } from "jsdom";
 import { marked } from "marked";
+import { transformMarkdownAlerts } from "./markdown_alerts.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
@@ -719,6 +720,7 @@ function buildPage(
 
   rewriteLinks(document, glossaryDescriptions);
   transformMarkedFences(document);
+  transformMarkdownAlerts(document);
   annotateHeadings(document);
   injectPublicationNote(document);
   injectRatingGuide(document);
