@@ -40,6 +40,11 @@
   --tone-neutral: var(--neutral);
   --tone-neutral-bg: var(--neutral-bg);
   --tone-neutral-border: var(--neutral-border);
+  --font-stack:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica,
+    Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --mono-stack:
+    ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
 }
 
 * {
@@ -52,63 +57,17 @@ html {
 
 body {
   margin: 0;
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans",
-    "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
-  line-height: 1.75;
-  color: var(--fg);
-  background: var(--bg);
+  color: var(--color-fg-default);
+  background: var(--color-canvas-default);
+  font-family: var(--font-stack);
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 .container {
-  width: min(980px, 100%);
+  width: min(100%, 1012px);
   margin: 0 auto;
-  padding: 32px 20px 64px;
-}
-
-.article {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
   padding: 32px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
-}
-
-header.hero {
-  background: linear-gradient(135deg, #fff, #eef4ff);
-  border-bottom: 1px solid var(--border);
-}
-
-.hero .container {
-  padding-top: 44px;
-  padding-bottom: 36px;
-}
-
-h1,
-h2,
-h3 {
-  line-height: 1.3;
-}
-h1 {
-  margin: 0 0 16px;
-  font-size: clamp(1.9rem, 4vw, 2.7rem);
-}
-h2 {
-  margin: 2.1em 0 0.85em;
-  padding-bottom: 0.25em;
-  border-bottom: 1px solid var(--border);
-}
-h3 {
-  margin: 1.7em 0 0.65em;
-}
-p {
-  margin: 0 0 1rem;
-}
-
-a {
-  color: var(--link);
-  text-decoration-thickness: 0.08em;
-  text-underline-offset: 0.18em;
 }
 
 :where(
@@ -130,35 +89,53 @@ a {
 .nav a {
   margin-right: 12px;
 }
-.meta,
-.small {
+
+body.site-index :where(.article) {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+body.site-index header.hero {
+  background: linear-gradient(135deg, #fff, #eef4ff);
+  border-bottom: 1px solid var(--border);
+}
+
+body.site-index .hero .container {
+  padding-top: 44px;
+  padding-bottom: 36px;
+}
+
+body.site-index :where(.meta, .small) {
   color: var(--muted);
 }
-.small {
+body.site-index :where(.small) {
   font-size: 0.92rem;
 }
 
-.article-list {
+body.site-index :where(.article-list) {
   list-style: none;
   padding: 0;
   display: grid;
   gap: 14px;
 }
 
-.article-list li {
+body.site-index :where(.article-list li) {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 16px 18px;
 }
 
-.badges {
+body.site-index :where(.badges) {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 8px;
 }
-.badge {
+body.site-index :where(.badge) {
   display: inline-block;
   border: 1px solid var(--border);
   border-radius: 999px;
@@ -168,70 +145,9 @@ a {
   background: #fff;
 }
 
-blockquote {
-  margin-left: 0;
-  padding-left: 1em;
-  border-left: 4px solid var(--border);
-  color: var(--muted);
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  display: block;
-  overflow-x: auto;
-}
-th,
-td {
-  border: 1px solid var(--border);
-  padding: 8px 10px;
-  vertical-align: top;
-}
-th {
-  background: var(--soft-strong);
-}
-
-pre,
-code {
-  font-family:
-    ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-}
-code {
-  background: var(--inline-code-bg);
-  padding: 0.12em 0.32em;
-  border-radius: 5px;
-}
-pre {
-  margin: 1.05rem 0 1.35rem;
-  padding: 16px;
-  border-radius: 12px;
-  background: var(--code-bg);
-  color: var(--code-text);
-  overflow: auto;
-  line-height: 1.65;
-}
-pre code {
-  background: transparent;
-  padding: 0;
-  color: inherit;
-}
-
-/* GitHub Markdown content */
-.markdown-document {
-  width: min(980px, calc(100% - 40px));
-  margin: 32px auto 64px;
-  padding: 32px;
-  background: var(--color-canvas-default);
-  border: 1px solid var(--color-border-default);
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
-}
-
-:where(.markdown-document, .article) {
+:where(.markdown-body, .markdown-document, .article) {
   color: var(--color-fg-default);
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica,
-    Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-family: var(--font-stack);
   font-size: 16px;
   line-height: 1.5;
   word-wrap: break-word;
@@ -283,12 +199,14 @@ pre code {
   margin: 0 0 16px;
 }
 
-:where(.markdown-document, .article) a {
+.markdown-document a,
+.article a {
   color: var(--color-accent-fg);
   text-decoration: none;
 }
 
-:where(.markdown-document, .article) a:hover {
+.markdown-document a:hover,
+.article a:hover {
   text-decoration: underline;
 }
 
@@ -328,6 +246,7 @@ pre code {
   line-height: 1.45;
   background-color: var(--color-canvas-subtle);
   border-radius: 6px;
+  font-family: var(--mono-stack);
 }
 
 :where(.markdown-document, .article) pre > code {
@@ -516,16 +435,6 @@ pre code {
   content: "⛔";
 }
 
-.sourceCode {
-  margin: 1.05rem 0 1.35rem;
-  border-radius: 1rem;
-  background: var(--code-bg);
-  color: var(--code-text);
-  overflow-x: auto;
-}
-.sourceCode pre {
-  margin: 0;
-}
 .code-example-box {
   margin: 1.05rem 0 1.35rem;
 }
@@ -1124,15 +1033,15 @@ h2#一言でいうと + p + .guideline-list li + li::before {
     width: 100%;
     padding: 10px 6px 28px;
   }
-  .article {
+  body.site-index :where(.article) {
     border-left: 0;
     border-right: 0;
     border-radius: 0;
     padding: 18px 12px 28px;
     box-shadow: none;
   }
-  header.hero .container,
-  .hero .container {
+  body.site-index header.hero .container,
+  body.site-index .hero .container {
     padding: 22px 12px 20px;
   }
   h1 {
@@ -1146,20 +1055,21 @@ h2#一言でいうと + p + .guideline-list li + li::before {
     font-size: 1.15rem;
     margin-top: 1.4em;
   }
-  .article p,
+  :where(.markdown-body, .markdown-document, .article) p,
+  .markdown-document li,
   .article li {
     word-break: normal;
     overflow-wrap: anywhere;
   }
-  .article ul,
-  .article ol {
+  :where(.markdown-body, .markdown-document, .article) ul,
+  :where(.markdown-body, .markdown-document, .article) ol {
     padding-left: 1.25em;
   }
-  pre {
+  :where(.markdown-body, .markdown-document, .article) pre {
     padding: 14px;
     white-space: pre-wrap;
   }
-  code {
+  :where(.markdown-body, .markdown-document, .article) code {
     overflow-wrap: anywhere;
   }
   .nav {
@@ -1171,10 +1081,10 @@ h2#一言でいうと + p + .guideline-list li + li::before {
   .nav a {
     margin-right: 0;
   }
-  .article-list {
+  body.site-index :where(.article-list) {
     gap: 10px;
   }
-  .article-list li {
+  body.site-index :where(.article-list li) {
     padding: 13px 12px;
     border-radius: 12px;
   }
@@ -1225,8 +1135,7 @@ h2#一言でいうと + p + .guideline-list li + li::before {
     padding-right: 4px;
   }
   body.glossary-page .article {
-    padding-left: 10px;
-    padding-right: 10px;
+    padding: 10px;
   }
   body.glossary-page .glossary-table-wrap {
     display: none;

@@ -714,7 +714,9 @@ function buildPage(
     breaks: false,
   });
 
-  const dom = new JSDOM(`<article class="article">${rendered}</article>`);
+  const dom = new JSDOM(
+    `<article class="article markdown-body markdown-document">${rendered}</article>`,
+  );
   const { document } = dom.window;
   const article = document.querySelector("article");
 
@@ -739,8 +741,8 @@ function buildPage(
   <link rel="stylesheet" href="../site/styles/style.css?v=${stylesheetVersion}" />
   <script src="../site/scripts/term-popup.js?v=${popupScriptVersion}" defer></script>
 </head>
-<body>
-<div class="container"><p class="nav"><a href="../index.html">← Index</a><a href="../domain-glossary.html">用語集</a></p><article class="article">${body}</article></div>
+<body class="tag-guide-page">
+<div class="container"><p class="nav"><a href="../index.html">← Index</a><a href="../domain-glossary.html">用語集</a></p><article class="article markdown-body markdown-document">${body}</article></div>
 </body>
 </html>
 `;

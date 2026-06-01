@@ -372,6 +372,7 @@ test("public dist assets package only copies static assets", () => {
         path.join(distDir, "site/styles/style.css"),
         "utf8",
       );
+      expect(distCss).toContain(".markdown-body");
       expect(distCss).toContain(".markdown-alert-note");
       expect(distCss).toContain(".markdown-alert-warning");
       expect(distCss).toContain(".markdown-alert-caution");

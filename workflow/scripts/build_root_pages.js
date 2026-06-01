@@ -33,11 +33,13 @@ function renderMarkdown(markdown) {
     gfm: true,
     breaks: false,
   });
-  const dom = new JSDOM(`<article>${rendered}</article>`);
+  const dom = new JSDOM(
+    `<main class="markdown-body markdown-document">${rendered}</main>`,
+  );
   const { document } = dom.window;
   transformMarkdownAlerts(document);
 
-  return document.querySelector("article")?.innerHTML ?? rendered;
+  return document.querySelector("main")?.innerHTML ?? rendered;
 }
 
 function splitGlossaryMarkdown(markdown) {
@@ -109,8 +111,10 @@ function buildIndexHtml() {
   <title>AI Agent Best Practices Linked Glossary</title>
   <link rel="stylesheet" href="site/styles/style.css?v=${stylesheetVersion}">
 </head>
-<body>
+<body class="site-index">
+<main class="markdown-body markdown-document">
 ${body}
+</main>
 </body>
 </html>`;
 }
@@ -199,7 +203,7 @@ function buildGlossaryHtml() {
 <body class="glossary-page">
 <div class="container">
   <p class="nav"><a href="index.html">Index</a><a href="domain-glossary.html">用語集</a></p>
-  <article class="article">
+  <article class="article markdown-body markdown-document">
     ${headerHtml}
 
     <div class="glossary-table-wrap">

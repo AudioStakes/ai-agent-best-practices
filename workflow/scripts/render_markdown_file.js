@@ -68,7 +68,7 @@ const renderedBody = marked.parse(markdown, {
   breaks: false,
 });
 const renderedDom = new JSDOM(
-  `<main class="markdown-document">${renderedBody}</main>`,
+  `<main class="markdown-document markdown-body">${renderedBody}</main>`,
 );
 transformMarkdownAlerts(renderedDom.window.document);
 const renderedMain = renderedDom.window.document.querySelector("main");
@@ -95,7 +95,7 @@ const html = `<!doctype html>
     <link rel="stylesheet" href="${escapeHtml(stylesheetHref)}">
   </head>
   <body>
-    <main class="markdown-document">
+    <main class="markdown-document markdown-body">
       ${renderedHtml}
     </main>
   </body>

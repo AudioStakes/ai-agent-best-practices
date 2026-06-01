@@ -84,6 +84,7 @@ test("build_tag_guides_html.js converts GitHub alerts and keeps normal blockquot
     const alertDocument = new JSDOM(
       readFileSync(path.join(outputDir, "alerts.html"), "utf8"),
     ).window.document;
+    expect(alertDocument.querySelector(".markdown-body")).toBeTruthy();
     expect(
       alertDocument.querySelector(".markdown-alert-note .markdown-alert-title")
         ?.textContent,
