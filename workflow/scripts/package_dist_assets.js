@@ -54,25 +54,16 @@ function copyTextFile(sourcePath, destinationPath) {
   writeFileSync(destinationPath, readFileSync(sourcePath, "utf8"), "utf8");
 }
 
-function resolveGitHubMarkdownSource() {
-  const lightPath = join(
-    repoRoot,
-    "node_modules/github-markdown-css/github-markdown-light.css",
-  );
-  if (existsSync(lightPath)) {
-    return lightPath;
-  }
-
-  return join(repoRoot, "node_modules/github-markdown-css/github-markdown.css");
-}
-
 function copySiteAssets(distDir) {
   copyTextFile(
     join(repoRoot, "site/styles/style.css"),
     join(distDir, "site/styles/style.css"),
   );
   copyTextFile(
-    resolveGitHubMarkdownSource(),
+    join(
+      repoRoot,
+      "node_modules/github-markdown-css/github-markdown-light.css",
+    ),
     join(distDir, "site/styles/github-markdown.css"),
   );
   copyTextFile(

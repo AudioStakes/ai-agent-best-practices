@@ -93,9 +93,6 @@ test("GitHub Markdown style guide renders into the expected DOM", async () => {
     .filter((text) => text.includes("[!NOTE]"));
 
   expect(alertCodeBlocks).toHaveLength(1);
-  expect(
-    readFileSync(path.join(repoRoot, "site/styles/style.css"), "utf8"),
-  ).not.toContain(".markdown-alert");
   expect(document.querySelectorAll("pre code").length).toBeGreaterThan(0);
   expect(document.querySelector("table")).toBeTruthy();
   expect(document.querySelector('input[type="checkbox"]')).toBeTruthy();

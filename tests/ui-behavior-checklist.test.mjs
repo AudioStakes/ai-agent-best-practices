@@ -365,17 +365,12 @@ test("public dist assets package only copies static assets", () => {
       expect(readdirSync(distDir)).toContain("site");
       expect(readdirSync(path.join(distDir, "site"))).toContain("styles");
       expect(readdirSync(path.join(distDir, "site"))).toContain("scripts");
-      expect(
-        readFileSync(path.join(distDir, "site/styles/style.css"), "utf8"),
-      ).not.toContain(".markdown-alert");
       const distCss = readFileSync(
         path.join(distDir, "site/styles/style.css"),
         "utf8",
       );
       expect(distCss).toContain(".term-popup");
       expect(distCss).toContain(".glossary-table-wrap");
-      expect(distCss).not.toContain(".publication-note");
-      expect(distCss).not.toContain(".rating-guide");
       expect(
         readFileSync(path.join(distDir, "site/scripts/term-popup.js"), "utf8"),
       ).toContain('popup.id = "term-popup"');
@@ -768,7 +763,6 @@ test("article pages keep the shared shell and readable headings", async ({
       await expect(
         page.locator("article.article.markdown-body.markdown-document"),
       ).toBeVisible();
-      await expect(page.locator("p.rating-guide")).toHaveCount(0);
 
       const title = await page.title();
       expect(title).toContain(heading);

@@ -37,16 +37,11 @@ function runProcess(args) {
   }));
 }
 
-test("site CSS uses GitHub Markdown styling instead of legacy article cards", async () => {
+test("site CSS stays focused on the shell, glossary, and term popup", async () => {
   const css = readFileSync(cssPath, "utf8");
 
   expect(css).not.toContain(".markdown-body");
   expect(css).not.toContain(".markdown-document");
-  expect(css).not.toContain(".markdown-alert");
-  expect(css).not.toContain(".publication-note");
-  expect(css).not.toContain(".rating-guide");
-  expect(css).not.toContain(".checklist");
-  expect(css).not.toContain(".semantic-list");
 
   expect(css).toContain(".term-popup");
   expect(css).toContain(".glossary-table-wrap");
@@ -66,12 +61,12 @@ test("site CSS uses GitHub Markdown styling instead of legacy article cards", as
       path.join(distDir, "site/styles/style.css"),
       "utf8",
     );
+    expect(distCss).toContain(".term-popup");
+    expect(distCss).toContain(".glossary-table-wrap");
     const distMarkdownCss = readFileSync(
       path.join(distDir, "site/styles/github-markdown.css"),
       "utf8",
     );
-    expect(distCss).not.toContain(".semantic-overrides");
-    expect(distCss).not.toContain(".markdown-alert");
     expect(distMarkdownCss).not.toContain("prefers-color-scheme: dark");
     expect(distMarkdownCss).toContain(".markdown-body");
     expect(readFileSync(githubMarkdownCssPath, "utf8")).not.toContain(

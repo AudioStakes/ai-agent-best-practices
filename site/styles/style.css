@@ -3,40 +3,9 @@
   --fg: #17202a;
   --muted: #667085;
   --border: #d9e0e7;
-  --bg: #f8fafc;
   --card: #ffffff;
-  --link: #0b57d0;
-  --soft: #f8fafc;
-  --soft-strong: #f1f5f9;
-  --good: #0f766e;
-  --good-bg: #ecfdf5;
-  --good-border: #a7f3d0;
-  --bad: #b42318;
-  --bad-bg: #fff1f0;
-  --bad-border: #ffccc7;
-  --negative: #9a3412;
-  --negative-bg: #fff7ed;
-  --negative-border: #fed7aa;
-  --neutral: #475569;
-  --neutral-bg: #f8fafc;
-  --neutral-border: #d9e0e7;
   --color-canvas-default: #ffffff;
-  --color-canvas-subtle: #f6f8fa;
   --color-fg-default: #1f2328;
-  --color-fg-muted: #59636e;
-  --color-border-default: #d0d7de;
-  --color-border-muted: #d8dee4;
-  --color-accent-fg: #0969da;
-  --color-neutral-muted: rgba(175, 184, 193, 0.2);
-  --tone-good: var(--good);
-  --tone-good-bg: var(--good-bg);
-  --tone-good-border: var(--good-border);
-  --tone-bad: var(--negative);
-  --tone-bad-bg: var(--negative-bg);
-  --tone-bad-border: var(--negative-border);
-  --tone-neutral: var(--neutral);
-  --tone-neutral-bg: var(--neutral-bg);
-  --tone-neutral-border: var(--neutral-border);
   --font-stack:
     -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica,
     Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
@@ -94,16 +63,6 @@ body.glossary-page :where(.article) {
   border-radius: 16px;
   padding: 32px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
-}
-
-body.site-index header.hero {
-  background: linear-gradient(135deg, #fff, #eef4ff);
-  border-bottom: 1px solid var(--border);
-}
-
-body.site-index .hero .container {
-  padding-top: 44px;
-  padding-bottom: 36px;
 }
 
 body.site-index :where(.meta, .small) {
@@ -245,26 +204,8 @@ body.site-index :where(.badge) {
 }
 
 .glossary-table {
-  display: table;
   width: 100%;
   border-collapse: collapse;
-}
-
-.glossary-table thead {
-  display: table-header-group;
-}
-
-.glossary-table tbody {
-  display: table-row-group;
-}
-
-.glossary-table tr {
-  display: table-row;
-}
-
-.glossary-table th,
-.glossary-table td {
-  display: table-cell;
 }
 
 .glossary-cards {
@@ -290,11 +231,6 @@ body.site-index :where(.badge) {
     border-radius: 0;
     padding: 18px 12px 28px;
     box-shadow: none;
-  }
-
-  body.site-index header.hero .container,
-  body.site-index .hero .container {
-    padding: 22px 12px 20px;
   }
 
   .nav {
