@@ -92,6 +92,12 @@ npm run build:tag-guides
 
 このコマンドは、Markdown をそのまま HTML に変換します。semantic fence の整形をしたい場合は `npm run fix:tag-guides`、整形が必要か確認したい場合は `npm run check:tag-guides` を使ってください。`tone-*` は色のヒント、`.process` や `.definition` などの suffix は構造のヒントとして扱われます。
 
+`workflow/guides/github-markdown-style-guide.md` を単体で HTML に変換したい場合は、次を使えます。
+
+```bash
+npm run render:github-markdown-style-guide
+```
+
 ## Source Safety
 
 `npm run build` と `npm run verify` は、`content/` 配下の原本 Markdown を変更しません。

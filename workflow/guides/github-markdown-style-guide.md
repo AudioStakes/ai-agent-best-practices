@@ -549,7 +549,7 @@ Repository rule:
 
 Published guide source files under `content/tag-guides/` should generally follow this structure.
 
-```markdown
+````markdown
 # 01. Topic Name
 
 ## この章で見直せること
@@ -576,7 +576,7 @@ The main point of this guide.
 ## Source Coverage
 
 ## References
-```
+````
 
 Rules:
 

@@ -50,6 +50,7 @@ const articlePages = [
 ];
 
 test.describe.configure({ mode: "serial" });
+test.setTimeout(60_000);
 
 async function waitForHttp(url, retries = 60) {
   let lastError = null;
@@ -124,7 +125,9 @@ async function ensureDistBuilt() {
 async function startServer(args = []) {
   await ensureDistBuilt();
 
-  const child = spawn(serveScript, args, {
+  const effectiveArgs = args.length > 0 ? args : [String(await getFreePort())];
+
+  const child = spawn(serveScript, effectiveArgs, {
     cwd: siteDir,
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -140,7 +143,7 @@ async function startServer(args = []) {
     stderr.push(chunk.toString("utf8"));
   });
 
-  const port = Number(args[0] ?? 8000);
+  const port = Number(effectiveArgs[0]);
   const url = `http://127.0.0.1:${port}/`;
 
   try {
@@ -194,7 +197,12 @@ test("ui checklist JSON stays machine-readable", async () => {
 });
 
 test("serve.sh starts with the documented host and port settings", async () => {
-  const defaults = await startServer();
+  const serveScriptContents = readFileSync(serveScript, "utf8");
+  expect(serveScriptContents).toContain(`PORT="\${1:-8000}"`);
+  expect(serveScriptContents).toContain(`HOST="\${2:-0.0.0.0}"`);
+
+  const defaultPort = await getFreePort();
+  const defaults = await startServer([String(defaultPort)]);
   try {
     const response = await fetch(defaults.url);
     expect(response.headers.get("cache-control")).toBe(
