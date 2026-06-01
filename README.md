@@ -9,19 +9,18 @@ AIエージェントを使った開発経験がある人向けに、OpenAI / Ant
 
 ## 公開ページ
 
-GitHub Pages で公開するトップページは、`docs/index.md` を元に生成される `docs/index.html` です。
+GitHub Pages で公開する内容は、`docs/index.md` を原本にして `npm run build` で生成します。
 
 - [docs/index.md](./docs/index.md)
-- [docs/index.html](./docs/index.html)
 - 公開対象は `docs/` 配下です。
-- 公開用ファイルの再生成は `npm run build:pages` で行います。
+- 公開用ファイルの再生成は `npm run build` で行います。
 - 公開前の確認項目は [docs/publishing-checklist.md](./docs/publishing-checklist.md) にまとめています。
 
 ## 生成物の扱い
 
-`docs/index.html`、`docs/domain-glossary.html`、`docs/tag-guides/*.html` は生成物です。直接編集せず、対応する Markdown や `workflow/scripts/*` を直してから `npm run build` を実行してください。
+`index.html`、`domain-glossary.html`、`tag-guides/*.html`、`docs/index.html`、`docs/domain-glossary.html`、`docs/tag-guides/*.html` は生成物です。直接編集せず、対応する Markdown や `workflow/scripts/*` を直してから `npm run build` を実行してください。
 
-公開物は `docs/` 配下にまとめてあり、`docs/index.html` から各章と用語集に辿れます。
+公開物は `docs/` 配下にまとめてあり、`npm run build` で再生成した `docs/index.html` から各章と用語集に辿れます。
 
 GitHub Pages を有効化した後は、次の形式のURLで公開される想定です。
 
@@ -68,16 +67,15 @@ OpenAI / Anthropic / Google / Microsoft / LangChain などの主要な公式ド�
 
 主な入口:
 
-- [index.html](./index.html)
-- [用語集](./domain-glossary.html)
-- [README.html](./README.html)
+- [index.md](./index.md)
+- [用語集原本](./domain-glossary.md)
+- [README.md](./README.md)
 
 主なファイルとディレクトリ:
 
 ```text
 .
-├── index.html
-├── domain-glossary.html
+├── index.md
 ├── domain-glossary.md
 ├── tag-guides/
 ├── tests/
@@ -89,8 +87,9 @@ OpenAI / Anthropic / Google / Microsoft / LangChain などの主要な公式ド�
 └── README.md
 ```
 
-- `tag-guides/`: タグ別の記事 HTML と Markdown
-- `domain-glossary.md` / `domain-glossary.html`: 用語集の原本と閲覧版
+- `tag-guides/`: タグ別の記事 Markdown 原本と build で生成する HTML
+- `domain-glossary.md`: 用語集の原本
+- `index.md`: ルートの案内ページ原本
 - `docs/`: GitHub Pages 公開用トップページと公開方針ドキュメント
 - `tests/`: ローカル表示の UI 挙動を確認する Playwright テスト
 - `style.css` / `term-popup.js`: 共通の見た目と用語ポップアップ
@@ -98,6 +97,7 @@ OpenAI / Anthropic / Google / Microsoft / LangChain などの主要な公式ド�
 ## ローカルで見る
 
 ```bash
+npm run build
 ./serve.sh
 ```
 
@@ -107,22 +107,12 @@ OpenAI / Anthropic / Google / Microsoft / LangChain などの主要な公式ド�
 http://localhost:8000/docs/
 ```
 
-公開用ファイルを再生成したあとは、`http://localhost:8000/docs/` か `http://localhost:8000/docs/index.html` を開いて、章の冒頭説明と相互リンクを確認できます。
+公開用ファイルを再生成したあとは、`http://localhost:8000/` か `http://localhost:8000/docs/` を開いて、章の冒頭説明と相互リンクを確認できます。
 
 ## GitHub Pages で公開する
 
-GitHub Pages で公開する場合は、リポジトリ設定で次のように指定します。
-
-```text
-Settings
-→ Pages
-→ Build and deployment
-→ Source: Deploy from a branch
-→ Branch: main
-→ Folder: /docs
-```
-
-この設定により、`docs/index.html` が公開トップになります。
+GitHub Pages を `Deploy from a branch` で公開する運用は、生成HTMLをコミットしない方針と衝突します。  
+このリポジトリでは、GitHub Actions で `npm run build` を実行して Pages 用 artifact を公開する運用へ寄せる前提で考えてください。
 
 ## 公開前チェック
 
@@ -134,7 +124,7 @@ npm run verify:pages
 npm run verify
 ```
 
-`npm run build` は `docs/` 配下の公開物を再生成します。`npm run verify:pages` は `docs/` 配下のファイル存在、章の必須要素、ローカルリンク切れを確認します。`npm run verify` は lint, format, test をまとめて確認します。
+`npm run build` はルート配下と `docs/` 配下の公開物を再生成します。`npm run verify:pages` は `docs/` 配下のファイル存在、章の必須要素、ローカルリンク切れを確認します。`npm run verify` は lint, format, test をまとめて確認します。
 
 ## 再生成手順
 

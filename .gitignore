@@ -1,5 +1,15 @@
 node_modules/
 
+# Generated from Markdown. Do not commit generated HTML.
+/index.html
+/domain-glossary.html
+/README.html
+/tag-guides/*.html
+/docs/index.html
+/docs/domain-glossary.html
+/docs/tag-guides/*.html
+/ai-agent-best-practices-linked-glossary/*.html
+
 # Local article archives
 singlefile/
 html/

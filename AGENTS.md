@@ -7,6 +7,8 @@
   files, `tests/`, and `workflow/` files you changed.
 - Use `npm run verify` before handing off any change that affects the site
   shell, article pages, glossary behavior, or tests.
+- Treat generated HTML as build output. Regenerate it with `npm run build`
+  instead of committing it.
 - Keep the root README focused on how to read and verify the site. Put article
   regeneration steps in `workflow/README.md` instead of expanding the root docs.
 - When changing generated HTML, keep the visible text, navigation, and linked
@@ -16,6 +18,9 @@
 ## Regeneration Notes
 
 - Markdown source files for tag guides live in `knowledge_templated/tag-guides/`.
+  Root site source files live in `index.md` and `domain-glossary.md`.
+  `workflow/scripts/build_root_pages.js` turns them into `index.html` and
+  `domain-glossary.html`,
   `workflow/scripts/build_tag_guides_html.js` turns each `.md` file into a
   matching `.html` file in `tag-guides/`, and `workflow/scripts/build_public_pages.js`
   mirrors both into `docs/tag-guides/` for GitHub Pages.

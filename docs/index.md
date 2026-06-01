@@ -52,9 +52,9 @@ OpenAI / Anthropic / Google / Microsoft / LangChain などの主要な公式ド�
 
 ## 公開範囲
 
-- この公開トップは `docs/index.md` です。
-- 各章は `docs/tag-guides/*.html` と `docs/tag-guides/*.md` から読めます。
-- 用語集は [docs/domain-glossary.html](domain-glossary.html) と `docs/domain-glossary.md` で参照できます。
+- この公開トップは `docs/index.md` を原本として `npm run build` で生成される `docs/index.html` です。
+- 各章は `npm run build` で生成される `docs/tag-guides/*.html` と `docs/tag-guides/*.md` から読めます。
+- 用語集は `npm run build` で生成される [docs/domain-glossary.html](domain-glossary.html) と `docs/domain-glossary.md` で参照できます。
 - 各章ページにはトップページへ戻るリンクと用語集への導線があります。
 
 ## 対象外

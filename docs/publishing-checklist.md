@@ -2,15 +2,15 @@
 
 ## Build
 
-- [ ] `npm run build` または `npm run build:pages` が成功する
+- [ ] `npm run build` が成功する
+- [ ] 必要に応じて `npm run build:pages` でも公開用 HTML を再生成できる
 - [ ] `npm run verify` が成功する
 - [ ] `npm run verify:pages` が成功する
 
 ## GitHub Pages
 
-- [ ] GitHub Pages の Source が `Deploy from a branch` になっている
-- [ ] Branch が `main` になっている
-- [ ] Folder が `/docs` になっている
+- [ ] GitHub Pages は GitHub Actions で build した artifact を公開する運用になっている
+- [ ] もし `Deploy from a branch` を使うなら、生成 HTML をコミットする必要があり、この方針とは両立しない
 - [ ] 公開URLでトップページが表示できる
 
 ## Content
@@ -31,7 +31,7 @@
 - [ ] トップページの CSS が反映されている
 - [ ] `style.css` と `term-popup.js` の相対パスが GitHub Pages 配下でも解決される
 - [ ] 用語ポップアップ、または用語リンクの挙動が壊れていない
-- [ ] `docs/index.html` を直接開いた場合と GitHub Pages 経由で開いた場合のリンク先が一致している
+- [ ] `docs/index.html` を build 後に直接開いた場合と GitHub Pages 経由で開いた場合のリンク先が一致している
 - [ ] 外部リンクが意図した公式ドキュメントを指している
 
 ## Readability

@@ -74,6 +74,17 @@ node workflow/scripts/save_content.js --all --overwrite
 node workflow/scripts/save_content.js --all --refresh-days 30
 ```
 
+## ルートの静的サイトを再生成する
+
+`index.md` と `domain-glossary.md` を元に、ルート配下の閲覧用 HTML を再生成できます。
+
+```bash
+npm run build:root
+```
+
+このコマンドで `index.html` と `domain-glossary.html` が生成されます。  
+`npm run build` を実行すると、これに加えてタグガイド HTML と `docs/` 配下の公開用ファイルもまとめて再生成されます。
+
 ## 保存済みSingleFileを一覧表示する
 
 `npm run save:singlefile` を実行すると、保存処理のあとに次の一覧ページが生成されます。
@@ -148,7 +159,7 @@ GitHub Pages の公開用ファイルを `docs/` 配下にまとめ直したい�
 npm run build:pages
 ```
 
-このコマンドは次をまとめて行います。
+このコマンドは次をまとめて行います。生成された HTML は Git にコミットしない前提です。
 
 - タグガイドの fence 注釈を更新する
 - `docs/tag-guides/*.html` を再生成する
@@ -156,7 +167,8 @@ npm run build:pages
 - `docs/tag-guides/*.md` を同期する
 - `docs/style.css` / `docs/term-popup.js` / `docs/domain-glossary.html` / `docs/domain-glossary.md` を同期する
 
-公開トップは `docs/index.html` なので、公開前にそこから各章と用語集へ辿れるかを確認してください。
+公開トップは `docs/index.html` なので、公開前に `npm run build` のあとでそこから各章と用語集へ辿れるかを確認してください。  
+GitHub Pages を branch deploy で配る場合はこの方針と衝突するため、Actions で artifact を生成して公開する運用に寄せるのが前提です。
 
 ## 再生成の入口
 
@@ -165,6 +177,7 @@ npm run build:pages
 - `workflow/scripts/save_singlefile.js`
 - `workflow/scripts/save_content.js`
 - `workflow/scripts/build_singlefile_index.js`
+- `workflow/scripts/build_root_pages.js`
 - `workflow/scripts/annotate_tag_guides_fences.js`
 - `workflow/scripts/build_tag_guides_html.js`
 - `workflow/scripts/build_public_pages.js`
