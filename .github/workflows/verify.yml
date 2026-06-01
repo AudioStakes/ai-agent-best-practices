@@ -29,15 +29,6 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Build site
-        run: npm run build
-
-      - name: Package public mirrors
-        run: npm run build:pages
-
-      - name: Verify public pages
-        run: npm run verify:pages
-
       - name: Run full verification
         run: npm run verify
 
@@ -71,8 +62,8 @@ jobs:
       - name: Build site
         run: npm run build
 
-      - name: Package public mirrors
-        run: npm run build:pages
+      - name: Verify public pages
+        run: npm run verify:pages
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

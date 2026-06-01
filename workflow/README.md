@@ -8,7 +8,7 @@
 - `archive/` は Web から保存・抽出した中間成果物を置く場所です。
 - `content/` は人間または ChatGPT が編集する原本 Markdown を置く場所です。
 - `site/` はサイト表示に必要な CSS と JavaScript を置く場所です。
-- `dist/` は生成 HTML と公開用のミラー出力を置く場所です。
+- `dist/` は生成 HTML と公開可能な静的資産を置く場所です。
 
 ## 保存対象を確認する
 
@@ -91,15 +91,15 @@ npm run build:tag-guides
 
 このコマンドは、先に Markdown の fence に semantic marker を付け直してから HTML を生成します。`tone-*` は色のヒント、`.process` や `.definition` などの suffix は構造のヒントとして扱われます。
 
-## 生成物を `dist/` にまとめる
+## 公開用資産を `dist/` にまとめる
 
-GitHub Pages やローカルプレビューで使いやすいように、Markdown と静的資産を `dist/` にミラーしたい場合は次を実行します。
+HTML の公開に必要な CSS / JS を `dist/site/` にまとめたい場合は次を実行します。
 
 ```bash
-npm run build:pages
+npm run build:assets
 ```
 
-このコマンドは、`dist/` に公開用の Markdown と CSS / JS をまとめます。生成物は Git にコミットしません。
+このコマンドは、`dist/site/` に CSS / JS をコピーします。`dist/` に source Markdown は置きません。生成物は Git にコミットしません。
 
 ## 保存済み SingleFile を一覧表示する
 
@@ -119,7 +119,7 @@ node workflow/scripts/build_singlefile_index.js
 
 ## 再生成の入口
 
-`workflow/scripts/` にあるスクリプトが、記事保存、一覧生成、タグガイド生成、公開用ミラー作成の中心です。
+`workflow/scripts/` にあるスクリプトが、記事保存、一覧生成、タグガイド生成、公開用資産のパッケージングの中心です。
 
 - `workflow/scripts/save_singlefile.js`
 - `workflow/scripts/save_content.js`
@@ -127,4 +127,5 @@ node workflow/scripts/build_singlefile_index.js
 - `workflow/scripts/build_root_pages.js`
 - `workflow/scripts/annotate_tag_guides_fences.js`
 - `workflow/scripts/build_tag_guides_html.js`
-- `workflow/scripts/build_public_pages.js`
+- `workflow/scripts/package_dist_assets.js`
+- `scripts/clean-dist.mjs`

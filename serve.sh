@@ -11,7 +11,9 @@ HOST="${2:-0.0.0.0}"
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SITE_DIR="${ROOT_DIR}/dist"
 if [ ! -d "${SITE_DIR}" ]; then
-  SITE_DIR="${ROOT_DIR}"
+  echo "dist/ was not found."
+  echo "Run \`npm run build\` before \`./serve.sh\`."
+  exit 1
 fi
 
 cd "${SITE_DIR}"

@@ -2,6 +2,8 @@ import { spawn } from "node:child_process";
 import { once } from "node:events";
 import net from "node:net";
 import {
+  chmodSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -23,9 +25,9 @@ const buildTagGuidesScript = path.join(
   siteDir,
   "workflow/scripts/build_tag_guides_html.js",
 );
-const buildPublicPagesScript = path.join(
+const packageDistAssetsScript = path.join(
   siteDir,
-  "workflow/scripts/build_public_pages.js",
+  "workflow/scripts/package_dist_assets.js",
 );
 const annotateTagGuidesScript = path.join(
   siteDir,
@@ -70,7 +72,58 @@ async function waitForHttp(url, retries = 60) {
   );
 }
 
+async function runProcess(command, args, cwd = siteDir) {
+  const child = spawn(command, args, {
+    cwd,
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+
+  const stdout = [];
+  const stderr = [];
+
+  child.stdout.on("data", (chunk) => {
+    stdout.push(chunk.toString("utf8"));
+  });
+
+  child.stderr.on("data", (chunk) => {
+    stderr.push(chunk.toString("utf8"));
+  });
+
+  const [code, signal] = await once(child, "close");
+  return {
+    code,
+    signal,
+    stdout: stdout.join(""),
+    stderr: stderr.join(""),
+  };
+}
+
+async function ensureDistBuilt() {
+  const distDir = path.join(siteDir, "dist");
+  const legacyMirrors = [
+    path.join(distDir, "index.md"),
+    path.join(distDir, "domain-glossary.md"),
+    path.join(distDir, "sources", "articles.csv"),
+  ];
+
+  if (
+    existsSync(path.join(distDir, "index.html")) &&
+    !legacyMirrors.some((filePath) => existsSync(filePath))
+  ) {
+    return;
+  }
+
+  const result = await runProcess("npm", ["run", "build"]);
+  if (result.code !== 0) {
+    throw new Error(
+      `site build failed with exit code ${result.code}\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`,
+    );
+  }
+}
+
 async function startServer(args = []) {
+  await ensureDistBuilt();
+
   const child = spawn(serveScript, args, {
     cwd: siteDir,
     stdio: ["ignore", "pipe", "pipe"],
@@ -105,10 +158,14 @@ async function startServer(args = []) {
     stop: async () => {
       if (child.exitCode === null && child.signalCode === null) {
         child.kill("SIGINT");
-        await Promise.race([
+        const closed = await Promise.race([
           once(child, "close"),
           new Promise((resolve) => setTimeout(resolve, 2000)),
         ]);
+        if (!closed) {
+          child.kill("SIGKILL");
+          await once(child, "close").catch(() => {});
+        }
       }
     },
   };
@@ -168,8 +225,27 @@ test("serve.sh starts with the documented host and port settings", async () => {
   }
 });
 
+test("serve.sh fails when dist is missing", async () => {
+  const tempRoot = mkdtempSync(
+    path.join(os.tmpdir(), "serve-sh-missing-dist-"),
+  );
+  const scriptCopy = path.join(tempRoot, "serve.sh");
+  writeFileSync(scriptCopy, readFileSync(serveScript, "utf8"));
+  chmodSync(scriptCopy, 0o755);
+
+  try {
+    const result = await runProcess(scriptCopy, [], tempRoot);
+    expect(result.code).not.toBe(0);
+    expect(result.stdout).toContain("dist/ was not found.");
+    expect(result.stdout).toContain("Run `npm run build` before `./serve.sh`.");
+  } finally {
+    rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
 test("markdown code block gallery is linked from the home page", async () => {
-  const server = await startServer();
+  const port = await getFreePort();
+  const server = await startServer([String(port)]);
   try {
     const home = await fetch(server.url);
     const homeHtml = await home.text();
@@ -266,93 +342,34 @@ test("tag guide markdown can be regenerated into readable HTML", () => {
     });
 });
 
-test("public dist can be regenerated for GitHub Pages", () => {
+test("public dist assets package only copies static assets", () => {
   const distDir = path.join(siteDir, "dist");
-  const result = spawn(
-    "node",
-    [buildPublicPagesScript, "--dist-dir", distDir],
-    {
-      cwd: siteDir,
-      stdio: ["ignore", "pipe", "pipe"],
-    },
-  );
-
-  const stdout = [];
-  const stderr = [];
-  result.stdout.on("data", (chunk) => {
-    stdout.push(chunk.toString("utf8"));
-  });
-  result.stderr.on("data", (chunk) => {
-    stderr.push(chunk.toString("utf8"));
-  });
-
-  return once(result, "close")
-    .then(([code]) => {
-      if (code !== 0) {
+  return runProcess("node", [packageDistAssetsScript, "--dist-dir", distDir])
+    .then((result) => {
+      if (result.code !== 0) {
         throw new Error(
-          `public dist build failed with exit code ${code}\nstdout:\n${stdout.join("")}\nstderr:\n${stderr.join("")}`,
+          `asset packaging failed with exit code ${result.code}\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`,
         );
       }
 
-      const generatedFiles = readdirSync(path.join(distDir, "tag-guides"));
-      expect(generatedFiles).toContain("01-agent-design.html");
-      expect(generatedFiles).toContain("01-agent-design.md");
-      expect(readdirSync(distDir)).toContain("index.html");
-      expect(readdirSync(distDir)).toContain("index.md");
-      expect(readdirSync(distDir)).toContain("domain-glossary.html");
-      expect(readdirSync(distDir)).toContain("domain-glossary.md");
-      expect(readdirSync(distDir)).toContain("sources");
       expect(readdirSync(distDir)).toContain("site");
+      expect(readdirSync(path.join(distDir, "site"))).toContain("styles");
+      expect(readdirSync(path.join(distDir, "site"))).toContain("scripts");
       expect(
         readFileSync(path.join(distDir, "site/styles/style.css"), "utf8"),
       ).toContain(".publication-note");
-      expect(readdirSync(path.join(distDir, "tag-guides"))).toContain(
-        "11-markdown-code-block-gallery.md",
-      );
-      expect(readdirSync(path.join(distDir, "tag-guides"))).toContain(
-        "11-markdown-code-block-gallery.html",
-      );
-
-      const distIndex = readFileSync(path.join(distDir, "index.html"), "utf8");
-      expect(distIndex).toContain('href="tag-guides/01-agent-design.html"');
-      expect(distIndex).toContain(
-        'href="tag-guides/08-security-sandboxing.html"',
-      );
-      expect(distIndex).toContain('href="domain-glossary.html"');
-      expect(distIndex).toContain('href="sources/articles.csv"');
-      expect(distIndex).toContain("AI Agent Best Practices Linked Glossary");
-
-      const generated = readFileSync(
-        path.join(distDir, "tag-guides", "01-agent-design.html"),
-        "utf8",
-      );
-      expect(generated).toContain("対象時点:</strong> 2026年5月");
-      expect(generated).toContain('href="../site/styles/style.css?v=');
-      expect(generated).toContain('src="../site/scripts/term-popup.js?v=');
-      expect(generated).toContain('href="../domain-glossary.html#agent"');
-
-      const gallery = readFileSync(
-        path.join(distDir, "tag-guides", "11-markdown-code-block-gallery.html"),
-        "utf8",
-      );
-      expect(gallery).toContain("11. MarkdownコードブロックHTMLデザイン見本");
-      expect(gallery).toContain('class="guideline-list"');
-      expect(gallery).toContain('class="risk-box"');
-      expect(gallery).toContain('class="takeaway-box"');
-      expect(gallery).toContain('class="process-steps"');
-      expect(gallery).toContain('class="checklist"');
-      expect(gallery).toContain('class="risk-ladder"');
-      expect(gallery).toContain('class="definition-box"');
-      expect(gallery).toContain('class="structured-list"');
-      expect(gallery).toContain('class="code-example-box"');
-
-      const glossary = readFileSync(
-        path.join(distDir, "domain-glossary.html"),
-        "utf8",
-      );
-      expect(glossary).not.toContain('href="README.html"');
-      expect(glossary).toContain('href="index.html"');
-      expect(glossary).toContain('href="domain-glossary.html"');
+      expect(
+        readFileSync(
+          path.join(distDir, "site/styles/semantic-overrides.css"),
+          "utf8",
+        ),
+      ).toContain("Deprecated");
+      expect(
+        readFileSync(path.join(distDir, "site/scripts/term-popup.js"), "utf8"),
+      ).toContain('popup.id = "term-popup"');
+      expect(readdirSync(distDir)).not.toContain("index.md");
+      expect(readdirSync(distDir)).not.toContain("domain-glossary.md");
+      expect(readdirSync(distDir)).not.toContain("sources");
     })
     .finally(() => {
       // Keep dist output in place for the rest of the test suite.
@@ -648,13 +665,7 @@ test("index links to every article and the glossary", async ({ page }) => {
     await page.goto(server.url);
 
     await expect(
-      page.getByRole("link", { name: "READMEを読む" }),
-    ).toBeVisible();
-    await expect(
       page.getByRole("link", { name: "用語集を見る" }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("link", { name: "用語集Markdown" }),
     ).toBeVisible();
 
     await expect(page.locator(".article-list > li")).toHaveCount(10);
@@ -667,6 +678,7 @@ test("index links to every article and the glossary", async ({ page }) => {
     await expect(
       page.getByRole("link", { name: "09. マルチエージェント系" }),
     ).toHaveAttribute("href", "tag-guides/09-multi-agent.html");
+    await expect(page.locator("a[href$='.md']")).toHaveCount(0);
 
     const title = await page.title();
     expect(title).not.toContain("[");

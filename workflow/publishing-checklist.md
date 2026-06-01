@@ -3,7 +3,6 @@
 ## Build
 
 - [ ] `npm run build` が成功する
-- [ ] 必要に応じて `npm run build:pages` でも公開用 HTML を再生成できる
 - [ ] `npm run verify` が成功する
 - [ ] `npm run verify:pages` が成功する
 
@@ -32,7 +31,7 @@
 - [ ] `site/styles/style.css` と `site/scripts/term-popup.js` の相対パスが GitHub Pages 配下でも解決される
 - [ ] 用語ポップアップ、または用語リンクの挙動が壊れていない
 - [ ] `dist/index.html` を build 後に直接開いた場合と GitHub Pages 経由で開いた場合のリンク先が一致している
-- [ ] `dist/index.md` や `dist/domain-glossary.md` は build output であり、原本ではない
+- [ ] `dist/` に source Markdown や CSV のコピーが入っていない
 - [ ] 外部リンクが意図した公式ドキュメントを指している
 
 ## Readability

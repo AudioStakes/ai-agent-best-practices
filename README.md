@@ -17,14 +17,14 @@ The repository is organized so it is easy to tell what is source, what is interm
 | 4 | Read and synthesize sources | ChatGPT | `notes/` |
 | 5 | Draft guide Markdown | ChatGPT | `content/tag-guides/*.md` |
 | 6 | Normalize structure and terms | ChatGPT / Automation | Source Markdown under `content/` |
-| 7 | Generate HTML | Automation | `dist/` |
+| 7 | Generate HTML and package public assets | Automation | `dist/` |
 | 8 | Verify and publish | Automation / Human | Checked public site |
 
 ## Source of Truth
 
 Markdown files under `content/` are the source of truth.
 
-Generated HTML lives under `dist/`. Do not edit generated HTML directly. Fix the Markdown source, glossary source, semantic markers, or build scripts instead.
+Generated HTML and static assets live under `dist/`. Do not edit generated output directly. Fix the Markdown source, glossary source, semantic markers, or build scripts instead.
 
 ## Key Paths
 
@@ -39,7 +39,7 @@ content/tag-guides/                  # Source Markdown for tag guides
 site/styles/                         # Site CSS
 site/scripts/                        # Site JavaScript
 workflow/                            # Capture, extraction, and build scripts
-dist/                                # Generated site output, ignored by Git
+dist/                                # Generated publishable site output, ignored by Git
 ```
 
 ## Common Commands
@@ -67,7 +67,7 @@ Then open:
 http://localhost:8000/
 ```
 
-The local server serves `dist/` when it exists.
+Run `npm run build` before `./serve.sh`. The local server only serves `dist/`.
 
 ## Publish
 
