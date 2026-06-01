@@ -189,7 +189,7 @@ async function getFreePort() {
 test("ui checklist JSON stays machine-readable", async () => {
   expect(checklist.name).toBe("AI Agent Best Practices UI behavior checklist");
   expect(checklist.version).toBe("2026-05-31");
-  expect(checklist.target).toBe("repo-root");
+  expect(checklist.target).toBe("dist");
   expect(checklist.categories).toHaveLength(13);
 });
 
@@ -343,7 +343,9 @@ test("tag guide markdown can be regenerated into readable HTML", () => {
 });
 
 test("public dist assets package only copies static assets", () => {
-  const distDir = path.join(siteDir, "dist");
+  const tempRoot = mkdtempSync(path.join(os.tmpdir(), "dist-assets-"));
+  const distDir = path.join(tempRoot, "dist");
+
   return runProcess("node", [packageDistAssetsScript, "--dist-dir", distDir])
     .then((result) => {
       if (result.code !== 0) {
@@ -372,7 +374,7 @@ test("public dist assets package only copies static assets", () => {
       expect(readdirSync(distDir)).not.toContain("sources");
     })
     .finally(() => {
-      // Keep dist output in place for the rest of the test suite.
+      rmSync(tempRoot, { recursive: true, force: true });
     });
 });
 
@@ -527,6 +529,59 @@ test("tag guide markdown fences can be annotated with semantic markers", () => {
       expect(annotated).toContain("```tone-neutral.risk-ladder");
       expect(annotated).toContain("```json.code-example");
       expect(annotated).toContain("```markdown.definition");
+    })
+    .finally(() => {
+      rmSync(tempRoot, { recursive: true, force: true });
+    });
+});
+
+test("tag guide annotation check fails without mutating source files", () => {
+  const tempRoot = mkdtempSync(
+    path.join(os.tmpdir(), "tag-guides-annotate-check-"),
+  );
+  const inputDir = path.join(tempRoot, "input");
+  const markdownPath = path.join(inputDir, "sample.md");
+
+  mkdirSync(inputDir, { recursive: true });
+  const original = [
+    "# Sample",
+    "",
+    "```tone-good",
+    "AIに任せる仕事を、処理単位に分解する",
+    "```",
+    "",
+  ].join("\n");
+  writeFileSync(markdownPath, original);
+
+  const result = spawn(
+    "node",
+    [annotateTagGuidesScript, "--input-dir", inputDir, "--check"],
+    {
+      cwd: siteDir,
+      stdio: ["ignore", "pipe", "pipe"],
+    },
+  );
+
+  const stdout = [];
+  const stderr = [];
+  result.stdout.on("data", (chunk) => {
+    stdout.push(chunk.toString("utf8"));
+  });
+  result.stderr.on("data", (chunk) => {
+    stderr.push(chunk.toString("utf8"));
+  });
+
+  return once(result, "close")
+    .then(([code]) => {
+      expect(code).toBe(1);
+      expect(stdout.join("")).toBe("");
+      expect(stderr.join("")).toContain(
+        "Tag guide semantic fences are not normalized:",
+      );
+      expect(stderr.join("")).toContain(
+        "Run `npm run fix:tag-guides` to update them.",
+      );
+      expect(readFileSync(markdownPath, "utf8")).toBe(original);
     })
     .finally(() => {
       rmSync(tempRoot, { recursive: true, force: true });

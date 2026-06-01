@@ -89,7 +89,7 @@ npm run build:root
 npm run build:tag-guides
 ```
 
-このコマンドは、先に Markdown の fence に semantic marker を付け直してから HTML を生成します。`tone-*` は色のヒント、`.process` や `.definition` などの suffix は構造のヒントとして扱われます。
+このコマンドは、Markdown をそのまま HTML に変換します。semantic fence の整形をしたい場合は `npm run fix:tag-guides`、整形が必要か確認したい場合は `npm run check:tag-guides` を使ってください。`tone-*` は色のヒント、`.process` や `.definition` などの suffix は構造のヒントとして扱われます。
 
 ## 公開用資産を `dist/` にまとめる
 

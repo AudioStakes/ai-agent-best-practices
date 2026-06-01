@@ -1,7 +1,7 @@
 {
   "name": "AI Agent Best Practices UI behavior checklist",
   "version": "2026-05-31",
-  "target": "repo-root",
+  "target": "dist",
   "categories": [
     {
       "id": "serve_cache",

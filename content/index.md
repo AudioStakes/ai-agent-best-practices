@@ -66,9 +66,8 @@ AIエージェント関連記事をタグ別に統合し、ドメイン用語を
 
   <section class="article" style="margin-top: 28px;">
     <h2>ローカルで起動する</h2>
-    <p>このフォルダで次を実行し、<code>http://localhost:8000/</code> を開いてください。</p>
-    <pre><code>./serve.sh</code></pre>
-    <p>または:</p>
-    <pre><code>python3 -m http.server 8000</code></pre>
+    <p>先に <code>npm run build</code> を実行し、その後 <code>./serve.sh</code> で <code>dist/</code> を配信してください。</p>
+    <pre><code>npm run build
+./serve.sh</code></pre>
   </section>
 </div>
