@@ -18,7 +18,7 @@ type PackageOptions = {
   distDir: string;
 };
 
-function parseArgs(argv: string[]): PackageOptions {
+const parseArgs = (argv: string[]): PackageOptions => {
   const options: PackageOptions = {
     distDir: defaultDistDir,
   };
@@ -40,34 +40,34 @@ function parseArgs(argv: string[]): PackageOptions {
   }
 
   return options;
-}
+};
 
-function printHelpAndExit() {
+const printHelpAndExit = (): never => {
   console.log(`Usage:
   tsx workflow/scripts/package_dist_assets.ts [--dist-dir DIR]
 
 Defaults:
   --dist-dir   ${defaultDistDir}`);
   process.exit(0);
-}
+};
 
-function ensureDir(path: string): void {
+const ensureDir = (path: string): void => {
   mkdirSync(path, { recursive: true });
-}
+};
 
-function copyTextFile(sourcePath: string, destinationPath: string): void {
+const copyTextFile = (sourcePath: string, destinationPath: string): void => {
   if (!existsSync(sourcePath)) {
     throw new Error(`Source file not found: ${sourcePath}`);
   }
 
   ensureDir(dirname(destinationPath));
   writeFileSync(destinationPath, readFileSync(sourcePath, "utf8"), "utf8");
-}
+};
 
-function transpileBrowserScript(
+const transpileBrowserScript = (
   sourcePath: string,
   destinationPath: string,
-): void {
+): void => {
   const source = readFileSync(sourcePath, "utf8");
   const compilerOptions = {
     target: ScriptTarget.ES2022,
@@ -89,9 +89,9 @@ function transpileBrowserScript(
 
   ensureDir(dirname(destinationPath));
   writeFileSync(destinationPath, result.outputText, "utf8");
-}
+};
 
-function copySiteAssets(distDir: string): void {
+const copySiteAssets = (distDir: string): void => {
   copyTextFile(
     join(repoRoot, "site/styles/style.css"),
     join(distDir, "site/styles/style.css"),
@@ -107,14 +107,14 @@ function copySiteAssets(distDir: string): void {
     join(repoRoot, "site/scripts/term-popup.ts"),
     join(distDir, "site/scripts/term-popup.js"),
   );
-}
+};
 
-function main(): void {
+const main = (): void => {
   const options = parseArgs(process.argv.slice(2));
   ensureDir(options.distDir);
   copySiteAssets(options.distDir);
 
   console.log(`generated: ${join(options.distDir, "site")}`);
-}
+};
 
 main();

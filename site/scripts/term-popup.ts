@@ -44,13 +44,13 @@ const toneScoring: TonePatternMap = {
   ],
 };
 
-function normalizeText(value: string | null | undefined): string {
+const normalizeText = (value: string | null | undefined): string => {
   return String(value ?? "")
     .replace(/\s+/g, " ")
     .trim();
-}
+};
 
-function getSiblingText(node: Element, limit = 1): string {
+const getSiblingText = (node: Element, limit = 1): string => {
   const texts: string[] = [];
   let current: Element | null = node.previousElementSibling;
 
@@ -63,9 +63,9 @@ function getSiblingText(node: Element, limit = 1): string {
   }
 
   return texts.join(" ");
-}
+};
 
-function classifyToneChipList(list: Element): Tone {
+const classifyToneChipList = (list: Element): Tone => {
   const chips = Array.from(list.querySelectorAll("span")).map((chip) =>
     normalizeText(chip.textContent),
   );
@@ -81,19 +81,19 @@ function classifyToneChipList(list: Element): Tone {
   }
 
   return "neutral";
-}
+};
 
 const chipLists = Array.from(
   document.querySelectorAll<HTMLElement>(".term-chip-list"),
 );
-for (const list of chipLists) {
+chipLists.forEach((list) => {
   const tone = classifyToneChipList(list);
   list.dataset.tone = tone;
 
-  for (const chip of list.querySelectorAll("span")) {
+  Array.from(list.querySelectorAll("span")).forEach((chip) => {
     chip.dataset.tone = tone;
-  }
-}
+  });
+});
 
 const terms = Array.from(
   document.querySelectorAll<HTMLAnchorElement>("a.term[data-description]"),
@@ -110,22 +110,22 @@ if (terms.length > 0) {
   popup.hidden = true;
   document.body.appendChild(popup);
 
-  function isTouchLike(): boolean {
+  const isTouchLike = (): boolean => {
     return (
       window.matchMedia?.("(hover: none), (pointer: coarse)")?.matches ===
         true || navigator.maxTouchPoints > 0
     );
-  }
+  };
 
-  function isMobileLayout(): boolean {
+  const isMobileLayout = (): boolean => {
     return window.matchMedia?.("(max-width: 720px)")?.matches === true;
-  }
+  };
 
-  function getTermLabel(term: HTMLAnchorElement): string {
+  const getTermLabel = (term: HTMLAnchorElement): string => {
     return (term.textContent || "").replace(/\s+/g, " ").trim();
-  }
+  };
 
-  function renderPopup(term: HTMLAnchorElement): void {
+  const renderPopup = (term: HTMLAnchorElement): void => {
     const description = term.getAttribute("data-description") || "";
     popup.replaceChildren();
 
@@ -157,9 +157,9 @@ if (terms.length > 0) {
     body.className = "term-popup-description";
     body.textContent = description;
     popup.appendChild(body);
-  }
+  };
 
-  function setPopupPosition(term: HTMLAnchorElement): void {
+  const setPopupPosition = (term: HTMLAnchorElement): void => {
     const rect = term.getBoundingClientRect();
     const mobile = isMobileLayout();
 
@@ -199,9 +199,9 @@ if (terms.length > 0) {
       top = rect.bottom + 10;
     }
     popup.style.top = `${top}px`;
-  }
+  };
 
-  function openPopup(term: HTMLAnchorElement): void {
+  const openPopup = (term: HTMLAnchorElement): void => {
     if (!term) {
       return;
     }
@@ -217,9 +217,9 @@ if (terms.length > 0) {
     popup.setAttribute("aria-hidden", "false");
     term.setAttribute("aria-expanded", "true");
     setPopupPosition(term);
-  }
+  };
 
-  function closePopup(): void {
+  const closePopup = (): void => {
     if (activeTerm) {
       activeTerm.setAttribute("aria-expanded", "false");
     }
@@ -227,9 +227,9 @@ if (terms.length > 0) {
     popup.hidden = true;
     delete popup.dataset.open;
     popup.setAttribute("aria-hidden", "true");
-  }
+  };
 
-  for (const term of terms) {
+  terms.forEach((term) => {
     term.setAttribute("aria-haspopup", "dialog");
     term.setAttribute("aria-expanded", "false");
     term.setAttribute("aria-describedby", "term-popup");
@@ -288,7 +288,7 @@ if (terms.length > 0) {
         }
       }
     });
-  }
+  });
 
   document.addEventListener("click", (event: MouseEvent) => {
     if (!activeTerm) {

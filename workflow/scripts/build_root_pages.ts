@@ -22,20 +22,20 @@ type GlossaryEntry = {
   avoid: string;
 };
 
-function escapeHtml(value: string | number | null | undefined): string {
+const escapeHtml = (value: string | number | null | undefined): string => {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
-}
+};
 
-function readMarkdown(filePath: string): string {
+const readMarkdown = (filePath: string): string => {
   return readFileSync(filePath, "utf8");
-}
+};
 
-async function renderMarkdown(markdown: string): Promise<string> {
+const renderMarkdown = async (markdown: string): Promise<string> => {
   const rendered = await markdownToHtml(markdown);
   const dom = new JSDOM(
     `<article class="article markdown-body markdown-document">${rendered}</article>`,
@@ -43,11 +43,11 @@ async function renderMarkdown(markdown: string): Promise<string> {
   const { document } = dom.window;
 
   return document.querySelector("article")?.innerHTML ?? rendered;
-}
+};
 
-async function splitGlossaryMarkdown(
+const splitGlossaryMarkdown = async (
   markdown: string,
-): Promise<{ headerHtml: string; tableLines: string[] }> {
+): Promise<{ headerHtml: string; tableLines: string[] }> => {
   const lines = markdown.split(/\r?\n/);
   const headerLines = [];
   const tableLines = [];
@@ -69,9 +69,9 @@ async function splitGlossaryMarkdown(
     headerHtml: await renderMarkdown(headerLines.join("\n")),
     tableLines,
   };
-}
+};
 
-function parseGlossaryEntries(tableLines: string[]): GlossaryEntry[] {
+const parseGlossaryEntries = (tableLines: string[]): GlossaryEntry[] => {
   const entries: GlossaryEntry[] = [];
 
   for (const line of tableLines) {
@@ -107,9 +107,9 @@ function parseGlossaryEntries(tableLines: string[]): GlossaryEntry[] {
   }
 
   return entries;
-}
+};
 
-async function buildIndexHtml(): Promise<string> {
+const buildIndexHtml = async (): Promise<string> => {
   const markdown = readMarkdown(indexMarkdownPath);
   const body = await renderMarkdown(markdown);
 
@@ -130,9 +130,9 @@ ${body}
 </main>
 </body>
 </html>`;
-}
+};
 
-async function buildGlossaryHtml(): Promise<string> {
+const buildGlossaryHtml = async (): Promise<string> => {
   const markdown = readMarkdown(glossaryMarkdownPath);
   const { headerHtml, tableLines } = await splitGlossaryMarkdown(markdown);
   const entries = parseGlossaryEntries(tableLines);
@@ -195,9 +195,9 @@ ${cards}
 </div>
 </body>
 </html>`;
-}
+};
 
-async function main(): Promise<void> {
+const main = async (): Promise<void> => {
   mkdirSync(distRoot, { recursive: true });
   writeFileSync(join(distRoot, "index.html"), await buildIndexHtml(), "utf8");
   writeFileSync(
@@ -208,6 +208,6 @@ async function main(): Promise<void> {
 
   console.log(`generated: ${join(distRoot, "index.html")}`);
   console.log(`generated: ${join(distRoot, "domain-glossary.html")}`);
-}
+};
 
 await main();

@@ -21,7 +21,7 @@ const defaultGlossaryPath = join(repoRoot, "content/domain-glossary.md");
 const stylesheetVersion = "20260601-site-shell-3";
 const popupScriptVersion = "20260601-site-shell-3";
 
-function parseArgs(argv) {
+const parseArgs = (argv) => {
   const options = {
     inputDir: defaultInputDir,
     outputDir: defaultOutputDir,
@@ -51,9 +51,9 @@ function parseArgs(argv) {
   }
 
   return options;
-}
+};
 
-function printHelpAndExit() {
+const printHelpAndExit = () => {
   console.log(`Usage:
   tsx workflow/scripts/build_tag_guides_html.ts [--input-dir DIR] [--output-dir DIR] [--glossary FILE]
 
@@ -62,18 +62,18 @@ Defaults:
   --output-dir  ${defaultOutputDir}
   --glossary    ${defaultGlossaryPath}`);
   process.exit(0);
-}
+};
 
-function escapeHtml(value) {
+const escapeHtml = (value) => {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
-}
+};
 
-function readGlossaryDescriptions(glossaryPath) {
+const readGlossaryDescriptions = (glossaryPath) => {
   if (!existsSync(glossaryPath)) {
     throw new Error(`Glossary file not found: ${glossaryPath}`);
   }
@@ -96,9 +96,9 @@ function readGlossaryDescriptions(glossaryPath) {
   }
 
   return descriptions;
-}
+};
 
-function readGlossaryTerms(glossaryPath) {
+const readGlossaryTerms = (glossaryPath) => {
   const terms = [];
   const lines = readFileSync(glossaryPath, "utf8").split(/\r?\n/);
 
@@ -126,9 +126,9 @@ function readGlossaryTerms(glossaryPath) {
   }
 
   return terms;
-}
+};
 
-function slugifyHeading(text, usedIds) {
+const slugifyHeading = (text, usedIds) => {
   const base =
     String(text)
       .normalize("NFKD")
@@ -146,9 +146,9 @@ function slugifyHeading(text, usedIds) {
 
   usedIds.add(candidate);
   return candidate;
-}
+};
 
-function rewriteLinks(document, glossaryDescriptions) {
+const rewriteLinks = (document, glossaryDescriptions) => {
   for (const anchor of document.querySelectorAll("a[href]")) {
     const href = anchor.getAttribute("href");
     if (!href) {
@@ -178,13 +178,13 @@ function rewriteLinks(document, glossaryDescriptions) {
       anchor.setAttribute("href", href.replace(/\.md(?=(?:[?#]|$))/g, ".html"));
     }
   }
-}
+};
 
-function escapeRegExp(value) {
+const escapeRegExp = (value) => {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+};
 
-function buildTermMatcher(terms) {
+const buildTermMatcher = (terms) => {
   const uniqueTerms = [
     ...new Map(terms.map((entry) => [entry.term, entry])).values(),
   ];
@@ -197,9 +197,9 @@ function buildTermMatcher(terms) {
     termsByText: new Map(uniqueTerms.map((entry) => [entry.term, entry])),
     regex: pattern ? new RegExp(pattern, "g") : null,
   };
-}
+};
 
-function linkGlossaryTerms(document, article, glossaryTerms) {
+const linkGlossaryTerms = (document, article, glossaryTerms) => {
   if (!article || glossaryTerms.length === 0) {
     return;
   }
@@ -278,9 +278,9 @@ function linkGlossaryTerms(document, article, glossaryTerms) {
 
     textNode.parentNode?.replaceChild(fragment, textNode);
   }
-}
+};
 
-function annotateHeadings(document) {
+const annotateHeadings = (document) => {
   const usedIds = new Set();
 
   for (const heading of document.querySelectorAll("h1, h2, h3, h4, h5, h6")) {
@@ -290,27 +290,27 @@ function annotateHeadings(document) {
       usedIds.add(heading.id);
     }
   }
-}
+};
 
-function getFenceToken(codeBlock) {
+const getFenceToken = (codeBlock) => {
   return Array.from(codeBlock.classList).find((className) =>
     className.startsWith("language-"),
   );
-}
+};
 
-function parseFenceToken(token) {
+const parseFenceToken = (token) => {
   const value = token.replace(/^language-/, "");
   const parts = value.split(".").filter(Boolean);
   const base = parts[0] || "";
   const tags = new Set(parts.slice(1));
   return { base, tags, raw: value };
-}
+};
 
-function stripListMarker(line) {
+const stripListMarker = (line) => {
   return line.replace(/^\s*(?:[-*+]\s+|\d+[.)]\s+)/, "").trim();
-}
+};
 
-function createListElement(document, tagName, className, items) {
+const createListElement = (document, tagName, className, items) => {
   const list = document.createElement(tagName);
   list.className = className;
 
@@ -321,9 +321,9 @@ function createListElement(document, tagName, className, items) {
   }
 
   return list;
-}
+};
 
-function extractCodeExampleLabel(base) {
+const extractCodeExampleLabel = (base) => {
   const normalized = base.toLowerCase();
   if (normalized === "json") {
     return "JSON";
@@ -341,9 +341,9 @@ function extractCodeExampleLabel(base) {
     return "Code";
   }
   return normalized.toUpperCase();
-}
+};
 
-function renderCodeExample(document, codeBlock, base) {
+const renderCodeExample = (document, codeBlock, base) => {
   const box = document.createElement("div");
   box.className = "code-example-box";
 
@@ -363,9 +363,9 @@ function renderCodeExample(document, codeBlock, base) {
   pre.appendChild(code);
   box.appendChild(pre);
   return box;
-}
+};
 
-function renderTakeaway(document, lines) {
+const renderTakeaway = (document, lines) => {
   const box = document.createElement("div");
   box.className = "takeaway-box";
 
@@ -377,9 +377,9 @@ function renderTakeaway(document, lines) {
   });
 
   return box;
-}
+};
 
-async function renderDefinition(document, text) {
+const renderDefinition = async (document, text) => {
   const box = document.createElement("div");
   box.className = "definition-box";
   const dl = document.createElement("dl");
@@ -465,9 +465,9 @@ async function renderDefinition(document, text) {
   }
 
   return box;
-}
+};
 
-function renderStructuredList(document, lines) {
+const renderStructuredList = (document, lines) => {
   const box = document.createElement("div");
   box.className = "structured-list";
 
@@ -489,9 +489,9 @@ function renderStructuredList(document, lines) {
   }
 
   return box;
-}
+};
 
-function renderRiskLadder(document, text) {
+const renderRiskLadder = (document, text) => {
   const box = document.createElement("div");
   box.className = "risk-ladder";
   const lines = text.split(/\r?\n/);
@@ -547,17 +547,17 @@ function renderRiskLadder(document, text) {
 
   finalize();
   return box;
-}
+};
 
-function renderListFromLines(document, tagName, className, text) {
+const renderListFromLines = (document, tagName, className, text) => {
   const lines = text
     .split(/\r?\n/)
     .map((line) => stripListMarker(line))
     .filter(Boolean);
   return createListElement(document, tagName, className, lines);
-}
+};
 
-function renderProcessSteps(document, text) {
+const renderProcessSteps = (document, text) => {
   const textLines = text
     .split(/\r?\n/)
     .map((line) => line.trim())
@@ -584,22 +584,22 @@ function renderProcessSteps(document, text) {
   }
 
   return createListElement(document, "ol", "process-steps", items);
-}
+};
 
-function renderChecklist(document, text, question = false) {
+const renderChecklist = (document, text, question = false) => {
   const className = question ? "checklist question-checklist" : "checklist";
   return renderListFromLines(document, "ul", className, text);
-}
+};
 
-function renderGuidelineList(document, text) {
+const renderGuidelineList = (document, text) => {
   return renderListFromLines(document, "ul", "guideline-list", text);
-}
+};
 
-function renderRiskBox(document, text) {
+const renderRiskBox = (document, text) => {
   return renderListFromLines(document, "ul", "risk-box", text);
-}
+};
 
-async function transformMarkedFences(document) {
+const transformMarkedFences = async (document) => {
   const codeBlocks = Array.from(
     document.querySelectorAll('pre > code[class*="language-"]'),
   );
@@ -666,14 +666,14 @@ async function transformMarkedFences(document) {
       codeBlock.parentElement?.replaceWith(replacement);
     }
   }
-}
+};
 
-async function buildPage(
+const buildPage = async (
   markdown,
   sourceFileName,
   glossaryDescriptions,
   glossaryTerms,
-) {
+) => {
   const rendered = await markdownToHtml(markdown);
 
   const dom = new JSDOM(
@@ -706,9 +706,9 @@ async function buildPage(
 </body>
 </html>
 `;
-}
+};
 
-async function main() {
+const main = async () => {
   const options = parseArgs(process.argv.slice(2));
   if (!existsSync(options.inputDir)) {
     throw new Error(`Input directory not found: ${options.inputDir}`);
@@ -740,6 +740,6 @@ async function main() {
     writeFileSync(outputPath, html, "utf8");
     console.log(`generated: ${outputPath}`);
   }
-}
+};
 
 main();

@@ -18,7 +18,7 @@ type LocalTarget = {
   message?: string;
 };
 
-function parseArgs(argv: string[]): CheckOptions {
+const parseArgs = (argv: string[]): CheckOptions => {
   const options: CheckOptions = {
     distDir: defaultDistDir,
   };
@@ -40,34 +40,34 @@ function parseArgs(argv: string[]): CheckOptions {
   }
 
   return options;
-}
+};
 
-function printHelpAndExit() {
+const printHelpAndExit = (): never => {
   console.log(`Usage:
   tsx scripts/check-pages-output.ts [--dist-dir DIR]
 
 Defaults:
   --dist-dir   ${defaultDistDir}`);
   process.exit(0);
-}
+};
 
-function fail(message: string): never {
+const fail = (message: string): never => {
   throw new Error(message);
-}
+};
 
-function requireFile(filePath: string, hint = ""): void {
+const requireFile = (filePath: string, hint = ""): void => {
   if (!existsSync(filePath)) {
     const relativePath = relative(repoRoot, filePath);
     fail(`Missing required file: ${relativePath}${hint ? `\n${hint}` : ""}`);
   }
-}
+};
 
-function readText(filePath: string, hint = ""): string {
+const readText = (filePath: string, hint = ""): string => {
   requireFile(filePath, hint);
   return readFileSync(filePath, "utf8");
-}
+};
 
-function walkFiles(rootDir: string): string[] {
+const walkFiles = (rootDir: string): string[] => {
   const entries: string[] = [];
   const stack = [rootDir];
 
@@ -89,27 +89,27 @@ function walkFiles(rootDir: string): string[] {
   }
 
   return entries.sort((a, b) => a.localeCompare(b));
-}
+};
 
-function assertContains(text: string, needle: string, label: string): void {
+const assertContains = (text: string, needle: string, label: string): void => {
   if (!text.includes(needle)) {
     fail(`${label} is missing "${needle}"`);
   }
-}
+};
 
-function toDocument(text: string): Document {
+const toDocument = (text: string): Document => {
   return new JSDOM(text).window.document;
-}
+};
 
-function isLocalLink(url: string): boolean {
+const isLocalLink = (url: string): boolean => {
   return (
     url.length > 0 &&
     !/^(?:https?:|mailto:|tel:|data:|javascript:|#)/i.test(url) &&
     !url.startsWith("//")
   );
-}
+};
 
-function resolveLocalTarget(filePath: string, url: string): LocalTarget {
+const resolveLocalTarget = (filePath: string, url: string): LocalTarget => {
   const cleaned = url.split(/[?#]/)[0] ?? "";
   const sourceDir = dirname(filePath);
 
@@ -129,23 +129,21 @@ function resolveLocalTarget(filePath: string, url: string): LocalTarget {
     absolute,
     message: `does not exist: ${relative(repoRoot, absolute)}`,
   };
-}
+};
 
-function collectDocumentLinks(document: Document): string[] {
-  const urls: string[] = [];
-  for (const element of document.querySelectorAll(
-    "a[href], img[src], script[src], link[href], source[src], iframe[src]",
-  )) {
-    const url =
-      element.getAttribute("href") ?? element.getAttribute("src") ?? "";
-    if (isLocalLink(url)) {
-      urls.push(url);
-    }
-  }
-  return urls;
-}
+const collectDocumentLinks = (document: Document): string[] =>
+  Array.from(
+    document.querySelectorAll(
+      "a[href], img[src], script[src], link[href], source[src], iframe[src]",
+    ),
+  )
+    .map(
+      (element) =>
+        element.getAttribute("href") ?? element.getAttribute("src") ?? "",
+    )
+    .filter(isLocalLink);
 
-function validateLocalLinks(filePath: string, document: Document): void {
+const validateLocalLinks = (filePath: string, document: Document): void => {
   const urls = collectDocumentLinks(document);
   const failures: string[] = [];
 
@@ -163,17 +161,17 @@ function validateLocalLinks(filePath: string, document: Document): void {
       `Broken local links found:\n${failures.map((entry) => `- ${entry}`).join("\n")}`,
     );
   }
-}
+};
 
-function readSourceTagGuideSlugs() {
+const readSourceTagGuideSlugs = (): string[] => {
   const tagGuidesDir = join(repoRoot, "content/tag-guides");
   return readdirSync(tagGuidesDir)
     .filter((name) => name.endsWith(".md"))
     .map((name) => name.replace(/\.md$/, ""))
     .sort((a, b) => a.localeCompare(b));
-}
+};
 
-function checkRequiredFiles(distDir: string): void {
+const checkRequiredFiles = (distDir: string): void => {
   const requiredPaths = [
     join(distDir, "index.html"),
     join(distDir, "domain-glossary.html"),
@@ -191,9 +189,9 @@ function checkRequiredFiles(distDir: string): void {
   for (const slug of readSourceTagGuideSlugs()) {
     requireFile(join(tagGuidesDir, `${slug}.html`));
   }
-}
+};
 
-function checkNoSourceMirrors(distDir: string): void {
+const checkNoSourceMirrors = (distDir: string): void => {
   const forbiddenFiles = walkFiles(distDir).filter((filePath) =>
     [".md", ".csv"].includes(extname(filePath)),
   );
@@ -205,9 +203,9 @@ function checkNoSourceMirrors(distDir: string): void {
         .join("\n")}`,
     );
   }
-}
+};
 
-function checkIndexHtml(distDir: string): void {
+const checkIndexHtml = (distDir: string): void => {
   const indexPath = join(distDir, "index.html");
   const text = readText(
     indexPath,
@@ -236,9 +234,9 @@ function checkIndexHtml(distDir: string): void {
   for (const slug of readSourceTagGuideSlugs()) {
     assertContains(text, `tag-guides/${slug}.html`, label);
   }
-}
+};
 
-function checkGlossaryHtml(distDir: string): void {
+const checkGlossaryHtml = (distDir: string): void => {
   const glossaryPath = join(distDir, "domain-glossary.html");
   const text = readText(
     glossaryPath,
@@ -248,7 +246,7 @@ function checkGlossaryHtml(distDir: string): void {
   const label = relative(repoRoot, glossaryPath);
 
   const h1 = document.querySelector("h1");
-  if (!h1) {
+  if (h1 === null) {
     fail(`${label} is missing an h1 title`);
   }
 
@@ -262,9 +260,9 @@ function checkGlossaryHtml(distDir: string): void {
 
   assertContains(text, 'href="site/styles/style.css?v=', label);
   assertContains(text, 'src="site/scripts/term-popup.js?v=', label);
-}
+};
 
-function checkTagGuideHtml(distDir: string, slug: string): void {
+const checkTagGuideHtml = (distDir: string, slug: string): void => {
   const htmlPath = join(distDir, "tag-guides", `${slug}.html`);
   const text = readText(
     htmlPath,
@@ -286,7 +284,8 @@ function checkTagGuideHtml(distDir: string, slug: string): void {
     fail(`${label} is missing an h1 title`);
   }
 
-  const headingText = h1.textContent?.replace(/\s+/g, " ").trim() ?? "";
+  const headingText =
+    (h1 as HTMLHeadingElement).textContent?.replace(/\s+/g, " ").trim() ?? "";
   if (!/^\d{2}\.\s+/.test(headingText)) {
     fail(`${label} has an unexpected title: "${headingText}"`);
   }
@@ -312,9 +311,9 @@ function checkTagGuideHtml(distDir: string, slug: string): void {
 
   assertContains(text, 'href="../site/styles/style.css?v=', label);
   assertContains(text, 'src="../site/scripts/term-popup.js?v=', label);
-}
+};
 
-function checkTagGuideHtmlFiles(distDir: string): void {
+const checkTagGuideHtmlFiles = (distDir: string): void => {
   const slugs = readSourceTagGuideSlugs();
   if (slugs.length === 0) {
     fail("No tag guide source files were found in content/tag-guides.");
@@ -338,9 +337,9 @@ function checkTagGuideHtmlFiles(distDir: string): void {
   for (const slug of slugs) {
     checkTagGuideHtml(distDir, slug);
   }
-}
+};
 
-function checkLocalLinksInDist(distDir: string): void {
+const checkLocalLinksInDist = (distDir: string): void => {
   for (const filePath of walkFiles(distDir).filter((filePath) =>
     filePath.endsWith(".html"),
   )) {
@@ -348,9 +347,9 @@ function checkLocalLinksInDist(distDir: string): void {
     const document = toDocument(text);
     validateLocalLinks(filePath, document);
   }
-}
+};
 
-function main(): void {
+const main = (): void => {
   const options = parseArgs(process.argv.slice(2));
   checkRequiredFiles(options.distDir);
   checkNoSourceMirrors(options.distDir);
@@ -359,6 +358,6 @@ function main(): void {
   checkTagGuideHtmlFiles(options.distDir);
   checkLocalLinksInDist(options.distDir);
   console.log(`verified: ${relative(repoRoot, options.distDir)}`);
-}
+};
 
 main();
