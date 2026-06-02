@@ -1,10 +1,10 @@
+import { spawn } from "node:child_process";
+import { once } from "node:events";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { spawn } from "node:child_process";
-import { once } from "node:events";
 import { fileURLToPath } from "node:url";
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(testDir, "..");
@@ -15,11 +15,11 @@ const githubMarkdownCssPath = path.join(
 );
 const packageDistAssetsScript = path.join(
   repoRoot,
-  "workflow/scripts/package_dist_assets.js",
+  "workflow/scripts/package_dist_assets.ts",
 );
 
 function runProcess(args) {
-  const child = spawn("node", [packageDistAssetsScript, ...args], {
+  const child = spawn("tsx", [packageDistAssetsScript, ...args], {
     cwd: repoRoot,
     stdio: ["ignore", "pipe", "pipe"],
   });

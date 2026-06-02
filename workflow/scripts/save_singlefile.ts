@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
+import { spawn } from "node:child_process";
 import {
   existsSync,
   mkdirSync,
-  readFileSync,
   renameSync,
   rmSync,
   statSync,
@@ -11,9 +11,8 @@ import {
 } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { spawn } from "node:child_process";
-import { parse } from "csv-parse/sync";
 import { stringify } from "csv-stringify/sync";
+import { type ArticleRow, readArticles } from "./article_rows.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
@@ -28,8 +27,12 @@ const csvPath = join(repoRoot, "sources/articles.csv");
 const outputRoot = join(repoRoot, "archive/singlefile");
 const defaultTimeoutSeconds = 120;
 
-function usage() {
-  console.log(`Usage: node workflow/scripts/save_singlefile.js [options]
+type RunOptions = {
+  timeoutMs: number;
+};
+
+const usage = (): void => {
+  console.log(`Usage: tsx workflow/scripts/save_singlefile.ts [options]
 
 Options:
   --dry-run                   Show what would be saved without downloading pages.
@@ -40,21 +43,21 @@ Options:
 
 Examples:
   npm run save:singlefile
-  node workflow/scripts/save_singlefile.js --all --refresh-days 30
-  node workflow/scripts/save_singlefile.js --all --timeout-seconds 300
-  node workflow/scripts/save_singlefile.js --all --overwrite
+  tsx workflow/scripts/save_singlefile.ts --all --refresh-days 30
+  tsx workflow/scripts/save_singlefile.ts --all --timeout-seconds 300
+  tsx workflow/scripts/save_singlefile.ts --all --overwrite
 
 Output:
   archive/singlefile/<source>/<id>.html
 `);
-}
+};
 
 if (args.has("--help") || args.has("-h")) {
   usage();
   process.exit(0);
 }
 
-function readNumberArg(name) {
+const readNumberArg = (name: string): number | null => {
   const equalsPrefix = `${name}=`;
   const equalsArg = rawArgs.find((arg) => arg.startsWith(equalsPrefix));
 
@@ -68,7 +71,7 @@ function readNumberArg(name) {
   }
 
   return Number(rawArgs[index + 1]);
-}
+};
 
 const refreshDays = readNumberArg("--refresh-days");
 const timeoutSeconds =
@@ -85,36 +88,37 @@ if (!Number.isFinite(timeoutSeconds) || timeoutSeconds <= 0) {
   throw new Error("--timeout-seconds must be a positive number.");
 }
 
-function normalizeSource(source) {
-  return (
-    String(source || "unknown")
-      .trim()
-      .toLowerCase()
-      .replace(/&/g, "and")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "unknown"
-  );
-}
+const normalizeSource = (source: string | undefined): string =>
+  String(source ?? "unknown")
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "unknown";
 
-function ensureDir(path) {
+const ensureDir = (path: string): void => {
   if (!existsSync(path)) {
     mkdirSync(path, { recursive: true });
   }
-}
+};
 
-function removeFileIfExists(path) {
+const removeFileIfExists = (path: string): void => {
   if (existsSync(path)) {
     rmSync(path, { force: true });
   }
-}
+};
 
-function fileAgeDays(path) {
+const fileAgeDays = (path: string): number => {
   const { mtimeMs } = statSync(path);
   return (Date.now() - mtimeMs) / (1000 * 60 * 60 * 24);
-}
+};
 
-function run(command, commandArgs, { timeoutMs }) {
-  return new Promise((resolve, reject) => {
+const run = (
+  command: string,
+  commandArgs: string[],
+  { timeoutMs }: RunOptions,
+): Promise<void> =>
+  new Promise<void>((resolve, reject) => {
     let settled = false;
     let timedOut = false;
 
@@ -165,22 +169,8 @@ function run(command, commandArgs, { timeoutMs }) {
       }
     });
   });
-}
 
-function readArticles() {
-  if (!existsSync(csvPath)) {
-    throw new Error(`articles.csv was not found: ${csvPath}`);
-  }
-
-  const csv = readFileSync(csvPath, "utf8");
-  return parse(csv, {
-    columns: true,
-    skip_empty_lines: true,
-    bom: true,
-  });
-}
-
-function writeArticles(rows) {
+const writeArticles = (rows: ArticleRow[]): void => {
   const columns = [
     "id",
     "title",
@@ -199,9 +189,14 @@ function writeArticles(rows) {
   });
 
   writeFileSync(csvPath, csv, "utf8");
-}
+};
 
-function shouldRefreshExistingFile(outputPath) {
+const shouldRefreshExistingFile = (
+  outputPath: string,
+): {
+  refresh: boolean;
+  reason: string;
+} => {
   if (overwrite) {
     return { refresh: true, reason: "overwrite requested" };
   }
@@ -222,9 +217,9 @@ function shouldRefreshExistingFile(outputPath) {
     refresh: false,
     reason: `existing file is ${ageDays.toFixed(1)} days old; refresh threshold is ${refreshDays} days`,
   };
-}
+};
 
-async function saveArticle(row) {
+const saveArticle = async (row: ArticleRow): Promise<"saved" | "skipped"> => {
   const id = row.id?.trim();
   const url = row.url?.trim();
   const sourceDir = normalizeSource(row.source);
@@ -283,10 +278,10 @@ async function saveArticle(row) {
   row.raw_path = relativeOutputPath;
 
   return "saved";
-}
+};
 
-async function main() {
-  const rows = readArticles();
+const main = async (): Promise<void> => {
+  const rows = readArticles(csvPath);
   let saved = 0;
   let skipped = 0;
   let failed = 0;
@@ -311,11 +306,11 @@ async function main() {
       } else if (!dryRun) {
         saved += 1;
       }
-    } catch (error) {
+    } catch (error: unknown) {
       failed += 1;
       row.status = "failed";
       console.error(`failed: ${row.id} ${row.url}`);
-      console.error(error.message);
+      console.error(error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -331,9 +326,9 @@ async function main() {
   if (dryRun) {
     console.log("Dry run only. No files were written.");
   }
-}
+};
 
-main().catch((error) => {
-  console.error(error);
+main().catch((error: unknown) => {
+  console.error(error instanceof Error ? error : String(error));
   process.exit(1);
 });

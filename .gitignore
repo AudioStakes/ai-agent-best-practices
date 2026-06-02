@@ -1,4 +1,5 @@
 node_modules/
+*.tsbuildinfo
 
 # Generated site output
 /dist/

@@ -17,4 +17,4 @@
 - `npm run save:singlefile:dry-run`
 - `npm run save:content`
 - `npm run save:content:dry-run`
-- `node workflow/scripts/build_singlefile_index.js`
+- `tsx workflow/scripts/build_singlefile_index.ts`

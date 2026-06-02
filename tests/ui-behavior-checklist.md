@@ -22,7 +22,7 @@
 - [ ] `dist/` がないとき、`./serve.sh` は root にフォールバックせず失敗する。
 - [ ] ローカルサーバーはHTML / CSS / JSに対してキャッシュを避けるレスポンスヘッダーを返す。
 - [ ] 各HTMLの `site/styles/style.css` 読み込みURLにキャッシュ破棄用のクエリ文字列が付いている。
-- [ ] 各HTMLの `site/scripts/term-popup.js` 読み込みURLにキャッシュ破棄用のクエリ文字列が付いている。
+- [ ] 各HTMLの `site/scripts/term-popup.ts` 読み込みURLにキャッシュ破棄用のクエリ文字列が付いている。
 - [ ] CSS / JS 更新後、ページを再読み込みすると最新の表示・挙動が反映される。
 
 ## 文字化け

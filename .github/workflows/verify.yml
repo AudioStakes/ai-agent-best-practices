@@ -30,7 +30,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run full verification
-        run: npm run verify
+        run: npm run verify:full
 
   deploy-pages:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'

@@ -3,7 +3,6 @@
 import {
   existsSync,
   mkdirSync,
-  readFileSync,
   rmSync,
   statSync,
   writeFileSync,
@@ -11,9 +10,9 @@ import {
 import { dirname, extname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Readability } from "@mozilla/readability";
-import { parse } from "csv-parse/sync";
 import { JSDOM } from "jsdom";
 import TurndownService from "turndown";
+import { type ArticleRow, readArticles } from "./article_rows.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
@@ -25,13 +24,16 @@ const overwrite = args.has("--overwrite");
 const pendingOnly = !args.has("--all");
 const saveImages = !args.has("--no-images");
 
-const csvPath = join(repoRoot, "sources/articles.csv");
 const contentRoot = join(repoRoot, "archive/extracted");
 const assetsRoot = join(repoRoot, "archive/assets");
 const defaultTimeoutSeconds = 60;
 
-function usage() {
-  console.log(`Usage: node workflow/scripts/save_content.js [options]
+type FetchOptions = {
+  headers?: Record<string, string>;
+};
+
+const usage = (): void => {
+  console.log(`Usage: tsx workflow/scripts/save_content.ts [options]
 
 Options:
   --dry-run                   Show what would be saved without downloading pages.
@@ -43,22 +45,22 @@ Options:
 
 Examples:
   npm run save:content
-  node workflow/scripts/save_content.js --all --refresh-days 30
-  node workflow/scripts/save_content.js --all --overwrite
-  node workflow/scripts/save_content.js --no-images
+  tsx workflow/scripts/save_content.ts --all --refresh-days 30
+  tsx workflow/scripts/save_content.ts --all --overwrite
+  tsx workflow/scripts/save_content.ts --no-images
 
 Output:
   archive/extracted/<source>/<id>.md
   archive/assets/<source>/<id>/image-001.<ext>
 `);
-}
+};
 
 if (args.has("--help") || args.has("-h")) {
   usage();
   process.exit(0);
 }
 
-function readNumberArg(name) {
+const readNumberArg = (name: string): number | null => {
   const equalsPrefix = `${name}=`;
   const equalsArg = rawArgs.find((arg) => arg.startsWith(equalsPrefix));
 
@@ -72,7 +74,7 @@ function readNumberArg(name) {
   }
 
   return Number(rawArgs[index + 1]);
-}
+};
 
 const refreshDays = readNumberArg("--refresh-days");
 const timeoutSeconds =
@@ -89,49 +91,48 @@ if (!Number.isFinite(timeoutSeconds) || timeoutSeconds <= 0) {
   throw new Error("--timeout-seconds must be a positive number.");
 }
 
-function normalizeSource(source) {
-  return (
-    String(source || "unknown")
-      .trim()
-      .toLowerCase()
-      .replace(/&/g, "and")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "unknown"
-  );
-}
+const normalizeSource = (source: string | undefined): string =>
+  String(source ?? "unknown")
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "unknown";
 
-function ensureDir(path) {
+const ensureDir = (path: string): void => {
   if (!existsSync(path)) {
     mkdirSync(path, { recursive: true });
   }
-}
+};
 
-function removeDirIfExists(path) {
+const removeDirIfExists = (path: string): void => {
   if (existsSync(path)) {
     rmSync(path, { recursive: true, force: true });
   }
-}
+};
 
-function fileAgeDays(path) {
+const fileAgeDays = (path: string): number => {
   const { mtimeMs } = statSync(path);
   return (Date.now() - mtimeMs) / (1000 * 60 * 60 * 24);
-}
+};
 
-function escapeYaml(value) {
+const escapeYaml = (value: string | number | null | undefined): string => {
   return String(value ?? "")
     .replace(/\\/g, "\\\\")
     .replace(/"/g, '\\"');
-}
+};
 
-function sanitizeMarkdown(markdown) {
-  return markdown.replace(/\n{3,}/g, "\n\n").trim();
-}
+const sanitizeMarkdown = (markdown: string): string =>
+  markdown.replace(/\n{3,}/g, "\n\n").trim();
 
-function extensionFromContentType(contentType) {
+const extensionFromContentType = (
+  contentType: string | null,
+): string | null => {
   if (!contentType) return null;
-  const type = contentType.split(";")[0].trim().toLowerCase();
+  const [typePart] = contentType.split(";");
+  const type = (typePart ?? "").trim().toLowerCase();
 
-  const map = {
+  const map: Record<string, string> = {
     "image/jpeg": ".jpg",
     "image/png": ".png",
     "image/gif": ".gif",
@@ -141,9 +142,9 @@ function extensionFromContentType(contentType) {
   };
 
   return map[type] ?? null;
-}
+};
 
-function extensionFromUrl(url) {
+const extensionFromUrl = (url: string): string | null => {
   try {
     const pathname = new URL(url).pathname;
     const ext = extname(pathname).toLowerCase();
@@ -157,21 +158,12 @@ function extensionFromUrl(url) {
   }
 
   return null;
-}
+};
 
-function readArticles() {
-  if (!existsSync(csvPath)) {
-    throw new Error(`articles.csv was not found: ${csvPath}`);
-  }
-
-  return parse(readFileSync(csvPath, "utf8"), {
-    columns: true,
-    skip_empty_lines: true,
-    bom: true,
-  });
-}
-
-async function fetchWithTimeout(url, options = {}) {
+const fetchWithTimeout = async (
+  url: string,
+  options: FetchOptions = {},
+): Promise<Response> => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutSeconds * 1000);
 
@@ -189,9 +181,14 @@ async function fetchWithTimeout(url, options = {}) {
   } finally {
     clearTimeout(timeout);
   }
-}
+};
 
-function shouldProcessContent(outputPath) {
+const shouldProcessContent = (
+  outputPath: string,
+): {
+  process: boolean;
+  reason: string;
+} => {
   if (!existsSync(outputPath)) {
     return { process: true, reason: "missing content file" };
   }
@@ -216,18 +213,18 @@ function shouldProcessContent(outputPath) {
   }
 
   return { process: false, reason: "existing content file" };
-}
+};
 
-function prepareArticleHtml(document) {
+const prepareArticleHtml = (document: Document): void => {
   document
     .querySelectorAll(
       "script, style, noscript, iframe, nav, header, footer, aside, form, button",
     )
-    .forEach((node) => {
+    .forEach((node: Element) => {
       node.remove();
     });
 
-  document.querySelectorAll("img").forEach((img) => {
+  document.querySelectorAll("img").forEach((img: HTMLImageElement) => {
     const src =
       img.getAttribute("src") ||
       img.getAttribute("data-src") ||
@@ -239,9 +236,14 @@ function prepareArticleHtml(document) {
     img.removeAttribute("srcset");
     img.removeAttribute("sizes");
   });
-}
+};
 
-async function downloadImages(articleDom, articleUrl, assetsDir, markdownPath) {
+const downloadImages = async (
+  articleDom: JSDOM,
+  articleUrl: string,
+  assetsDir: string,
+  markdownPath: string,
+): Promise<void> => {
   if (!saveImages) return;
 
   const images = [...articleDom.window.document.querySelectorAll("img")];
@@ -254,7 +256,7 @@ async function downloadImages(articleDom, articleUrl, assetsDir, markdownPath) {
     const src = img.getAttribute("src");
     if (!src || src.startsWith("data:")) continue;
 
-    let absoluteUrl;
+    let absoluteUrl: string;
     try {
       absoluteUrl = new URL(src, articleUrl).toString();
     } catch {
@@ -296,15 +298,17 @@ async function downloadImages(articleDom, articleUrl, assetsDir, markdownPath) {
       ).replaceAll("\\", "/");
       img.setAttribute("src", markdownRelativePath);
       index += 1;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(`image failed: ${absoluteUrl}`);
-      console.error(`  ${error.message}`);
+      console.error(
+        `  ${error instanceof Error ? error.message : String(error)}`,
+      );
       img.remove();
     }
   }
-}
+};
 
-function configureTurndown() {
+const configureTurndown = (): TurndownService => {
   const turndown = new TurndownService({
     headingStyle: "atx",
     codeBlockStyle: "fenced",
@@ -314,20 +318,34 @@ function configureTurndown() {
   turndown.keep(["table", "thead", "tbody", "tr", "th", "td"]);
 
   turndown.addRule("fencedCodeWithLanguage", {
-    filter: (node) => node.nodeName === "PRE" && node.querySelector("code"),
-    replacement: (_content, node) => {
+    filter: (node: Node) => {
+      return (
+        node.nodeName === "PRE" &&
+        node instanceof HTMLElement &&
+        node.querySelector("code") !== null
+      );
+    },
+    replacement: (_content: string, node: Node) => {
+      if (!(node instanceof HTMLElement)) {
+        return "";
+      }
+
       const code = node.querySelector("code");
+      if (!code) {
+        return "";
+      }
+
       const className = code.getAttribute("class") || "";
       const language = className.match(/language-([^\s]+)/)?.[1] || "";
-      return `\n\n\`\`\`${language}\n${code.textContent.replace(/\n$/, "")}\n\`\`\`\n\n`;
+      return `\n\n\`\`\`${language}\n${code.textContent?.replace(/\n$/, "") ?? ""}\n\`\`\`\n\n`;
     },
   });
 
   return turndown;
-}
+};
 
-async function saveArticle(row) {
-  const id = row.id?.trim();
+const saveArticle = async (row: ArticleRow): Promise<"saved" | "skipped"> => {
+  const id = row.id.trim();
   const url = row.url?.trim();
   const sourceDir = normalizeSource(row.source);
 
@@ -406,10 +424,10 @@ ${markdownBody}
   writeFileSync(outputPath, markdown, "utf8");
 
   return "saved";
-}
+};
 
-async function main() {
-  const rows = readArticles();
+const main = async (): Promise<void> => {
+  const rows = readArticles(join(repoRoot, "sources/articles.csv"));
   let saved = 0;
   let skipped = 0;
   let failed = 0;
@@ -425,7 +443,7 @@ async function main() {
     } catch (error) {
       failed += 1;
       console.error(`failed: ${row.id} ${row.url}`);
-      console.error(error.message);
+      console.error(error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -437,9 +455,9 @@ async function main() {
   if (dryRun) {
     console.log("Dry run only. No files were written.");
   }
-}
+};
 
-main().catch((error) => {
-  console.error(error);
+main().catch((error: unknown) => {
+  console.error(error instanceof Error ? error : String(error));
   process.exit(1);
 });

@@ -1,17 +1,16 @@
 #!/usr/bin/env node
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { parse } from "csv-parse/sync";
+import { type ArticleRow, readArticles } from "./article_rows.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
-const csvPath = join(repoRoot, "sources/articles.csv");
 const singlefileRoot = join(repoRoot, "archive/singlefile");
 const indexPath = join(singlefileRoot, "index.html");
 
-function normalizeSource(source) {
+function normalizeSource(source: string | undefined): string {
   return (
     String(source || "unknown")
       .trim()
@@ -22,7 +21,7 @@ function normalizeSource(source) {
   );
 }
 
-function escapeHtml(value) {
+function escapeHtml(value: string | number | null | undefined): string {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -31,19 +30,11 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
-function readArticles() {
-  if (!existsSync(csvPath)) {
-    throw new Error(`articles.csv was not found: ${csvPath}`);
-  }
-
-  return parse(readFileSync(csvPath, "utf8"), {
-    columns: true,
-    skip_empty_lines: true,
-    bom: true,
-  });
-}
-
-function resolveSinglefilePath(row) {
+function resolveSinglefilePath(row: {
+  id: string;
+  source?: string;
+  raw_path?: string;
+}): string {
   if (row.raw_path?.trim()) {
     return row.raw_path.trim();
   }
@@ -52,14 +43,14 @@ function resolveSinglefilePath(row) {
   return `archive/singlefile/${sourceDir}/${row.id}.html`;
 }
 
-function pathFromIndex(relativePathFromRepoRoot) {
+function pathFromIndex(relativePathFromRepoRoot: string): string {
   return relative(
     singlefileRoot,
     join(repoRoot, relativePathFromRepoRoot),
   ).replaceAll("\\", "/");
 }
 
-function buildIndex(rows) {
+function buildIndex(rows: ArticleRow[]): string {
   const generatedAt = new Date().toISOString();
   const total = rows.length;
   const saved = rows.filter((row) =>
@@ -70,7 +61,17 @@ function buildIndex(rows) {
   ).length;
   const pending = total - saved - failed;
 
-  const grouped = Map.groupBy(rows, (row) => row.source || "Unknown");
+  const grouped = new Map<string, ArticleRow[]>();
+  for (const row of rows) {
+    const source = row.source || "Unknown";
+    const existing = grouped.get(source);
+    if (existing) {
+      existing.push(row);
+    } else {
+      grouped.set(source, [row]);
+    }
+  }
+
   const sections = [...grouped.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([source, sourceRows]) => {
@@ -182,7 +183,7 @@ function buildIndex(rows) {
 }
 
 function main() {
-  const rows = readArticles();
+  const rows = readArticles(join(repoRoot, "sources/articles.csv"));
   mkdirSync(singlefileRoot, { recursive: true });
   writeFileSync(indexPath, buildIndex(rows), "utf8");
   console.log(`generated: ${relative(repoRoot, indexPath)}`);

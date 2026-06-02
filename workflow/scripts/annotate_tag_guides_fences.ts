@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -8,8 +8,13 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
 const defaultInputDir = join(repoRoot, "content/tag-guides");
 
-function parseArgs(argv) {
-  const options = {
+type AnnotateOptions = {
+  inputDir: string;
+  check: boolean;
+};
+
+function parseArgs(argv: string[]): AnnotateOptions {
+  const options: AnnotateOptions = {
     inputDir: defaultInputDir,
     check: false,
   };
@@ -37,7 +42,7 @@ function parseArgs(argv) {
 
 function printHelpAndExit() {
   console.log(`Usage:
-  node workflow/scripts/annotate_tag_guides_fences.js [--input-dir DIR] [--check]
+  tsx workflow/scripts/annotate_tag_guides_fences.ts [--input-dir DIR] [--check]
 
 Defaults:
   --input-dir   ${defaultInputDir}
@@ -45,24 +50,24 @@ Defaults:
   process.exit(0);
 }
 
-function splitLines(text) {
+function splitLines(text: string): string[] {
   return String(text ?? "").split(/\r?\n/);
 }
 
-function nonEmptyLines(text) {
+function nonEmptyLines(text: string): string[] {
   return splitLines(text)
     .map((line) => line.trim())
     .filter(Boolean);
 }
 
-function isProcess(lines) {
+function isProcess(lines: string[]): boolean {
   return (
     lines.some((line) => /^\d+[.)]\s*/.test(line)) ||
     lines.some((line) => /(?:→|->|↓)/.test(line))
   );
 }
 
-function isRiskLadder(lines) {
+function isRiskLadder(lines: string[]): boolean {
   return lines.some((line) =>
     /^(低リスク|中リスク|高リスク|low risk|mid risk|high risk|low|mid|high)\s*[:：]?/i.test(
       line,
@@ -70,7 +75,7 @@ function isRiskLadder(lines) {
   );
 }
 
-function isQuestionChecklist(lines) {
+function isQuestionChecklist(lines: string[]): boolean {
   if (lines.length < 2) {
     return false;
   }
@@ -81,7 +86,7 @@ function isQuestionChecklist(lines) {
   return questionCount >= Math.ceil(lines.length / 2);
 }
 
-function isRiskList(lines, tone) {
+function isRiskList(lines: string[], tone: string): boolean {
   const riskKeywords = [
     "危険",
     "リスク",
@@ -115,11 +120,11 @@ function isRiskList(lines, tone) {
   );
 }
 
-function isDefinition(text) {
+function isDefinition(text: string): boolean {
   return /^#{2,6}\s+/.test(text) || /^\s*.+?[：:]\s+/.test(text);
 }
 
-function isCodeLike(lines, base) {
+function isCodeLike(lines: string[], base: string): boolean {
   const joined = lines.join("\n");
   if (!joined) {
     return false;
@@ -152,7 +157,7 @@ function isCodeLike(lines, base) {
   return false;
 }
 
-function classifyToneFence(base, body) {
+function classifyToneFence(base: string, body: string): string {
   const lines = nonEmptyLines(body);
   const tone = base.replace("tone-", "");
 
@@ -191,7 +196,7 @@ function classifyToneFence(base, body) {
   return `${base}.guideline`;
 }
 
-function classifyFence(lang, body) {
+function classifyFence(lang: string, body: string): string {
   const token = (lang || "").trim();
   if (!token) {
     return "";
@@ -220,12 +225,15 @@ function classifyFence(lang, body) {
   return `${token}.code-example`;
 }
 
-function annotateMarkdown(markdown) {
+function annotateMarkdown(markdown: string): string {
   const lines = splitLines(markdown);
   const output = [];
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
+    if (line === undefined) {
+      break;
+    }
     const opening = line.match(/^```([^\s]*)\s*$/);
 
     if (!opening) {
@@ -258,7 +266,7 @@ function annotateMarkdown(markdown) {
   return output.join("\n");
 }
 
-function main() {
+function main(): void {
   const options = parseArgs(process.argv.slice(2));
   if (!existsSync(options.inputDir)) {
     throw new Error(`Input directory not found: ${options.inputDir}`);
