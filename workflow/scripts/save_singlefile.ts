@@ -28,6 +28,22 @@ const csvPath = join(repoRoot, "sources/articles.csv");
 const outputRoot = join(repoRoot, "archive/singlefile");
 const defaultTimeoutSeconds = 120;
 
+type ArticleRow = {
+  id: string;
+  title?: string;
+  url?: string;
+  source?: string;
+  category?: string;
+  status?: string;
+  captured_at?: string;
+  markdown_path?: string;
+  raw_path?: string;
+};
+
+type RunOptions = {
+  timeoutMs: number;
+};
+
 function usage() {
   console.log(`Usage: tsx workflow/scripts/save_singlefile.ts [options]
 
@@ -54,7 +70,7 @@ if (args.has("--help") || args.has("-h")) {
   process.exit(0);
 }
 
-function readNumberArg(name) {
+function readNumberArg(name: string): number | null {
   const equalsPrefix = `${name}=`;
   const equalsArg = rawArgs.find((arg) => arg.startsWith(equalsPrefix));
 
@@ -85,7 +101,7 @@ if (!Number.isFinite(timeoutSeconds) || timeoutSeconds <= 0) {
   throw new Error("--timeout-seconds must be a positive number.");
 }
 
-function normalizeSource(source) {
+function normalizeSource(source: string | undefined): string {
   return (
     String(source || "unknown")
       .trim()
@@ -96,25 +112,29 @@ function normalizeSource(source) {
   );
 }
 
-function ensureDir(path) {
+function ensureDir(path: string): void {
   if (!existsSync(path)) {
     mkdirSync(path, { recursive: true });
   }
 }
 
-function removeFileIfExists(path) {
+function removeFileIfExists(path: string): void {
   if (existsSync(path)) {
     rmSync(path, { force: true });
   }
 }
 
-function fileAgeDays(path) {
+function fileAgeDays(path: string): number {
   const { mtimeMs } = statSync(path);
   return (Date.now() - mtimeMs) / (1000 * 60 * 60 * 24);
 }
 
-function run(command, commandArgs, { timeoutMs }) {
-  return new Promise((resolve, reject) => {
+function run(
+  command: string,
+  commandArgs: string[],
+  { timeoutMs }: RunOptions,
+): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
     let settled = false;
     let timedOut = false;
 
@@ -167,7 +187,7 @@ function run(command, commandArgs, { timeoutMs }) {
   });
 }
 
-function readArticles() {
+function readArticles(): ArticleRow[] {
   if (!existsSync(csvPath)) {
     throw new Error(`articles.csv was not found: ${csvPath}`);
   }
@@ -177,10 +197,10 @@ function readArticles() {
     columns: true,
     skip_empty_lines: true,
     bom: true,
-  });
+  }) as ArticleRow[];
 }
 
-function writeArticles(rows) {
+function writeArticles(rows: ArticleRow[]): void {
   const columns = [
     "id",
     "title",
@@ -201,7 +221,10 @@ function writeArticles(rows) {
   writeFileSync(csvPath, csv, "utf8");
 }
 
-function shouldRefreshExistingFile(outputPath) {
+function shouldRefreshExistingFile(outputPath: string): {
+  refresh: boolean;
+  reason: string;
+} {
   if (overwrite) {
     return { refresh: true, reason: "overwrite requested" };
   }
@@ -224,7 +247,7 @@ function shouldRefreshExistingFile(outputPath) {
   };
 }
 
-async function saveArticle(row) {
+async function saveArticle(row: ArticleRow): Promise<"saved" | "skipped"> {
   const id = row.id?.trim();
   const url = row.url?.trim();
   const sourceDir = normalizeSource(row.source);
@@ -285,7 +308,7 @@ async function saveArticle(row) {
   return "saved";
 }
 
-async function main() {
+async function main(): Promise<void> {
   const rows = readArticles();
   let saved = 0;
   let skipped = 0;
@@ -311,11 +334,11 @@ async function main() {
       } else if (!dryRun) {
         saved += 1;
       }
-    } catch (error) {
+    } catch (error: unknown) {
       failed += 1;
       row.status = "failed";
       console.error(`failed: ${row.id} ${row.url}`);
-      console.error(error.message);
+      console.error(error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -333,7 +356,7 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error(error);
+main().catch((error: unknown) => {
+  console.error(error instanceof Error ? error : String(error));
   process.exit(1);
 });

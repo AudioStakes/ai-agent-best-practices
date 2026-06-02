@@ -30,6 +30,22 @@ const contentRoot = join(repoRoot, "archive/extracted");
 const assetsRoot = join(repoRoot, "archive/assets");
 const defaultTimeoutSeconds = 60;
 
+type ArticleRow = {
+  id: string;
+  title?: string;
+  url?: string;
+  source?: string;
+  category?: string;
+  status?: string;
+  captured_at?: string;
+  markdown_path?: string;
+  raw_path?: string;
+};
+
+type FetchOptions = {
+  headers?: Record<string, string>;
+};
+
 function usage() {
   console.log(`Usage: tsx workflow/scripts/save_content.ts [options]
 
@@ -58,7 +74,7 @@ if (args.has("--help") || args.has("-h")) {
   process.exit(0);
 }
 
-function readNumberArg(name) {
+function readNumberArg(name: string): number | null {
   const equalsPrefix = `${name}=`;
   const equalsArg = rawArgs.find((arg) => arg.startsWith(equalsPrefix));
 
@@ -89,7 +105,7 @@ if (!Number.isFinite(timeoutSeconds) || timeoutSeconds <= 0) {
   throw new Error("--timeout-seconds must be a positive number.");
 }
 
-function normalizeSource(source) {
+function normalizeSource(source: string | undefined): string {
   return (
     String(source || "unknown")
       .trim()
@@ -100,38 +116,39 @@ function normalizeSource(source) {
   );
 }
 
-function ensureDir(path) {
+function ensureDir(path: string): void {
   if (!existsSync(path)) {
     mkdirSync(path, { recursive: true });
   }
 }
 
-function removeDirIfExists(path) {
+function removeDirIfExists(path: string): void {
   if (existsSync(path)) {
     rmSync(path, { recursive: true, force: true });
   }
 }
 
-function fileAgeDays(path) {
+function fileAgeDays(path: string): number {
   const { mtimeMs } = statSync(path);
   return (Date.now() - mtimeMs) / (1000 * 60 * 60 * 24);
 }
 
-function escapeYaml(value) {
+function escapeYaml(value: string | number | null | undefined): string {
   return String(value ?? "")
     .replace(/\\/g, "\\\\")
     .replace(/"/g, '\\"');
 }
 
-function sanitizeMarkdown(markdown) {
+function sanitizeMarkdown(markdown: string): string {
   return markdown.replace(/\n{3,}/g, "\n\n").trim();
 }
 
-function extensionFromContentType(contentType) {
+function extensionFromContentType(contentType: string | null): string | null {
   if (!contentType) return null;
-  const type = contentType.split(";")[0].trim().toLowerCase();
+  const [typePart] = contentType.split(";");
+  const type = (typePart ?? "").trim().toLowerCase();
 
-  const map = {
+  const map: Record<string, string> = {
     "image/jpeg": ".jpg",
     "image/png": ".png",
     "image/gif": ".gif",
@@ -143,7 +160,7 @@ function extensionFromContentType(contentType) {
   return map[type] ?? null;
 }
 
-function extensionFromUrl(url) {
+function extensionFromUrl(url: string): string | null {
   try {
     const pathname = new URL(url).pathname;
     const ext = extname(pathname).toLowerCase();
@@ -159,7 +176,7 @@ function extensionFromUrl(url) {
   return null;
 }
 
-function readArticles() {
+function readArticles(): ArticleRow[] {
   if (!existsSync(csvPath)) {
     throw new Error(`articles.csv was not found: ${csvPath}`);
   }
@@ -168,10 +185,13 @@ function readArticles() {
     columns: true,
     skip_empty_lines: true,
     bom: true,
-  });
+  }) as ArticleRow[];
 }
 
-async function fetchWithTimeout(url, options = {}) {
+async function fetchWithTimeout(
+  url: string,
+  options: FetchOptions = {},
+): Promise<Response> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutSeconds * 1000);
 
@@ -191,7 +211,10 @@ async function fetchWithTimeout(url, options = {}) {
   }
 }
 
-function shouldProcessContent(outputPath) {
+function shouldProcessContent(outputPath: string): {
+  process: boolean;
+  reason: string;
+} {
   if (!existsSync(outputPath)) {
     return { process: true, reason: "missing content file" };
   }
@@ -218,16 +241,16 @@ function shouldProcessContent(outputPath) {
   return { process: false, reason: "existing content file" };
 }
 
-function prepareArticleHtml(document) {
+function prepareArticleHtml(document: Document): void {
   document
     .querySelectorAll(
       "script, style, noscript, iframe, nav, header, footer, aside, form, button",
     )
-    .forEach((node) => {
+    .forEach((node: Element) => {
       node.remove();
     });
 
-  document.querySelectorAll("img").forEach((img) => {
+  document.querySelectorAll("img").forEach((img: HTMLImageElement) => {
     const src =
       img.getAttribute("src") ||
       img.getAttribute("data-src") ||
@@ -241,7 +264,12 @@ function prepareArticleHtml(document) {
   });
 }
 
-async function downloadImages(articleDom, articleUrl, assetsDir, markdownPath) {
+async function downloadImages(
+  articleDom: JSDOM,
+  articleUrl: string,
+  assetsDir: string,
+  markdownPath: string,
+): Promise<void> {
   if (!saveImages) return;
 
   const images = [...articleDom.window.document.querySelectorAll("img")];
@@ -296,15 +324,17 @@ async function downloadImages(articleDom, articleUrl, assetsDir, markdownPath) {
       ).replaceAll("\\", "/");
       img.setAttribute("src", markdownRelativePath);
       index += 1;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(`image failed: ${absoluteUrl}`);
-      console.error(`  ${error.message}`);
+      console.error(
+        `  ${error instanceof Error ? error.message : String(error)}`,
+      );
       img.remove();
     }
   }
 }
 
-function configureTurndown() {
+function configureTurndown(): TurndownService {
   const turndown = new TurndownService({
     headingStyle: "atx",
     codeBlockStyle: "fenced",
@@ -314,20 +344,34 @@ function configureTurndown() {
   turndown.keep(["table", "thead", "tbody", "tr", "th", "td"]);
 
   turndown.addRule("fencedCodeWithLanguage", {
-    filter: (node) => node.nodeName === "PRE" && node.querySelector("code"),
-    replacement: (_content, node) => {
+    filter: (node: Node) => {
+      return (
+        node.nodeName === "PRE" &&
+        node instanceof HTMLElement &&
+        node.querySelector("code") !== null
+      );
+    },
+    replacement: (_content: string, node: Node) => {
+      if (!(node instanceof HTMLElement)) {
+        return "";
+      }
+
       const code = node.querySelector("code");
+      if (!code) {
+        return "";
+      }
+
       const className = code.getAttribute("class") || "";
       const language = className.match(/language-([^\s]+)/)?.[1] || "";
-      return `\n\n\`\`\`${language}\n${code.textContent.replace(/\n$/, "")}\n\`\`\`\n\n`;
+      return `\n\n\`\`\`${language}\n${code.textContent?.replace(/\n$/, "") ?? ""}\n\`\`\`\n\n`;
     },
   });
 
   return turndown;
 }
 
-async function saveArticle(row) {
-  const id = row.id?.trim();
+async function saveArticle(row: ArticleRow): Promise<"saved" | "skipped"> {
+  const id = row.id.trim();
   const url = row.url?.trim();
   const sourceDir = normalizeSource(row.source);
 
@@ -425,7 +469,7 @@ async function main() {
     } catch (error) {
       failed += 1;
       console.error(`failed: ${row.id} ${row.url}`);
-      console.error(error.message);
+      console.error(error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -439,7 +483,7 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error(error);
+main().catch((error: unknown) => {
+  console.error(error instanceof Error ? error : String(error));
   process.exit(1);
 });

@@ -16,15 +16,6 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": ["node"]
   },
-  "include": [
-    "scripts/**/*.ts",
-    "site/scripts/**/*.ts",
-    "workflow/scripts/annotate_tag_guides_fences.ts",
-    "workflow/scripts/build_root_pages.ts",
-    "workflow/scripts/build_singlefile_index.ts",
-    "workflow/scripts/markdown_to_html.ts",
-    "workflow/scripts/package_dist_assets.ts",
-    "workflow/scripts/render_markdown_file.ts"
-  ],
+  "include": ["**/*.ts"],
   "exclude": ["dist", "archive", "node_modules"]
 }
