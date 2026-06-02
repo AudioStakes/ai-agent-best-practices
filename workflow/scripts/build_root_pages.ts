@@ -14,7 +14,15 @@ const glossaryMarkdownPath = join(repoRoot, "content/domain-glossary.md");
 const stylesheetVersion = "20260601-site-shell-3";
 const popupScriptVersion = "20260601-site-shell-3";
 
-function escapeHtml(value) {
+type GlossaryEntry = {
+  id: string;
+  english: string;
+  japanese: string;
+  description: string;
+  avoid: string;
+};
+
+function escapeHtml(value: string | number | null | undefined): string {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -23,11 +31,11 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
-function readMarkdown(filePath) {
+function readMarkdown(filePath: string): string {
   return readFileSync(filePath, "utf8");
 }
 
-async function renderMarkdown(markdown) {
+async function renderMarkdown(markdown: string): Promise<string> {
   const rendered = await markdownToHtml(markdown);
   const dom = new JSDOM(
     `<article class="article markdown-body markdown-document">${rendered}</article>`,
@@ -37,7 +45,9 @@ async function renderMarkdown(markdown) {
   return document.querySelector("article")?.innerHTML ?? rendered;
 }
 
-async function splitGlossaryMarkdown(markdown) {
+async function splitGlossaryMarkdown(
+  markdown: string,
+): Promise<{ headerHtml: string; tableLines: string[] }> {
   const lines = markdown.split(/\r?\n/);
   const headerLines = [];
   const tableLines = [];
@@ -61,8 +71,8 @@ async function splitGlossaryMarkdown(markdown) {
   };
 }
 
-function parseGlossaryEntries(tableLines) {
-  const entries = [];
+function parseGlossaryEntries(tableLines: string[]): GlossaryEntry[] {
+  const entries: GlossaryEntry[] = [];
 
   for (const line of tableLines) {
     if (!line.startsWith('| <a id="')) {
@@ -77,24 +87,29 @@ function parseGlossaryEntries(tableLines) {
       continue;
     }
 
-    const match = cells[0].match(/^<a id="([^"]+)"><\/a>\s*(.*)$/);
+    const firstCell = cells[0];
+    if (!firstCell) {
+      continue;
+    }
+
+    const match = firstCell.match(/^<a id="([^"]+)"><\/a>\s*(.*)$/);
     if (!match) {
       continue;
     }
 
     entries.push({
-      id: match[1],
-      english: match[2].trim(),
-      japanese: cells[1],
-      description: cells[2],
-      avoid: cells[3],
+      id: match[1] ?? "",
+      english: (match[2] ?? "").trim(),
+      japanese: cells[1] ?? "",
+      description: cells[2] ?? "",
+      avoid: cells[3] ?? "",
     });
   }
 
   return entries;
 }
 
-async function buildIndexHtml() {
+async function buildIndexHtml(): Promise<string> {
   const markdown = readMarkdown(indexMarkdownPath);
   const body = await renderMarkdown(markdown);
 
@@ -117,7 +132,7 @@ ${body}
 </html>`;
 }
 
-async function buildGlossaryHtml() {
+async function buildGlossaryHtml(): Promise<string> {
   const markdown = readMarkdown(glossaryMarkdownPath);
   const { headerHtml, tableLines } = await splitGlossaryMarkdown(markdown);
   const entries = parseGlossaryEntries(tableLines);
@@ -182,7 +197,7 @@ ${cards}
 </html>`;
 }
 
-async function main() {
+async function main(): Promise<void> {
   mkdirSync(distRoot, { recursive: true });
   writeFileSync(join(distRoot, "index.html"), await buildIndexHtml(), "utf8");
   writeFileSync(
@@ -195,4 +210,4 @@ async function main() {
   console.log(`generated: ${join(distRoot, "domain-glossary.html")}`);
 }
 
-main();
+await main();

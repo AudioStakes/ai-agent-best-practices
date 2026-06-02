@@ -6,7 +6,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { expect, test } from "@playwright/test";
 import { JSDOM } from "jsdom";
-import { markdownToHtml } from "../workflow/scripts/markdown_to_html.js";
+import { markdownToHtml } from "../workflow/scripts/markdown_to_html.ts";
 
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(testDir, "..");
@@ -17,7 +17,7 @@ const guidePath = path.join(
 const guideDirUrl = pathToFileURL(path.dirname(guidePath) + path.sep);
 const renderMarkdownFileScript = path.join(
   repoRoot,
-  "workflow/scripts/render_markdown_file.js",
+  "workflow/scripts/render_markdown_file.ts",
 );
 
 async function renderDocument(markdown) {
@@ -47,7 +47,7 @@ function getLocalHrefPath(href) {
 }
 
 function runProcess(args) {
-  const child = spawn("node", [renderMarkdownFileScript, ...args], {
+  const child = spawn("tsx", [renderMarkdownFileScript, ...args], {
     cwd: repoRoot,
     stdio: ["ignore", "pipe", "pipe"],
   });

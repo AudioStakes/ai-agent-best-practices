@@ -15,11 +15,11 @@ const githubMarkdownCssPath = path.join(
 );
 const packageDistAssetsScript = path.join(
   repoRoot,
-  "workflow/scripts/package_dist_assets.js",
+  "workflow/scripts/package_dist_assets.ts",
 );
 
 function runProcess(args) {
-  const child = spawn("node", [packageDistAssetsScript, ...args], {
+  const child = spawn("tsx", [packageDistAssetsScript, ...args], {
     cwd: repoRoot,
     stdio: ["ignore", "pipe", "pipe"],
   });

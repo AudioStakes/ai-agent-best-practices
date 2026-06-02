@@ -54,7 +54,7 @@ function parseArgs(argv) {
 
 function printHelpAndExit() {
   console.log(`Usage:
-  node workflow/scripts/build_tag_guides_html.js [--input-dir DIR] [--output-dir DIR] [--glossary FILE]
+  tsx workflow/scripts/build_tag_guides_html.ts [--input-dir DIR] [--output-dir DIR] [--glossary FILE]
 
 Defaults:
   --input-dir   ${defaultInputDir}

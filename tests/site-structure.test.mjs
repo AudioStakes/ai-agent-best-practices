@@ -23,15 +23,15 @@ const checklistPath = path.join(testDir, "ui-behavior-checklist.json");
 const serveScript = path.join(repoRoot, "serve.sh");
 const buildTagGuidesScript = path.join(
   repoRoot,
-  "workflow/scripts/build_tag_guides_html.js",
+  "workflow/scripts/build_tag_guides_html.ts",
 );
 const packageDistAssetsScript = path.join(
   repoRoot,
-  "workflow/scripts/package_dist_assets.js",
+  "workflow/scripts/package_dist_assets.ts",
 );
 const annotateTagGuidesScript = path.join(
   repoRoot,
-  "workflow/scripts/annotate_tag_guides_fences.js",
+  "workflow/scripts/annotate_tag_guides_fences.ts",
 );
 
 let distChecked = false;
@@ -152,7 +152,7 @@ test("tag guide markdown can be regenerated into readable HTML", () => {
   const tempRoot = mkdtempSync(path.join(os.tmpdir(), "tag-guides-build-"));
   const outputDir = path.join(tempRoot, "tag-guides");
   const result = spawn(
-    "node",
+    "tsx",
     [buildTagGuidesScript, "--output-dir", outputDir],
     {
       cwd: repoRoot,
@@ -220,7 +220,7 @@ test("public dist assets package only copies static assets", () => {
   const tempRoot = mkdtempSync(path.join(os.tmpdir(), "dist-assets-"));
   const distSubdir = path.join(tempRoot, "dist");
 
-  return runProcess("node", [packageDistAssetsScript, "--dist-dir", distSubdir])
+  return runProcess("tsx", [packageDistAssetsScript, "--dist-dir", distSubdir])
     .then((result) => {
       if (result.code !== 0) {
         throw new Error(
@@ -281,7 +281,7 @@ test("tone-marked markdown fences become semantic chip lists", () => {
   );
 
   const result = spawn(
-    "node",
+    "tsx",
     [buildTagGuidesScript, "--input-dir", inputDir, "--output-dir", outputDir],
     {
       cwd: repoRoot,
@@ -372,7 +372,7 @@ test("tag guide markdown fences can be annotated with semantic markers", () => {
   );
 
   const result = spawn(
-    "node",
+    "tsx",
     [annotateTagGuidesScript, "--input-dir", inputDir],
     {
       cwd: repoRoot,
@@ -428,7 +428,7 @@ test("tag guide annotation check fails without mutating source files", () => {
   writeFileSync(markdownPath, original);
 
   const result = spawn(
-    "node",
+    "tsx",
     [annotateTagGuidesScript, "--input-dir", inputDir, "--check"],
     {
       cwd: repoRoot,
@@ -510,7 +510,7 @@ test("semantic markers become semantic HTML blocks", () => {
   );
 
   const result = spawn(
-    "node",
+    "tsx",
     [buildTagGuidesScript, "--input-dir", inputDir, "--output-dir", outputDir],
     {
       cwd: repoRoot,

@@ -1,91 +1,106 @@
-(() => {
-  const VERSION = "20260531-mobile-top-close-1";
-  const toneScoring = {
-    bad: [
-      /返却値が長すぎる/,
-      /重要情報が埋もれる/,
-      /エラー理由が分からない/,
-      /エラー理由がわからない/,
-      /次に何をすべきかわからない/,
-      /次に何をすべきか分からない/,
-      /悪い例/,
-      /危険/,
-      /曖昧/,
-      /不明/,
-      /失敗/,
-      /多すぎる/,
-      /少なすぎる/,
-    ],
-    good: [
-      /次の判断に必要な情報だけを/,
-      /分かりやすく/,
-      /わかりやすく/,
-      /構造化して/,
-      /構造化する/,
-      /必要なら根拠も含めて返す/,
-      /良い例/,
-      /良いツール結果/,
-      /安全/,
-      /明確/,
-      /具体的/,
-    ],
-  };
+const VERSION = "20260531-mobile-top-close-1";
 
-  function normalizeText(value) {
-    return String(value ?? "")
-      .replace(/\s+/g, " ")
-      .trim();
+type Tone = "bad" | "good" | "neutral";
+
+type TonePatternMap = {
+  bad: RegExp[];
+  good: RegExp[];
+};
+
+declare global {
+  interface Window {
+    __TERM_POPUP_VERSION__?: string;
+  }
+}
+
+const toneScoring: TonePatternMap = {
+  bad: [
+    /返却値が長すぎる/,
+    /重要情報が埋もれる/,
+    /エラー理由が分からない/,
+    /エラー理由がわからない/,
+    /次に何をすべきかわからない/,
+    /次に何をすべきか分からない/,
+    /悪い例/,
+    /危険/,
+    /曖昧/,
+    /不明/,
+    /失敗/,
+    /多すぎる/,
+    /少なすぎる/,
+  ],
+  good: [
+    /次の判断に必要な情報だけを/,
+    /分かりやすく/,
+    /わかりやすく/,
+    /構造化して/,
+    /構造化する/,
+    /必要なら根拠も含めて返す/,
+    /良い例/,
+    /良いツール結果/,
+    /安全/,
+    /明確/,
+    /具体的/,
+  ],
+};
+
+function normalizeText(value: string | null | undefined): string {
+  return String(value ?? "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getSiblingText(node: Element, limit = 1): string {
+  const texts: string[] = [];
+  let current: Element | null = node.previousElementSibling;
+
+  while (current && texts.length < limit) {
+    const text = normalizeText(current.textContent);
+    if (text) {
+      texts.push(text);
+    }
+    current = current.previousElementSibling;
   }
 
-  function getSiblingText(node, limit = 1) {
-    const texts = [];
-    let current = node.previousElementSibling;
+  return texts.join(" ");
+}
 
-    while (current && texts.length < limit) {
-      const text = normalizeText(current.textContent);
-      if (text) {
-        texts.push(text);
-      }
-      current = current.previousElementSibling;
-    }
-
-    return texts.join(" ");
-  }
-
-  function classifyToneChipList(list) {
-    const chips = Array.from(list.querySelectorAll("span")).map((chip) =>
-      normalizeText(chip.textContent),
-    );
-    const content = chips.join(" ");
-    const context = `${getSiblingText(list)} ${content}`;
-
-    if (toneScoring.bad.some((pattern) => pattern.test(context))) {
-      return "bad";
-    }
-
-    if (toneScoring.good.some((pattern) => pattern.test(context))) {
-      return "good";
-    }
-
-    return "neutral";
-  }
-
-  const chipLists = Array.from(document.querySelectorAll(".term-chip-list"));
-  for (const list of chipLists) {
-    const tone = classifyToneChipList(list);
-    list.dataset.tone = tone;
-
-    for (const chip of list.querySelectorAll("span")) {
-      chip.dataset.tone = tone;
-    }
-  }
-
-  const terms = Array.from(
-    document.querySelectorAll("a.term[data-description]"),
+function classifyToneChipList(list: Element): Tone {
+  const chips = Array.from(list.querySelectorAll("span")).map((chip) =>
+    normalizeText(chip.textContent),
   );
-  if (!terms.length) return;
+  const content = chips.join(" ");
+  const context = `${getSiblingText(list)} ${content}`;
 
-  let activeTerm = null;
+  if (toneScoring.bad.some((pattern) => pattern.test(context))) {
+    return "bad";
+  }
+
+  if (toneScoring.good.some((pattern) => pattern.test(context))) {
+    return "good";
+  }
+
+  return "neutral";
+}
+
+const chipLists = Array.from(
+  document.querySelectorAll<HTMLElement>(".term-chip-list"),
+);
+for (const list of chipLists) {
+  const tone = classifyToneChipList(list);
+  list.dataset.tone = tone;
+
+  for (const chip of list.querySelectorAll("span")) {
+    chip.dataset.tone = tone;
+  }
+}
+
+const terms = Array.from(
+  document.querySelectorAll<HTMLAnchorElement>("a.term[data-description]"),
+);
+
+if (terms.length > 0) {
+  let activeTerm: HTMLAnchorElement | null = null;
 
   const popup = document.createElement("div");
   popup.id = "term-popup";
@@ -95,22 +110,22 @@
   popup.hidden = true;
   document.body.appendChild(popup);
 
-  function isTouchLike() {
+  function isTouchLike(): boolean {
     return (
-      window.matchMedia?.("(hover: none), (pointer: coarse)")?.matches ||
-      navigator.maxTouchPoints > 0
+      window.matchMedia?.("(hover: none), (pointer: coarse)")?.matches ===
+        true || navigator.maxTouchPoints > 0
     );
   }
 
-  function isMobileLayout() {
-    return window.matchMedia?.("(max-width: 720px)")?.matches;
+  function isMobileLayout(): boolean {
+    return window.matchMedia?.("(max-width: 720px)")?.matches === true;
   }
 
-  function getTermLabel(term) {
+  function getTermLabel(term: HTMLAnchorElement): string {
     return (term.textContent || "").replace(/\s+/g, " ").trim();
   }
 
-  function renderPopup(term) {
+  function renderPopup(term: HTMLAnchorElement): void {
     const description = term.getAttribute("data-description") || "";
     popup.replaceChildren();
 
@@ -128,7 +143,7 @@
       closeButton.className = "term-popup-close";
       closeButton.setAttribute("aria-label", "ポップアップを閉じる");
       closeButton.textContent = "×";
-      closeButton.addEventListener("click", (event) => {
+      closeButton.addEventListener("click", (event: MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();
         closePopup();
@@ -144,7 +159,7 @@
     popup.appendChild(body);
   }
 
-  function setPopupPosition(term) {
+  function setPopupPosition(term: HTMLAnchorElement): void {
     const rect = term.getBoundingClientRect();
     const mobile = isMobileLayout();
 
@@ -166,27 +181,35 @@
     popup.style.bottom = "auto";
 
     let left = rect.left;
-    if (left + width > window.innerWidth - margin)
+    if (left + width > window.innerWidth - margin) {
       left = window.innerWidth - width - margin;
-    if (left < margin) left = margin;
+    }
+    if (left < margin) {
+      left = margin;
+    }
 
     popup.style.left = `${left}px`;
 
-    // First place above the term. If it would go off screen, place below.
     popup.style.top = "0px";
     popup.hidden = false;
     popup.dataset.open = "true";
     const popupHeight = popup.offsetHeight || 120;
     let top = rect.top - popupHeight - 10;
-    if (top < margin) top = rect.bottom + 10;
+    if (top < margin) {
+      top = rect.bottom + 10;
+    }
     popup.style.top = `${top}px`;
   }
 
-  function openPopup(term) {
-    if (!term) return;
+  function openPopup(term: HTMLAnchorElement): void {
+    if (!term) {
+      return;
+    }
+
     if (activeTerm && activeTerm !== term) {
       activeTerm.setAttribute("aria-expanded", "false");
     }
+
     activeTerm = term;
     renderPopup(term);
     popup.hidden = false;
@@ -196,8 +219,10 @@
     setPopupPosition(term);
   }
 
-  function closePopup() {
-    if (activeTerm) activeTerm.setAttribute("aria-expanded", "false");
+  function closePopup(): void {
+    if (activeTerm) {
+      activeTerm.setAttribute("aria-expanded", "false");
+    }
     activeTerm = null;
     popup.hidden = true;
     delete popup.dataset.open;
@@ -210,28 +235,36 @@
     term.setAttribute("aria-describedby", "term-popup");
 
     term.addEventListener("mouseenter", () => {
-      if (!isTouchLike()) openPopup(term);
+      if (!isTouchLike()) {
+        openPopup(term);
+      }
     });
 
     term.addEventListener("mouseleave", () => {
-      if (!isTouchLike()) closePopup();
+      if (!isTouchLike()) {
+        closePopup();
+      }
     });
 
     term.addEventListener("focus", () => {
-      if (!isTouchLike()) openPopup(term);
+      if (!isTouchLike()) {
+        openPopup(term);
+      }
     });
 
     term.addEventListener("blur", () => {
       if (!isTouchLike()) {
         setTimeout(() => {
-          if (document.activeElement !== term) closePopup();
+          if (document.activeElement !== term) {
+            closePopup();
+          }
         }, 120);
       }
     });
 
     term.addEventListener(
       "touchend",
-      (event) => {
+      (event: TouchEvent) => {
         const alreadyOpen = activeTerm === term && !popup.hidden;
         event.preventDefault();
         event.stopPropagation();
@@ -246,8 +279,7 @@
       { passive: false },
     );
 
-    term.addEventListener("click", (event) => {
-      // On touch devices, the first tap opens the popup. The second tap follows the link.
+    term.addEventListener("click", (event: MouseEvent) => {
       if (isTouchLike()) {
         const alreadyOpen = activeTerm === term && !popup.hidden;
         if (!alreadyOpen) {
@@ -258,25 +290,35 @@
     });
   }
 
-  document.addEventListener("click", (event) => {
-    if (!activeTerm) return;
-    if (
-      event.target.closest &&
-      (event.target.closest("a.term") || event.target.closest("#term-popup"))
-    )
+  document.addEventListener("click", (event: MouseEvent) => {
+    if (!activeTerm) {
       return;
+    }
+
+    const target = event.target;
+    if (!(target instanceof Element)) {
+      return;
+    }
+
+    if (target.closest("a.term") || target.closest("#term-popup")) {
+      return;
+    }
+
     closePopup();
   });
 
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") closePopup();
+  document.addEventListener("keydown", (event: KeyboardEvent) => {
+    if (event.key === "Escape") {
+      closePopup();
+    }
   });
 
   window.addEventListener(
     "scroll",
     () => {
-      if (activeTerm && !popup.hidden && !isMobileLayout())
+      if (activeTerm && !popup.hidden && !isMobileLayout()) {
         setPopupPosition(activeTerm);
+      }
     },
     { passive: true },
   );
@@ -287,6 +329,8 @@
       setPopupPosition(activeTerm);
     }
   });
+}
 
-  window.__TERM_POPUP_VERSION__ = VERSION;
-})();
+window.__TERM_POPUP_VERSION__ = VERSION;
+
+export {};

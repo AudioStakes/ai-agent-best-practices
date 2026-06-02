@@ -31,7 +31,7 @@ const assetsRoot = join(repoRoot, "archive/assets");
 const defaultTimeoutSeconds = 60;
 
 function usage() {
-  console.log(`Usage: node workflow/scripts/save_content.js [options]
+  console.log(`Usage: tsx workflow/scripts/save_content.ts [options]
 
 Options:
   --dry-run                   Show what would be saved without downloading pages.
@@ -43,9 +43,9 @@ Options:
 
 Examples:
   npm run save:content
-  node workflow/scripts/save_content.js --all --refresh-days 30
-  node workflow/scripts/save_content.js --all --overwrite
-  node workflow/scripts/save_content.js --no-images
+  tsx workflow/scripts/save_content.ts --all --refresh-days 30
+  tsx workflow/scripts/save_content.ts --all --overwrite
+  tsx workflow/scripts/save_content.ts --no-images
 
 Output:
   archive/extracted/<source>/<id>.md
@@ -254,7 +254,7 @@ async function downloadImages(articleDom, articleUrl, assetsDir, markdownPath) {
     const src = img.getAttribute("src");
     if (!src || src.startsWith("data:")) continue;
 
-    let absoluteUrl;
+    let absoluteUrl: string;
     try {
       absoluteUrl = new URL(src, articleUrl).toString();
     } catch {

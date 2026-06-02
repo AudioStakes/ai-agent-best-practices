@@ -28,7 +28,7 @@
 - [ ] トップページから各章へのリンクが壊れていない
 - [ ] 各章から用語集へのリンクが壊れていない
 - [ ] トップページの CSS が反映されている
-- [ ] `site/styles/style.css` と `site/scripts/term-popup.js` の相対パスが GitHub Pages 配下でも解決される
+- [ ] `site/styles/style.css` と `site/scripts/term-popup.ts` の相対パスが GitHub Pages 配下でも解決される
 - [ ] 用語ポップアップ、または用語リンクの挙動が壊れていない
 - [ ] `dist/index.html` を build 後に直接開いた場合と GitHub Pages 経由で開いた場合のリンク先が一致している
 - [ ] `dist/` に source Markdown や CSV のコピーが入っていない

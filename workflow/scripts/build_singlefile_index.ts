@@ -11,7 +11,18 @@ const csvPath = join(repoRoot, "sources/articles.csv");
 const singlefileRoot = join(repoRoot, "archive/singlefile");
 const indexPath = join(singlefileRoot, "index.html");
 
-function normalizeSource(source) {
+type ArticleRow = {
+  id: string;
+  title?: string;
+  url?: string;
+  source?: string;
+  category?: string;
+  status?: string;
+  captured_at?: string;
+  raw_path?: string;
+};
+
+function normalizeSource(source: string | undefined): string {
   return (
     String(source || "unknown")
       .trim()
@@ -22,7 +33,7 @@ function normalizeSource(source) {
   );
 }
 
-function escapeHtml(value) {
+function escapeHtml(value: string | number | null | undefined): string {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -31,7 +42,7 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
-function readArticles() {
+function readArticles(): ArticleRow[] {
   if (!existsSync(csvPath)) {
     throw new Error(`articles.csv was not found: ${csvPath}`);
   }
@@ -40,10 +51,10 @@ function readArticles() {
     columns: true,
     skip_empty_lines: true,
     bom: true,
-  });
+  }) as ArticleRow[];
 }
 
-function resolveSinglefilePath(row) {
+function resolveSinglefilePath(row: ArticleRow): string {
   if (row.raw_path?.trim()) {
     return row.raw_path.trim();
   }
@@ -52,14 +63,14 @@ function resolveSinglefilePath(row) {
   return `archive/singlefile/${sourceDir}/${row.id}.html`;
 }
 
-function pathFromIndex(relativePathFromRepoRoot) {
+function pathFromIndex(relativePathFromRepoRoot: string): string {
   return relative(
     singlefileRoot,
     join(repoRoot, relativePathFromRepoRoot),
   ).replaceAll("\\", "/");
 }
 
-function buildIndex(rows) {
+function buildIndex(rows: ArticleRow[]): string {
   const generatedAt = new Date().toISOString();
   const total = rows.length;
   const saved = rows.filter((row) =>
@@ -70,7 +81,17 @@ function buildIndex(rows) {
   ).length;
   const pending = total - saved - failed;
 
-  const grouped = Map.groupBy(rows, (row) => row.source || "Unknown");
+  const grouped = new Map<string, ArticleRow[]>();
+  for (const row of rows) {
+    const source = row.source || "Unknown";
+    const existing = grouped.get(source);
+    if (existing) {
+      existing.push(row);
+    } else {
+      grouped.set(source, [row]);
+    }
+  }
+
   const sections = [...grouped.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([source, sourceRows]) => {

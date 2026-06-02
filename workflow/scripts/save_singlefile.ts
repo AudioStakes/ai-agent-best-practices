@@ -29,7 +29,7 @@ const outputRoot = join(repoRoot, "archive/singlefile");
 const defaultTimeoutSeconds = 120;
 
 function usage() {
-  console.log(`Usage: node workflow/scripts/save_singlefile.js [options]
+  console.log(`Usage: tsx workflow/scripts/save_singlefile.ts [options]
 
 Options:
   --dry-run                   Show what would be saved without downloading pages.
@@ -40,9 +40,9 @@ Options:
 
 Examples:
   npm run save:singlefile
-  node workflow/scripts/save_singlefile.js --all --refresh-days 30
-  node workflow/scripts/save_singlefile.js --all --timeout-seconds 300
-  node workflow/scripts/save_singlefile.js --all --overwrite
+  tsx workflow/scripts/save_singlefile.ts --all --refresh-days 30
+  tsx workflow/scripts/save_singlefile.ts --all --timeout-seconds 300
+  tsx workflow/scripts/save_singlefile.ts --all --overwrite
 
 Output:
   archive/singlefile/<source>/<id>.html

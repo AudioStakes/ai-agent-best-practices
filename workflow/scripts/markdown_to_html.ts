@@ -10,15 +10,15 @@ const markdownProcessor = unified()
   .use(remarkRehype, { allowDangerousHtml: true })
   .use(rehypeStringify, { allowDangerousHtml: true });
 
-export async function markdownToHtml(markdown) {
+export async function markdownToHtml(markdown: string): Promise<string> {
   const file = await markdownProcessor.process(markdown);
   return String(file);
 }
 
-export function extractTitle(markdown, fallback) {
+export function extractTitle(markdown: string, fallback: string): string {
   for (const line of markdown.split(/\r?\n/)) {
     const match = line.match(/^#\s+(.+?)\s*$/);
-    if (match) {
+    if (match?.[1]) {
       return match[1].trim();
     }
   }

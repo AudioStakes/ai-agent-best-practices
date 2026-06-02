@@ -17,9 +17,9 @@ import { extractTitle, markdownToHtml } from "./markdown_to_html.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
 
-function printHelpAndExit() {
+function printHelpAndExit(): never {
   console.log(`Usage:
-  node workflow/scripts/render_markdown_file.js INPUT.md OUTPUT.html
+  tsx workflow/scripts/render_markdown_file.ts INPUT.md OUTPUT.html
 
 Notes:
   - INPUT.md must exist.
@@ -28,7 +28,7 @@ Notes:
   process.exit(0);
 }
 
-function escapeHtml(value) {
+function escapeHtml(value: string | number | null | undefined): string {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -37,7 +37,7 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
-const [, , inputArg, outputArg] = process.argv;
+const [inputArg, outputArg] = process.argv.slice(2);
 
 if (!inputArg || !outputArg || inputArg === "--help" || inputArg === "-h") {
   printHelpAndExit();

@@ -61,19 +61,19 @@ archive/assets/<source>/<id>/image-001.<ext>
 画像を保存せず、Markdown だけ保存する場合:
 
 ```bash
-node workflow/scripts/save_content.js --no-images
+tsx workflow/scripts/save_content.ts --no-images
 ```
 
 既存 Markdown を上書きして再作成する場合:
 
 ```bash
-node workflow/scripts/save_content.js --all --overwrite
+tsx workflow/scripts/save_content.ts --all --overwrite
 ```
 
 30日以上古い Markdown だけ再作成する場合:
 
 ```bash
-node workflow/scripts/save_content.js --all --refresh-days 30
+tsx workflow/scripts/save_content.ts --all --refresh-days 30
 ```
 
 ## ルートの静的サイトを再生成する
@@ -126,18 +126,18 @@ archive/singlefile/index.html
 一覧ページだけ作り直したい場合:
 
 ```bash
-node workflow/scripts/build_singlefile_index.js
+tsx workflow/scripts/build_singlefile_index.ts
 ```
 
 ## 再生成の入口
 
 `workflow/scripts/` にあるスクリプトが、記事保存、一覧生成、タグガイド生成、公開用資産のパッケージングの中心です。
 
-- `workflow/scripts/save_singlefile.js`
-- `workflow/scripts/save_content.js`
-- `workflow/scripts/build_singlefile_index.js`
-- `workflow/scripts/build_root_pages.js`
-- `workflow/scripts/annotate_tag_guides_fences.js`
-- `workflow/scripts/build_tag_guides_html.js`
-- `workflow/scripts/package_dist_assets.js`
+- `workflow/scripts/save_singlefile.ts`
+- `workflow/scripts/save_content.ts`
+- `workflow/scripts/build_singlefile_index.ts`
+- `workflow/scripts/build_root_pages.ts`
+- `workflow/scripts/annotate_tag_guides_fences.ts`
+- `workflow/scripts/build_tag_guides_html.ts`
+- `workflow/scripts/package_dist_assets.ts`
 - `scripts/clean-dist.mjs`

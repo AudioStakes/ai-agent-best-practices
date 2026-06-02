@@ -172,7 +172,7 @@ test.describe
       expect(await page.locator("a.term").count()).toBeGreaterThan(0);
 
       const script = readFileSync(
-        path.join(siteDir, "site/scripts/term-popup.js"),
+        path.join(siteDir, "site/scripts/term-popup.ts"),
         "utf8",
       );
       expect(script).toContain("aria-haspopup");
@@ -199,7 +199,7 @@ test.describe
         expect(await page.locator("a.term").count()).toBeGreaterThan(0);
 
         const script = readFileSync(
-          path.join(siteDir, "site/scripts/term-popup.js"),
+          path.join(siteDir, "site/scripts/term-popup.ts"),
           "utf8",
         );
         expect(script).toContain("touchend");

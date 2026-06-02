@@ -3,13 +3,23 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  type CompilerOptions,
+  ModuleKind,
+  ScriptTarget,
+  transpileModule,
+} from "typescript";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
 const defaultDistDir = join(repoRoot, "dist");
 
-function parseArgs(argv) {
-  const options = {
+type PackageOptions = {
+  distDir: string;
+};
+
+function parseArgs(argv: string[]): PackageOptions {
+  const options: PackageOptions = {
     distDir: defaultDistDir,
   };
 
@@ -34,18 +44,18 @@ function parseArgs(argv) {
 
 function printHelpAndExit() {
   console.log(`Usage:
-  node workflow/scripts/package_dist_assets.js [--dist-dir DIR]
+  tsx workflow/scripts/package_dist_assets.ts [--dist-dir DIR]
 
 Defaults:
   --dist-dir   ${defaultDistDir}`);
   process.exit(0);
 }
 
-function ensureDir(path) {
+function ensureDir(path: string): void {
   mkdirSync(path, { recursive: true });
 }
 
-function copyTextFile(sourcePath, destinationPath) {
+function copyTextFile(sourcePath: string, destinationPath: string): void {
   if (!existsSync(sourcePath)) {
     throw new Error(`Source file not found: ${sourcePath}`);
   }
@@ -54,7 +64,34 @@ function copyTextFile(sourcePath, destinationPath) {
   writeFileSync(destinationPath, readFileSync(sourcePath, "utf8"), "utf8");
 }
 
-function copySiteAssets(distDir) {
+function transpileBrowserScript(
+  sourcePath: string,
+  destinationPath: string,
+): void {
+  const source = readFileSync(sourcePath, "utf8");
+  const compilerOptions = {
+    target: ScriptTarget.ES2022,
+    module: ModuleKind.NodeNext,
+  } satisfies CompilerOptions;
+
+  const result = transpileModule(source, {
+    compilerOptions,
+    fileName: sourcePath,
+    reportDiagnostics: true,
+  });
+
+  if (result.diagnostics?.length) {
+    const messages = result.diagnostics
+      .map((diagnostic) => diagnostic.messageText)
+      .join("\n");
+    throw new Error(`Failed to transpile ${sourcePath}:\n${messages}`);
+  }
+
+  ensureDir(dirname(destinationPath));
+  writeFileSync(destinationPath, result.outputText, "utf8");
+}
+
+function copySiteAssets(distDir: string): void {
   copyTextFile(
     join(repoRoot, "site/styles/style.css"),
     join(distDir, "site/styles/style.css"),
@@ -66,13 +103,13 @@ function copySiteAssets(distDir) {
     ),
     join(distDir, "site/styles/github-markdown.css"),
   );
-  copyTextFile(
-    join(repoRoot, "site/scripts/term-popup.js"),
+  transpileBrowserScript(
+    join(repoRoot, "site/scripts/term-popup.ts"),
     join(distDir, "site/scripts/term-popup.js"),
   );
 }
 
-function main() {
+function main(): void {
   const options = parseArgs(process.argv.slice(2));
   ensureDir(options.distDir);
   copySiteAssets(options.distDir);

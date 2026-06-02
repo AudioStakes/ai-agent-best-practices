@@ -1,7 +1,7 @@
 # 11. MarkdownコードブロックHTMLデザイン見本
 
 このページは、Markdown だけを編集して再生成できる見本です。  
-`annotate_tag_guides_fences.js` でマーカーを整え、`build_tag_guides_html.js` で HTML に変換すると、どの文章にどのスタイルが当たるかをそのまま確認できます。
+`annotate_tag_guides_fences.ts` でマーカーを整え、`build_tag_guides_html.ts` で HTML に変換すると、どの文章にどのスタイルが当たるかをそのまま確認できます。
 
 ## 使い分けの早見表
 
