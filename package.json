@@ -16,7 +16,6 @@
     "save:content": "node workflow/scripts/save_content.js",
     "save:content:dry-run": "node workflow/scripts/save_content.js --dry-run",
     "fix:tag-guides": "node workflow/scripts/annotate_tag_guides_fences.js",
-    "annotate:tag-guides": "npm run fix:tag-guides",
     "check:tag-guides": "node workflow/scripts/annotate_tag_guides_fences.js --check",
     "build:tag-guides": "node workflow/scripts/build_tag_guides_html.js",
     "render:github-markdown-style-guide": "node workflow/scripts/render_markdown_file.js workflow/guides/github-markdown-style-guide.md dist/github-markdown-style-guide.html",
