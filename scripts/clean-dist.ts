@@ -13,14 +13,14 @@ type CleanResult = {
   distDir: string;
 };
 
-function cleanDist(targetDir: string): CleanResult {
+const cleanDist = (targetDir: string): CleanResult => {
   if (existsSync(targetDir)) {
     rmSync(targetDir, { recursive: true, force: true });
     return { removed: true, distDir: targetDir };
   }
 
   return { removed: false, distDir: targetDir };
-}
+};
 
 const result = cleanDist(distDir);
 if (result.removed) {

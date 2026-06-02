@@ -46,7 +46,7 @@ type FetchOptions = {
   headers?: Record<string, string>;
 };
 
-function usage() {
+const usage = (): void => {
   console.log(`Usage: tsx workflow/scripts/save_content.ts [options]
 
 Options:
@@ -67,14 +67,14 @@ Output:
   archive/extracted/<source>/<id>.md
   archive/assets/<source>/<id>/image-001.<ext>
 `);
-}
+};
 
 if (args.has("--help") || args.has("-h")) {
   usage();
   process.exit(0);
 }
 
-function readNumberArg(name: string): number | null {
+const readNumberArg = (name: string): number | null => {
   const equalsPrefix = `${name}=`;
   const equalsArg = rawArgs.find((arg) => arg.startsWith(equalsPrefix));
 
@@ -88,7 +88,7 @@ function readNumberArg(name: string): number | null {
   }
 
   return Number(rawArgs[index + 1]);
-}
+};
 
 const refreshDays = readNumberArg("--refresh-days");
 const timeoutSeconds =
@@ -105,45 +105,43 @@ if (!Number.isFinite(timeoutSeconds) || timeoutSeconds <= 0) {
   throw new Error("--timeout-seconds must be a positive number.");
 }
 
-function normalizeSource(source: string | undefined): string {
-  return (
-    String(source || "unknown")
-      .trim()
-      .toLowerCase()
-      .replace(/&/g, "and")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "unknown"
-  );
-}
+const normalizeSource = (source: string | undefined): string =>
+  String(source ?? "unknown")
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "unknown";
 
-function ensureDir(path: string): void {
+const ensureDir = (path: string): void => {
   if (!existsSync(path)) {
     mkdirSync(path, { recursive: true });
   }
-}
+};
 
-function removeDirIfExists(path: string): void {
+const removeDirIfExists = (path: string): void => {
   if (existsSync(path)) {
     rmSync(path, { recursive: true, force: true });
   }
-}
+};
 
-function fileAgeDays(path: string): number {
+const fileAgeDays = (path: string): number => {
   const { mtimeMs } = statSync(path);
   return (Date.now() - mtimeMs) / (1000 * 60 * 60 * 24);
-}
+};
 
-function escapeYaml(value: string | number | null | undefined): string {
+const escapeYaml = (value: string | number | null | undefined): string => {
   return String(value ?? "")
     .replace(/\\/g, "\\\\")
     .replace(/"/g, '\\"');
-}
+};
 
-function sanitizeMarkdown(markdown: string): string {
-  return markdown.replace(/\n{3,}/g, "\n\n").trim();
-}
+const sanitizeMarkdown = (markdown: string): string =>
+  markdown.replace(/\n{3,}/g, "\n\n").trim();
 
-function extensionFromContentType(contentType: string | null): string | null {
+const extensionFromContentType = (
+  contentType: string | null,
+): string | null => {
   if (!contentType) return null;
   const [typePart] = contentType.split(";");
   const type = (typePart ?? "").trim().toLowerCase();
@@ -158,9 +156,9 @@ function extensionFromContentType(contentType: string | null): string | null {
   };
 
   return map[type] ?? null;
-}
+};
 
-function extensionFromUrl(url: string): string | null {
+const extensionFromUrl = (url: string): string | null => {
   try {
     const pathname = new URL(url).pathname;
     const ext = extname(pathname).toLowerCase();
@@ -174,9 +172,9 @@ function extensionFromUrl(url: string): string | null {
   }
 
   return null;
-}
+};
 
-function readArticles(): ArticleRow[] {
+const readArticles = (): ArticleRow[] => {
   if (!existsSync(csvPath)) {
     throw new Error(`articles.csv was not found: ${csvPath}`);
   }
@@ -186,12 +184,12 @@ function readArticles(): ArticleRow[] {
     skip_empty_lines: true,
     bom: true,
   }) as ArticleRow[];
-}
+};
 
-async function fetchWithTimeout(
+const fetchWithTimeout = async (
   url: string,
   options: FetchOptions = {},
-): Promise<Response> {
+): Promise<Response> => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutSeconds * 1000);
 
@@ -209,12 +207,14 @@ async function fetchWithTimeout(
   } finally {
     clearTimeout(timeout);
   }
-}
+};
 
-function shouldProcessContent(outputPath: string): {
+const shouldProcessContent = (
+  outputPath: string,
+): {
   process: boolean;
   reason: string;
-} {
+} => {
   if (!existsSync(outputPath)) {
     return { process: true, reason: "missing content file" };
   }
@@ -239,9 +239,9 @@ function shouldProcessContent(outputPath: string): {
   }
 
   return { process: false, reason: "existing content file" };
-}
+};
 
-function prepareArticleHtml(document: Document): void {
+const prepareArticleHtml = (document: Document): void => {
   document
     .querySelectorAll(
       "script, style, noscript, iframe, nav, header, footer, aside, form, button",
@@ -262,14 +262,14 @@ function prepareArticleHtml(document: Document): void {
     img.removeAttribute("srcset");
     img.removeAttribute("sizes");
   });
-}
+};
 
-async function downloadImages(
+const downloadImages = async (
   articleDom: JSDOM,
   articleUrl: string,
   assetsDir: string,
   markdownPath: string,
-): Promise<void> {
+): Promise<void> => {
   if (!saveImages) return;
 
   const images = [...articleDom.window.document.querySelectorAll("img")];
@@ -332,9 +332,9 @@ async function downloadImages(
       img.remove();
     }
   }
-}
+};
 
-function configureTurndown(): TurndownService {
+const configureTurndown = (): TurndownService => {
   const turndown = new TurndownService({
     headingStyle: "atx",
     codeBlockStyle: "fenced",
@@ -368,9 +368,9 @@ function configureTurndown(): TurndownService {
   });
 
   return turndown;
-}
+};
 
-async function saveArticle(row: ArticleRow): Promise<"saved" | "skipped"> {
+const saveArticle = async (row: ArticleRow): Promise<"saved" | "skipped"> => {
   const id = row.id.trim();
   const url = row.url?.trim();
   const sourceDir = normalizeSource(row.source);
@@ -450,9 +450,9 @@ ${markdownBody}
   writeFileSync(outputPath, markdown, "utf8");
 
   return "saved";
-}
+};
 
-async function main() {
+const main = async (): Promise<void> => {
   const rows = readArticles();
   let saved = 0;
   let skipped = 0;
@@ -481,7 +481,7 @@ async function main() {
   if (dryRun) {
     console.log("Dry run only. No files were written.");
   }
-}
+};
 
 main().catch((error: unknown) => {
   console.error(error instanceof Error ? error : String(error));

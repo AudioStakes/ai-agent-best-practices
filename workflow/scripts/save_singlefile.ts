@@ -44,7 +44,7 @@ type RunOptions = {
   timeoutMs: number;
 };
 
-function usage() {
+const usage = (): void => {
   console.log(`Usage: tsx workflow/scripts/save_singlefile.ts [options]
 
 Options:
@@ -63,14 +63,14 @@ Examples:
 Output:
   archive/singlefile/<source>/<id>.html
 `);
-}
+};
 
 if (args.has("--help") || args.has("-h")) {
   usage();
   process.exit(0);
 }
 
-function readNumberArg(name: string): number | null {
+const readNumberArg = (name: string): number | null => {
   const equalsPrefix = `${name}=`;
   const equalsArg = rawArgs.find((arg) => arg.startsWith(equalsPrefix));
 
@@ -84,7 +84,7 @@ function readNumberArg(name: string): number | null {
   }
 
   return Number(rawArgs[index + 1]);
-}
+};
 
 const refreshDays = readNumberArg("--refresh-days");
 const timeoutSeconds =
@@ -101,40 +101,37 @@ if (!Number.isFinite(timeoutSeconds) || timeoutSeconds <= 0) {
   throw new Error("--timeout-seconds must be a positive number.");
 }
 
-function normalizeSource(source: string | undefined): string {
-  return (
-    String(source || "unknown")
-      .trim()
-      .toLowerCase()
-      .replace(/&/g, "and")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "unknown"
-  );
-}
+const normalizeSource = (source: string | undefined): string =>
+  String(source ?? "unknown")
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "unknown";
 
-function ensureDir(path: string): void {
+const ensureDir = (path: string): void => {
   if (!existsSync(path)) {
     mkdirSync(path, { recursive: true });
   }
-}
+};
 
-function removeFileIfExists(path: string): void {
+const removeFileIfExists = (path: string): void => {
   if (existsSync(path)) {
     rmSync(path, { force: true });
   }
-}
+};
 
-function fileAgeDays(path: string): number {
+const fileAgeDays = (path: string): number => {
   const { mtimeMs } = statSync(path);
   return (Date.now() - mtimeMs) / (1000 * 60 * 60 * 24);
-}
+};
 
-function run(
+const run = (
   command: string,
   commandArgs: string[],
   { timeoutMs }: RunOptions,
-): Promise<void> {
-  return new Promise<void>((resolve, reject) => {
+): Promise<void> =>
+  new Promise<void>((resolve, reject) => {
     let settled = false;
     let timedOut = false;
 
@@ -185,22 +182,20 @@ function run(
       }
     });
   });
-}
 
-function readArticles(): ArticleRow[] {
+const readArticles = (): ArticleRow[] => {
   if (!existsSync(csvPath)) {
     throw new Error(`articles.csv was not found: ${csvPath}`);
   }
 
-  const csv = readFileSync(csvPath, "utf8");
-  return parse(csv, {
+  return parse(readFileSync(csvPath, "utf8"), {
     columns: true,
     skip_empty_lines: true,
     bom: true,
   }) as ArticleRow[];
-}
+};
 
-function writeArticles(rows: ArticleRow[]): void {
+const writeArticles = (rows: ArticleRow[]): void => {
   const columns = [
     "id",
     "title",
@@ -219,12 +214,14 @@ function writeArticles(rows: ArticleRow[]): void {
   });
 
   writeFileSync(csvPath, csv, "utf8");
-}
+};
 
-function shouldRefreshExistingFile(outputPath: string): {
+const shouldRefreshExistingFile = (
+  outputPath: string,
+): {
   refresh: boolean;
   reason: string;
-} {
+} => {
   if (overwrite) {
     return { refresh: true, reason: "overwrite requested" };
   }
@@ -245,9 +242,9 @@ function shouldRefreshExistingFile(outputPath: string): {
     refresh: false,
     reason: `existing file is ${ageDays.toFixed(1)} days old; refresh threshold is ${refreshDays} days`,
   };
-}
+};
 
-async function saveArticle(row: ArticleRow): Promise<"saved" | "skipped"> {
+const saveArticle = async (row: ArticleRow): Promise<"saved" | "skipped"> => {
   const id = row.id?.trim();
   const url = row.url?.trim();
   const sourceDir = normalizeSource(row.source);
@@ -306,9 +303,9 @@ async function saveArticle(row: ArticleRow): Promise<"saved" | "skipped"> {
   row.raw_path = relativeOutputPath;
 
   return "saved";
-}
+};
 
-async function main(): Promise<void> {
+const main = async (): Promise<void> => {
   const rows = readArticles();
   let saved = 0;
   let skipped = 0;
@@ -354,7 +351,7 @@ async function main(): Promise<void> {
   if (dryRun) {
     console.log("Dry run only. No files were written.");
   }
-}
+};
 
 main().catch((error: unknown) => {
   console.error(error instanceof Error ? error : String(error));
