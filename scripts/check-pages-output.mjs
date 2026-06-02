@@ -166,7 +166,6 @@ function checkRequiredFiles(distDir) {
     join(distDir, "index.html"),
     join(distDir, "domain-glossary.html"),
     join(distDir, "site/styles/style.css"),
-    join(distDir, "site/styles/semantic-overrides.css"),
     join(distDir, "site/scripts/term-popup.js"),
   ];
 
@@ -205,6 +204,14 @@ function checkIndexHtml(distDir) {
   const document = toDocument(text);
   const label = relative(repoRoot, indexPath);
 
+  if (
+    !document.querySelector("article.article.markdown-body.markdown-document")
+  ) {
+    fail(
+      `${label} is missing an article.article.markdown-body.markdown-document wrapper`,
+    );
+  }
+
   assertContains(text, 'href="site/styles/style.css?v=', label);
 
   const glossaryLink = Array.from(document.querySelectorAll("a[href]")).find(
@@ -233,6 +240,14 @@ function checkGlossaryHtml(distDir) {
     fail(`${label} is missing an h1 title`);
   }
 
+  if (
+    !document.querySelector("article.article.markdown-body.markdown-document")
+  ) {
+    fail(
+      `${label} is missing an article.article.markdown-body.markdown-document wrapper`,
+    );
+  }
+
   assertContains(text, 'href="site/styles/style.css?v=', label);
   assertContains(text, 'src="site/scripts/term-popup.js?v=', label);
 }
@@ -245,6 +260,14 @@ function checkTagGuideHtml(distDir, slug) {
   );
   const document = toDocument(text);
   const label = `tag-guides/${slug}.html`;
+
+  if (
+    !document.querySelector("article.article.markdown-body.markdown-document")
+  ) {
+    fail(
+      `${label} is missing an article.article.markdown-body.markdown-document wrapper`,
+    );
+  }
 
   const h1 = document.querySelector("h1");
   if (!h1) {

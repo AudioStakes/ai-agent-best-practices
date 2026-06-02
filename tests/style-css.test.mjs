@@ -9,6 +9,10 @@ import { test, expect } from "@playwright/test";
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(testDir, "..");
 const cssPath = path.join(repoRoot, "site/styles/style.css");
+const githubMarkdownCssPath = path.join(
+  repoRoot,
+  "node_modules/github-markdown-css/github-markdown-light.css",
+);
 const packageDistAssetsScript = path.join(
   repoRoot,
   "workflow/scripts/package_dist_assets.js",
@@ -33,22 +37,18 @@ function runProcess(args) {
   }));
 }
 
-test("site CSS uses GitHub Markdown styling instead of legacy article cards", async () => {
+test("site CSS stays focused on the shell, glossary, and term popup", async () => {
   const css = readFileSync(cssPath, "utf8");
 
-  expect(css).toContain(".markdown-body");
-  expect(css).toContain("--color-canvas-subtle: #f6f8fa");
-  expect(css).toContain(".markdown-alert-note");
-  expect(css).toContain(".markdown-alert-warning");
-  expect(css).toContain(".markdown-alert-caution");
-  expect(css).toContain(
-    ":where(.markdown-body, .markdown-document, .article) pre {",
-  );
-  expect(css).toContain("background-color: var(--color-canvas-subtle);");
-  expect(css).toContain("font-family: var(--mono-stack);");
-
-  expect(css).not.toMatch(/(^|\n)\.article\s*\{[^}]*box-shadow:/s);
-  expect(css).not.toMatch(/(^|\n)pre\s*\{[^}]*background:\s*var\(--code-bg\)/s);
+  expect(css).toContain(".markdown-body a.term");
+  expect(css).toContain(".markdown-body a.term:hover");
+  expect(css).toContain(".markdown-body a.term:visited");
+  expect(css).toContain(".term-popup");
+  expect(css).toContain(".glossary-table-wrap");
+  expect(css).toContain("body.site-index :where(.article)");
+  expect(css).toContain("body.tag-guide-page :where(.article)");
+  expect(css).toContain("body.glossary-page :where(.article)");
+  expect(css).toContain("body.glossary-page .glossary-cards");
 
   const tempRoot = mkdtempSync(path.join(os.tmpdir(), "css-copy-"));
   const distDir = path.join(tempRoot, "dist");
@@ -61,10 +61,17 @@ test("site CSS uses GitHub Markdown styling instead of legacy article cards", as
       path.join(distDir, "site/styles/style.css"),
       "utf8",
     );
-    expect(distCss).toContain(".markdown-body");
-    expect(distCss).toContain(".markdown-alert-note");
-    expect(distCss).toContain(".markdown-alert-warning");
-    expect(distCss).toContain(".markdown-alert-caution");
+    expect(distCss).toContain(".term-popup");
+    expect(distCss).toContain(".glossary-table-wrap");
+    const distMarkdownCss = readFileSync(
+      path.join(distDir, "site/styles/github-markdown.css"),
+      "utf8",
+    );
+    expect(distMarkdownCss).not.toContain("prefers-color-scheme: dark");
+    expect(distMarkdownCss).toContain(".markdown-body");
+    expect(readFileSync(githubMarkdownCssPath, "utf8")).not.toContain(
+      "prefers-color-scheme: dark",
+    );
   } finally {
     rmSync(tempRoot, { recursive: true, force: true });
   }

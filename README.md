@@ -54,6 +54,13 @@ npm run verify
 
 More detailed regeneration steps are documented in [`workflow/README.md`](./workflow/README.md).
 
+## Markdown Rendering
+
+Source Markdown is converted to HTML with `unified`, `remark-parse`, `remark-gfm`, `remark-rehype`, and `rehype-stringify`.
+The renderer supports GitHub Flavored Markdown features such as tables, task lists, strikethrough, code blocks, inline code, links, quotes, lists, and headings.
+Generated pages wrap rendered content in `.markdown-body`, and `github-markdown-light.css` is copied into `dist/site/styles/github-markdown.css` so the GitHub Markdown styling is applied alongside the site shell.
+Repository Markdown can include trusted raw HTML, so untrusted external Markdown should be sanitized before using the same pipeline.
+
 ## Local Preview
 
 ```bash

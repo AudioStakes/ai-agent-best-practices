@@ -4,8 +4,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { JSDOM } from "jsdom";
-import { marked } from "marked";
-import { transformMarkdownAlerts } from "./markdown_alerts.js";
+import { markdownToHtml } from "./markdown_to_html.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
@@ -28,21 +27,17 @@ function readMarkdown(filePath) {
   return readFileSync(filePath, "utf8");
 }
 
-function renderMarkdown(markdown) {
-  const rendered = marked.parse(markdown, {
-    gfm: true,
-    breaks: false,
-  });
+async function renderMarkdown(markdown) {
+  const rendered = await markdownToHtml(markdown);
   const dom = new JSDOM(
-    `<main class="markdown-body markdown-document">${rendered}</main>`,
+    `<article class="article markdown-body markdown-document">${rendered}</article>`,
   );
   const { document } = dom.window;
-  transformMarkdownAlerts(document);
 
-  return document.querySelector("main")?.innerHTML ?? rendered;
+  return document.querySelector("article")?.innerHTML ?? rendered;
 }
 
-function splitGlossaryMarkdown(markdown) {
+async function splitGlossaryMarkdown(markdown) {
   const lines = markdown.split(/\r?\n/);
   const headerLines = [];
   const tableLines = [];
@@ -61,7 +56,7 @@ function splitGlossaryMarkdown(markdown) {
   }
 
   return {
-    headerHtml: renderMarkdown(headerLines.join("\n")),
+    headerHtml: await renderMarkdown(headerLines.join("\n")),
     tableLines,
   };
 }
@@ -99,9 +94,9 @@ function parseGlossaryEntries(tableLines) {
   return entries;
 }
 
-function buildIndexHtml() {
+async function buildIndexHtml() {
   const markdown = readMarkdown(indexMarkdownPath);
-  const body = renderMarkdown(markdown);
+  const body = await renderMarkdown(markdown);
 
   return `<!doctype html>
 <html lang="ja">
@@ -109,19 +104,22 @@ function buildIndexHtml() {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AI Agent Best Practices Linked Glossary</title>
+  <link rel="stylesheet" href="site/styles/github-markdown.css?v=${stylesheetVersion}">
   <link rel="stylesheet" href="site/styles/style.css?v=${stylesheetVersion}">
 </head>
 <body class="site-index">
-<main class="markdown-body markdown-document">
+<main>
+<article class="article markdown-body markdown-document">
 ${body}
+</article>
 </main>
 </body>
 </html>`;
 }
 
-function buildGlossaryHtml() {
+async function buildGlossaryHtml() {
   const markdown = readMarkdown(glossaryMarkdownPath);
-  const { headerHtml, tableLines } = splitGlossaryMarkdown(markdown);
+  const { headerHtml, tableLines } = await splitGlossaryMarkdown(markdown);
   const entries = parseGlossaryEntries(tableLines);
 
   const tableRows = entries
@@ -154,50 +152,8 @@ function buildGlossaryHtml() {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Agent Domain Glossary</title>
+  <link rel="stylesheet" href="site/styles/github-markdown.css?v=${stylesheetVersion}" />
   <link rel="stylesheet" href="site/styles/style.css?v=${stylesheetVersion}" />
-  <style>
-/* Force glossary mobile layout: desktop keeps a table; mobile uses card/list items. */
-.glossary-cards { display: none; }
-.glossary-table-wrap { width: 100%; overflow-x: auto; }
-.glossary-table { display: table; width: 100%; table-layout: auto; border-collapse: collapse; }
-.glossary-table thead { display: table-header-group; }
-.glossary-table tbody { display: table-row-group; }
-.glossary-table tr { display: table-row; }
-.glossary-table th, .glossary-table td { display: table-cell; }
-
-@media (max-width: 720px) {
-  body.glossary-page .container { padding-left: 4px; padding-right: 4px; }
-  body.glossary-page .article { padding-left: 10px; padding-right: 10px; }
-  body.glossary-page .glossary-table-wrap { display: none !important; }
-  body.glossary-page .glossary-cards { display: grid !important; gap: 12px; margin-top: 18px; padding: 0; }
-  body.glossary-page .glossary-card {
-    display: block;
-    list-style: none;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    background: #fff;
-    padding: 12px 12px 12px 14px;
-  }
-  body.glossary-page .glossary-card-title {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    margin-bottom: 8px;
-  }
-  body.glossary-page .glossary-card-title .english {
-    font-weight: 800;
-    font-size: 1.05rem;
-    line-height: 1.35;
-  }
-  body.glossary-page .glossary-card-title .japanese {
-    font-weight: 700;
-    color: var(--muted);
-    line-height: 1.35;
-  }
-  body.glossary-page .glossary-card p { margin: 7px 0; }
-  body.glossary-page .glossary-label { font-weight: 700; color: var(--muted); }
-}
-  </style>
   <script src="site/scripts/term-popup.js?v=${popupScriptVersion}" defer></script>
 </head>
 <body class="glossary-page">
@@ -226,12 +182,12 @@ ${cards}
 </html>`;
 }
 
-function main() {
+async function main() {
   mkdirSync(distRoot, { recursive: true });
-  writeFileSync(join(distRoot, "index.html"), buildIndexHtml(), "utf8");
+  writeFileSync(join(distRoot, "index.html"), await buildIndexHtml(), "utf8");
   writeFileSync(
     join(distRoot, "domain-glossary.html"),
-    buildGlossaryHtml(),
+    await buildGlossaryHtml(),
     "utf8",
   );
 
