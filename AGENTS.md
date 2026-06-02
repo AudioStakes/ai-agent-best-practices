@@ -16,6 +16,13 @@ A curated knowledge base of AI agent best practices based on primary sources suc
 - [Regeneration Rules](agent-instructions/regeneration.md)
 - [Workflow Notes](workflow/AGENTS.md)
 
+## Rules
+
+- Prefer the repository's documented commands in `agent-instructions/commands.md` and `package.json` scripts over extra wrappers.
+- Use raw shell commands unless a repo-local tool is explicitly required for the task.
+- When implementing changes, use `$tdd` by default and follow its test-first workflow.
+- Only skip `$tdd` when it is clearly unnecessary for the task.
+
 
 <!-- headroom:rtk-instructions -->
 # RTK (Rust Token Killer) - Token-Optimized Commands
