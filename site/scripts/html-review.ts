@@ -1,4 +1,4 @@
-const VERSION = "20260602-html-review-3";
+const VERSION = "20260602-html-review-4";
 
 declare global {
   interface Window {
@@ -363,7 +363,12 @@ const renderEditor = (draft: ReviewDraft): void => {
 
   textarea.addEventListener("input", syncSaveState);
   textarea.addEventListener("keydown", (event: KeyboardEvent) => {
-    if (event.metaKey && event.key === "Enter" && !saveButton.disabled) {
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey &&
+      !event.isComposing &&
+      !saveButton.disabled
+    ) {
       event.preventDefault();
       saveButton.click();
     }

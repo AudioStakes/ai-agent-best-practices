@@ -226,13 +226,37 @@ test.describe
         JSON.parse(window.localStorage.getItem("html-review-comments") ?? "[]"),
       );
 
-      expect(comments).toHaveLength(1);
-      expect(comments[0].text).toBe("Saved by backdrop click");
-    });
+    expect(comments).toHaveLength(1);
+    expect(comments[0].text).toBe("Saved by backdrop click");
+  });
 
-    test("copy all includes a line-to-comment explanation by default", async ({
-      page,
-    }) => {
+  test("enter key saves comment from the editor", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto(
+      `${server.url}tag-guides/11-markdown-code-block-gallery.html`,
+    );
+
+    const firstReviewable = page.locator('[data-reviewable="true"]').first();
+    await firstReviewable.click();
+
+    const input = page.locator(".html-review-input");
+    await expect(input).toBeVisible();
+    await input.fill("Saved with Enter");
+    await input.press("Enter");
+
+    await expect(page.locator(".html-review-overlay")).toBeHidden();
+
+    const comments = await page.evaluate(() =>
+      JSON.parse(window.localStorage.getItem("html-review-comments") ?? "[]"),
+    );
+
+    expect(comments).toHaveLength(1);
+    expect(comments[0].text).toBe("Saved with Enter");
+  });
+
+  test("copy all includes a line-to-comment explanation by default", async ({
+    page,
+  }) => {
       await page.setViewportSize({ width: 1280, height: 900 });
       await page.addInitScript(() => {
         window.__copiedText = null;
