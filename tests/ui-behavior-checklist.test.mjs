@@ -181,6 +181,55 @@ test.describe
       expect(script).toContain("closePopup");
     });
 
+    test("tag guide review overlay stays hidden until opened and saves on backdrop click", async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.goto(
+        `${server.url}tag-guides/11-markdown-code-block-gallery.html`,
+      );
+
+      await expect(page.locator('script[src*="html-review.js?v="]')).toHaveCount(
+        1,
+      );
+      await expect(page.locator(".html-review-launcher")).toBeHidden();
+      await expect(page.locator(".html-review-overlay")).toBeHidden();
+
+      const firstReviewable = page.locator('[data-reviewable="true"]').first();
+      const box = await firstReviewable.boundingBox();
+      expect(box).not.toBeNull();
+
+      const hit = await page.evaluate(({ x, y }) => {
+        const element = document.elementFromPoint(x, y);
+        return element
+          ? {
+              className: element.className,
+              tagName: element.tagName,
+            }
+          : null;
+      }, { x: box.x + box.width / 2, y: box.y + box.height / 2 });
+
+      expect(hit?.tagName).toBe("H1");
+
+      await firstReviewable.click();
+      await expect(page.locator(".html-review-overlay")).toBeVisible();
+      await expect(page.locator(".html-review-input")).toBeVisible();
+
+      await page.locator(".html-review-input").fill("Saved by backdrop click");
+      await page
+        .locator(".html-review-overlay")
+        .click({ position: { x: 8, y: 8 } });
+
+      await expect(page.locator(".html-review-overlay")).toBeHidden();
+
+      const comments = await page.evaluate(() =>
+        JSON.parse(window.localStorage.getItem("html-review-comments") ?? "[]"),
+      );
+
+      expect(comments).toHaveLength(1);
+      expect(comments[0].text).toBe("Saved by backdrop click");
+    });
+
     test("mobile term popups open once and second tap follows the glossary link", async ({
       browser,
     }) => {

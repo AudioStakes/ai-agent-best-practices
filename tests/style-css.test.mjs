@@ -46,7 +46,9 @@ test("site CSS stays focused on the shell, glossary, and term popup", async () =
   expect(css).toContain(".term-popup");
   expect(css).toContain('[data-reviewable="true"]');
   expect(css).toContain(".html-review-launcher");
+  expect(css).toContain(".html-review-launcher[hidden]");
   expect(css).toContain(".html-review-dialog");
+  expect(css).toContain(".html-review-overlay[hidden]");
   expect(css).toContain(".glossary-table-wrap");
   expect(css).toContain("body.site-index :where(.article)");
   expect(css).toContain("body.tag-guide-page :where(.article)");
@@ -66,7 +68,9 @@ test("site CSS stays focused on the shell, glossary, and term popup", async () =
     );
     expect(distCss).toContain(".term-popup");
     expect(distCss).toContain(".html-review-launcher");
+    expect(distCss).toContain(".html-review-launcher[hidden]");
     expect(distCss).toContain(".glossary-table-wrap");
+    expect(distCss).toContain(".html-review-overlay[hidden]");
     expect(
       readFileSync(path.join(distDir, "site/scripts/html-review.js"), "utf8"),
     ).toContain("HTML_REVIEW_VERSION");

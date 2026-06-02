@@ -1,4 +1,4 @@
-const VERSION = "20260602-html-review-1";
+const VERSION = "20260602-html-review-2";
 
 declare global {
   interface Window {
@@ -236,6 +236,7 @@ document.body.append(launcher, overlay);
 let comments = readComments();
 let dialogState: DialogState = { mode: "hidden" };
 let statusNode: HTMLParagraphElement | null = null;
+let activeSaveButton: HTMLButtonElement | null = null;
 
 const updateLauncher = (): void => {
   launcherCount.textContent = `${comments.length}`;
@@ -250,10 +251,20 @@ const setStatus = (text: string): void => {
 
 const closeDialog = (): void => {
   dialogState = { mode: "hidden" };
+  activeSaveButton = null;
   overlay.hidden = true;
   overlay.setAttribute("aria-hidden", "true");
   dialog.replaceChildren();
   setStatus("");
+};
+
+const clickActiveSaveButton = (): boolean => {
+  if (!activeSaveButton || activeSaveButton.disabled) {
+    return false;
+  }
+
+  activeSaveButton.click();
+  return true;
 };
 
 const renderEmptyState = (): HTMLDivElement => {
@@ -338,6 +349,7 @@ const renderEditor = (draft: ReviewDraft): void => {
 
   const saveButton = createButton("html-review-save", "コメント");
   saveButton.disabled = true;
+  activeSaveButton = saveButton;
 
   const syncSaveState = (): void => {
     saveButton.disabled = textarea.value.trim().length === 0;
@@ -491,11 +503,14 @@ const openEditor = (target: HTMLElement): void => {
 
 launcher.addEventListener("click", openList);
 
-overlay.addEventListener("click", (event: MouseEvent) => {
-  if (event.target === overlay) {
-    closeDialog();
-  }
-});
+  overlay.addEventListener("click", (event: MouseEvent) => {
+    if (event.target === overlay) {
+      if (clickActiveSaveButton()) {
+        return;
+      }
+      closeDialog();
+    }
+  });
 
 document.addEventListener("keydown", (event: KeyboardEvent) => {
   if (event.key === "Escape" && dialogState.mode !== "hidden") {
@@ -519,14 +534,17 @@ document.addEventListener("click", (event: MouseEvent) => {
     return;
   }
 
-  const draft = getReviewDraft(reviewable);
-  if (!draft) {
-    return;
-  }
+    const draft = getReviewDraft(reviewable);
+    if (!draft) {
+      return;
+    }
 
-  event.preventDefault();
-  openEditor(reviewable);
-});
+    event.preventDefault();
+    if (dialogState.mode === "editor" && clickActiveSaveButton()) {
+      return;
+    }
+    openEditor(reviewable);
+  });
 
 updateLauncher();
 
