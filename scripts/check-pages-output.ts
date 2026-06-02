@@ -312,7 +312,7 @@ const checkTagGuideHtml = (distDir: string, slug: string): void => {
 
   assertContains(text, 'href="../site/styles/style.css?v=', label);
   assertContains(text, 'src="../site/scripts/term-popup.js?v=', label);
-  assertContains(text, 'src="../site/scripts/html-review.js?v=', label);
+  assertContains(text, 'type="module" src="../site/scripts/html-review.js?v=', label);
 
   if (!document.querySelector('[data-reviewable="true"]')) {
     fail(`${label} is missing reviewable blocks`);

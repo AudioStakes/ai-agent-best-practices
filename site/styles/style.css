@@ -253,6 +253,10 @@ body.tag-guide-page :where([data-reviewable="true"]):focus-visible {
   letter-spacing: 0.01em;
 }
 
+.html-review-launcher[hidden] {
+  display: none;
+}
+
 .html-review-launcher .count {
   display: inline-flex;
   align-items: center;
@@ -274,6 +278,10 @@ body.tag-guide-page :where([data-reviewable="true"]):focus-visible {
   padding: 20px;
   background: rgba(15, 23, 42, 0.48);
   backdrop-filter: blur(4px);
+}
+
+.html-review-overlay[hidden] {
+  display: none;
 }
 
 .html-review-dialog {

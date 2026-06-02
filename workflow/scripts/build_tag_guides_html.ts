@@ -844,8 +844,8 @@ const buildPage = async (
   <title>${escapeHtml(title)}</title>
   <link rel="stylesheet" href="../site/styles/github-markdown.css?v=${stylesheetVersion}" />
   <link rel="stylesheet" href="../site/styles/style.css?v=${stylesheetVersion}" />
-  <script src="../site/scripts/term-popup.js?v=${popupScriptVersion}" defer></script>
-  <script src="../site/scripts/html-review.js?v=${reviewScriptVersion}" defer></script>
+  <script type="module" src="../site/scripts/term-popup.js?v=${popupScriptVersion}"></script>
+  <script type="module" src="../site/scripts/html-review.js?v=${reviewScriptVersion}"></script>
 </head>
 <body class="tag-guide-page">
 <div class="container"><p class="nav"><a href="../index.html">← Index</a><a href="../domain-glossary.html">用語集</a></p><article class="article markdown-body markdown-document">${body}</article></div>

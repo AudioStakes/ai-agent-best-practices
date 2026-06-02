@@ -195,7 +195,9 @@ test("tag guide markdown can be regenerated into readable HTML", () => {
       expect(generated).toContain('href="../domain-glossary.html#agent"');
       expect(generated).toContain('href="../site/styles/style.css?v=');
       expect(generated).toContain('src="../site/scripts/term-popup.js?v=');
-      expect(generated).toContain('src="../site/scripts/html-review.js?v=');
+      expect(generated).toContain(
+        'type="module" src="../site/scripts/html-review.js?v=',
+      );
       expect(generated).toContain('data-reviewable="true"');
 
       const gallery = readFileSync(
