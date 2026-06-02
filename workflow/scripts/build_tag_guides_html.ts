@@ -22,7 +22,7 @@ const defaultOutputDir = join(repoRoot, "dist/tag-guides");
 const defaultGlossaryPath = join(repoRoot, "content/domain-glossary.md");
 const stylesheetVersion = "20260601-site-shell-3";
 const popupScriptVersion = "20260601-site-shell-3";
-const reviewScriptVersion = "20260602-html-review-2";
+const reviewScriptVersion = "20260602-html-review-3";
 
 type BuildOptions = {
   inputDir: string;

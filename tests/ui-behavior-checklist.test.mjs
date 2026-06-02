@@ -230,6 +230,58 @@ test.describe
       expect(comments[0].text).toBe("Saved by backdrop click");
     });
 
+    test("copy all includes a line-to-comment explanation by default", async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.addInitScript(() => {
+        window.__copiedText = null;
+        Object.defineProperty(navigator, "clipboard", {
+          configurable: true,
+          value: {
+            writeText: async (text) => {
+              window.__copiedText = text;
+            },
+          },
+        });
+      });
+      await page.goto(
+        `${server.url}tag-guides/11-markdown-code-block-gallery.html`,
+      );
+
+      await page.evaluate(() => {
+        window.localStorage.setItem(
+          "html-review-comments",
+          JSON.stringify([
+            {
+              createdAt: 1,
+              endLine: 12,
+              id: "comment-1",
+              sourcePath: "content/tag-guides/example.md",
+              startLine: 10,
+              text: "First note",
+            },
+          ]),
+        );
+      });
+
+      await page.reload();
+      await page.locator(".html-review-launcher").click();
+      await page.locator(".html-review-copy").click();
+
+      const copiedText = await page.evaluate(() => window.__copiedText);
+
+      expect(copiedText).toContain(
+        "各コメントは、ファイル名と行番号の対応が分かる形式で表示しています。",
+      );
+      expect(copiedText).toContain(
+        "範囲コメントは開始行-終了行の形式です。",
+      );
+      expect(copiedText).toContain("## `content/tag-guides/example.md`");
+      expect(copiedText).toContain("`10-12`");
+      expect(copiedText).toContain("First note");
+    });
+
     test("mobile term popups open once and second tap follows the glossary link", async ({
       browser,
     }) => {

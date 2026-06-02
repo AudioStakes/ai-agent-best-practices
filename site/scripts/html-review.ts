@@ -1,4 +1,4 @@
-const VERSION = "20260602-html-review-2";
+const VERSION = "20260602-html-review-3";
 
 declare global {
   interface Window {
@@ -170,7 +170,13 @@ const buildMarkdownSummary = (comments: ReviewComment[]): string => {
     }
   }
 
-  const lines = ["# Review Comments", ""];
+  const lines = [
+    "# Review Comments",
+    "",
+    "> 各コメントは、ファイル名と行番号の対応が分かる形式で表示しています。",
+    "> 範囲コメントは開始行-終了行の形式です。",
+    "",
+  ];
 
   for (const [sourcePath, items] of grouped) {
     lines.push(`## \`${sourcePath}\``);
