@@ -48,9 +48,11 @@ dist/                                # Generated publishable site output, ignore
 npm install
 npm run save:singlefile
 npm run save:content
-npm run build
 npm run verify
+npm run build
 ```
+
+`npm run verify` is the quick local check. Use `npm run verify:full` when you need the full build-and-pages validation.
 
 More detailed regeneration steps are documented in [`workflow/README.md`](./workflow/README.md).
 
@@ -80,4 +82,4 @@ Run `npm run build` before `./serve.sh`. The local server only serves `dist/`.
 
 GitHub Pages is intended to publish the generated `dist/` output from CI. Generated output is not committed.
 
-Publish by running `npm run build` and `npm run verify`, then deploying the `dist/` artifact.
+Publish by running `npm run build` and `npm run verify:full`, then deploying the `dist/` artifact.

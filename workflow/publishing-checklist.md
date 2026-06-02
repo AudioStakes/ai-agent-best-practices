@@ -3,7 +3,7 @@
 ## Build
 
 - [ ] `npm run build` が成功する
-- [ ] `npm run verify` が成功する
+- [ ] `npm run verify:full` が成功する
 - [ ] `npm run verify:pages` が成功する
 
 ## GitHub Pages

@@ -8,7 +8,7 @@
 - Treat `site/` as the static implementation source for CSS and JavaScript.
 - Treat `dist/` as generated site output. Do not edit generated files directly.
 - Prefer small, targeted `biome lint` and `biome format` runs on the files you changed.
-- Use `npm run verify` before handing off any change that affects the site shell, article pages, glossary behavior, or tests.
+- Use `npm run verify:full` before handing off any change that affects the site shell, article pages, glossary behavior, or tests.
 - If a generated page or link is wrong, fix the source Markdown or build scripts instead of adding a test exception.
 
 ## Regeneration Notes
@@ -30,5 +30,6 @@
 - `npm run lint`
 - `npm run format`
 - `npm run format:check`
+- `npm run verify:fast`
+- `npm run verify:full`
 - `npm test`
-- `npm run verify`

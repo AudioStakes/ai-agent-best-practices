@@ -620,7 +620,8 @@ Use these commands when editing guide Markdown.
 npm run check:tag-guides
 npm run build
 npm run verify:pages
-npm run verify
+npm run verify:fast
+npm run verify:full
 ```
 
 If semantic fences need normalization:
