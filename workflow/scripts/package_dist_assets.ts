@@ -107,6 +107,10 @@ const copySiteAssets = (distDir: string): void => {
     join(repoRoot, "site/scripts/term-popup.ts"),
     join(distDir, "site/scripts/term-popup.js"),
   );
+  transpileBrowserScript(
+    join(repoRoot, "site/scripts/html-review.ts"),
+    join(distDir, "site/scripts/html-review.js"),
+  );
 };
 
 const main = (): void => {

@@ -195,6 +195,8 @@ test("tag guide markdown can be regenerated into readable HTML", () => {
       expect(generated).toContain('href="../domain-glossary.html#agent"');
       expect(generated).toContain('href="../site/styles/style.css?v=');
       expect(generated).toContain('src="../site/scripts/term-popup.js?v=');
+      expect(generated).toContain('src="../site/scripts/html-review.js?v=');
+      expect(generated).toContain('data-reviewable="true"');
 
       const gallery = readFileSync(
         path.join(outputDir, "11-markdown-code-block-gallery.html"),
@@ -243,6 +245,12 @@ test("public dist assets package only copies static assets", () => {
           "utf8",
         ),
       ).toContain('popup.id = "term-popup"');
+      expect(
+        readFileSync(
+          path.join(distSubdir, "site/scripts/html-review.js"),
+          "utf8",
+        ),
+      ).toContain("HTML_REVIEW_VERSION");
       expect(readdirSync(distSubdir)).not.toContain("index.md");
       expect(readdirSync(distSubdir)).not.toContain("domain-glossary.md");
       expect(readdirSync(distSubdir)).not.toContain("sources");
@@ -311,14 +319,14 @@ test("tone-marked markdown fences become semantic chip lists", () => {
         "utf8",
       );
       expect(generated).toContain(
-        '<div class="term-chip-list" data-tone="good">',
+        '<div class="term-chip-list" data-tone="good" data-reviewable="true"',
       );
       expect(generated).toContain("<span>必要な情報だけを</span>");
       expect(generated).toContain(
-        '<div class="term-chip-list" data-tone="bad">',
+        '<div class="term-chip-list" data-tone="bad" data-reviewable="true"',
       );
       expect(generated).toContain(
-        '<div class="term-chip-list" data-tone="neutral">',
+        '<div class="term-chip-list" data-tone="neutral" data-reviewable="true"',
       );
       expect(generated).not.toContain('<pre><code class="language-tone-good">');
     })

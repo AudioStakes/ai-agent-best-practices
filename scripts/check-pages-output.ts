@@ -177,6 +177,7 @@ const checkRequiredFiles = (distDir: string): void => {
     join(distDir, "domain-glossary.html"),
     join(distDir, "site/styles/style.css"),
     join(distDir, "site/scripts/term-popup.js"),
+    join(distDir, "site/scripts/html-review.js"),
   ];
 
   for (const filePath of requiredPaths) {
@@ -311,6 +312,11 @@ const checkTagGuideHtml = (distDir: string, slug: string): void => {
 
   assertContains(text, 'href="../site/styles/style.css?v=', label);
   assertContains(text, 'src="../site/scripts/term-popup.js?v=', label);
+  assertContains(text, 'src="../site/scripts/html-review.js?v=', label);
+
+  if (!document.querySelector('[data-reviewable="true"]')) {
+    fail(`${label} is missing reviewable blocks`);
+  }
 };
 
 const checkTagGuideHtmlFiles = (distDir: string): void => {

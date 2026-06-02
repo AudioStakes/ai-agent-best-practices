@@ -10,7 +10,10 @@ import {
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { JSDOM } from "jsdom";
-import { markdownToHtml } from "./markdown_to_html.js";
+import {
+  markdownToHtml,
+  markdownToHtmlWithSourceMetadata,
+} from "./markdown_to_html.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
@@ -19,6 +22,7 @@ const defaultOutputDir = join(repoRoot, "dist/tag-guides");
 const defaultGlossaryPath = join(repoRoot, "content/domain-glossary.md");
 const stylesheetVersion = "20260601-site-shell-3";
 const popupScriptVersion = "20260601-site-shell-3";
+const reviewScriptVersion = "20260602-html-review-1";
 
 type BuildOptions = {
   inputDir: string;
@@ -211,6 +215,26 @@ const rewriteLinks = (
 
 const escapeRegExp = (value: string): string => {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+};
+
+const copySourceMetadata = (source: Element, target: HTMLElement): void => {
+  const reviewable = source.getAttribute("data-reviewable");
+  const sourcePath = source.getAttribute("data-source-path");
+  const startLine = source.getAttribute("data-source-start-line");
+  const endLine = source.getAttribute("data-source-end-line");
+
+  if (reviewable) {
+    target.setAttribute("data-reviewable", reviewable);
+  }
+  if (sourcePath) {
+    target.setAttribute("data-source-path", sourcePath);
+  }
+  if (startLine) {
+    target.setAttribute("data-source-start-line", startLine);
+  }
+  if (endLine) {
+    target.setAttribute("data-source-end-line", endLine);
+  }
 };
 
 const buildTermMatcher = (
@@ -781,6 +805,8 @@ const transformMarkedFences = async (document: Document): Promise<void> => {
     }
 
     if (replacement) {
+      const sourceElement = codeBlock.parentElement ?? codeBlock;
+      copySourceMetadata(sourceElement, replacement);
       codeBlock.parentElement?.replaceWith(replacement);
     }
   }
@@ -789,10 +815,11 @@ const transformMarkedFences = async (document: Document): Promise<void> => {
 const buildPage = async (
   markdown: string,
   sourceFileName: string,
+  sourcePath: string,
   glossaryDescriptions: Map<string, string>,
   glossaryTerms: GlossaryTerm[],
 ): Promise<string> => {
-  const rendered = await markdownToHtml(markdown);
+  const rendered = await markdownToHtmlWithSourceMetadata(markdown, sourcePath);
 
   const dom = new JSDOM(
     `<article class="article markdown-body markdown-document">${rendered}</article>`,
@@ -818,6 +845,7 @@ const buildPage = async (
   <link rel="stylesheet" href="../site/styles/github-markdown.css?v=${stylesheetVersion}" />
   <link rel="stylesheet" href="../site/styles/style.css?v=${stylesheetVersion}" />
   <script src="../site/scripts/term-popup.js?v=${popupScriptVersion}" defer></script>
+  <script src="../site/scripts/html-review.js?v=${reviewScriptVersion}" defer></script>
 </head>
 <body class="tag-guide-page">
 <div class="container"><p class="nav"><a href="../index.html">← Index</a><a href="../domain-glossary.html">用語集</a></p><article class="article markdown-body markdown-document">${body}</article></div>
@@ -852,6 +880,7 @@ const main = async (): Promise<void> => {
     const html = await buildPage(
       markdown,
       fileName,
+      `content/tag-guides/${fileName}`,
       glossaryDescriptions,
       glossaryTerms,
     );

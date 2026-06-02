@@ -44,6 +44,9 @@ test("site CSS stays focused on the shell, glossary, and term popup", async () =
   expect(css).toContain(".markdown-body a.term:hover");
   expect(css).toContain(".markdown-body a.term:visited");
   expect(css).toContain(".term-popup");
+  expect(css).toContain('[data-reviewable="true"]');
+  expect(css).toContain(".html-review-launcher");
+  expect(css).toContain(".html-review-dialog");
   expect(css).toContain(".glossary-table-wrap");
   expect(css).toContain("body.site-index :where(.article)");
   expect(css).toContain("body.tag-guide-page :where(.article)");
@@ -62,7 +65,11 @@ test("site CSS stays focused on the shell, glossary, and term popup", async () =
       "utf8",
     );
     expect(distCss).toContain(".term-popup");
+    expect(distCss).toContain(".html-review-launcher");
     expect(distCss).toContain(".glossary-table-wrap");
+    expect(
+      readFileSync(path.join(distDir, "site/scripts/html-review.js"), "utf8"),
+    ).toContain("HTML_REVIEW_VERSION");
     const distMarkdownCss = readFileSync(
       path.join(distDir, "site/styles/github-markdown.css"),
       "utf8",
