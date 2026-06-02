@@ -3,7 +3,6 @@
 import {
   existsSync,
   mkdirSync,
-  readFileSync,
   rmSync,
   statSync,
   writeFileSync,
@@ -11,9 +10,9 @@ import {
 import { dirname, extname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Readability } from "@mozilla/readability";
-import { parse } from "csv-parse/sync";
 import { JSDOM } from "jsdom";
 import TurndownService from "turndown";
+import { type ArticleRow, readArticles } from "./article_rows.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
@@ -25,22 +24,9 @@ const overwrite = args.has("--overwrite");
 const pendingOnly = !args.has("--all");
 const saveImages = !args.has("--no-images");
 
-const csvPath = join(repoRoot, "sources/articles.csv");
 const contentRoot = join(repoRoot, "archive/extracted");
 const assetsRoot = join(repoRoot, "archive/assets");
 const defaultTimeoutSeconds = 60;
-
-type ArticleRow = {
-  id: string;
-  title?: string;
-  url?: string;
-  source?: string;
-  category?: string;
-  status?: string;
-  captured_at?: string;
-  markdown_path?: string;
-  raw_path?: string;
-};
 
 type FetchOptions = {
   headers?: Record<string, string>;
@@ -172,18 +158,6 @@ const extensionFromUrl = (url: string): string | null => {
   }
 
   return null;
-};
-
-const readArticles = (): ArticleRow[] => {
-  if (!existsSync(csvPath)) {
-    throw new Error(`articles.csv was not found: ${csvPath}`);
-  }
-
-  return parse(readFileSync(csvPath, "utf8"), {
-    columns: true,
-    skip_empty_lines: true,
-    bom: true,
-  }) as ArticleRow[];
 };
 
 const fetchWithTimeout = async (
@@ -453,7 +427,7 @@ ${markdownBody}
 };
 
 const main = async (): Promise<void> => {
-  const rows = readArticles();
+  const rows = readArticles(join(repoRoot, "sources/articles.csv"));
   let saved = 0;
   let skipped = 0;
   let failed = 0;

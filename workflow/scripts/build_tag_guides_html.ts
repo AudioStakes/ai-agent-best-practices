@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-// @ts-nocheck
 
 import {
   existsSync,
@@ -21,7 +20,31 @@ const defaultGlossaryPath = join(repoRoot, "content/domain-glossary.md");
 const stylesheetVersion = "20260601-site-shell-3";
 const popupScriptVersion = "20260601-site-shell-3";
 
-const parseArgs = (argv) => {
+type BuildOptions = {
+  inputDir: string;
+  outputDir: string;
+  glossaryPath: string;
+};
+
+type GlossaryTerm = {
+  id: string;
+  term: string;
+  description: string;
+};
+
+type ParsedFenceToken = {
+  base: string;
+  tags: Set<string>;
+  raw: string;
+};
+
+type RiskLevel = {
+  className: "risk-low" | "risk-mid" | "risk-high";
+  label: string;
+  items: string[];
+};
+
+const parseArgs = (argv: string[]): BuildOptions => {
   const options = {
     inputDir: defaultInputDir,
     outputDir: defaultOutputDir,
@@ -53,7 +76,7 @@ const parseArgs = (argv) => {
   return options;
 };
 
-const printHelpAndExit = () => {
+const printHelpAndExit = (): never => {
   console.log(`Usage:
   tsx workflow/scripts/build_tag_guides_html.ts [--input-dir DIR] [--output-dir DIR] [--glossary FILE]
 
@@ -64,7 +87,7 @@ Defaults:
   process.exit(0);
 };
 
-const escapeHtml = (value) => {
+const escapeHtml = (value: string | number | null | undefined): string => {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -73,12 +96,14 @@ const escapeHtml = (value) => {
     .replace(/'/g, "&#039;");
 };
 
-const readGlossaryDescriptions = (glossaryPath) => {
+const readGlossaryDescriptions = (
+  glossaryPath: string,
+): Map<string, string> => {
   if (!existsSync(glossaryPath)) {
     throw new Error(`Glossary file not found: ${glossaryPath}`);
   }
 
-  const descriptions = new Map();
+  const descriptions = new Map<string, string>();
   const lines = readFileSync(glossaryPath, "utf8").split(/\r?\n/);
 
   for (const line of lines) {
@@ -87,8 +112,8 @@ const readGlossaryDescriptions = (glossaryPath) => {
     );
 
     if (match) {
-      const id = match[1].trim();
-      const description = match[2].trim();
+      const id = (match[1] ?? "").trim();
+      const description = (match[2] ?? "").trim();
       if (id) {
         descriptions.set(id, description);
       }
@@ -98,8 +123,8 @@ const readGlossaryDescriptions = (glossaryPath) => {
   return descriptions;
 };
 
-const readGlossaryTerms = (glossaryPath) => {
-  const terms = [];
+const readGlossaryTerms = (glossaryPath: string): GlossaryTerm[] => {
+  const terms: GlossaryTerm[] = [];
   const lines = readFileSync(glossaryPath, "utf8").split(/\r?\n/);
 
   for (const line of lines) {
@@ -111,10 +136,10 @@ const readGlossaryTerms = (glossaryPath) => {
       continue;
     }
 
-    const id = match[1].trim();
-    const english = match[2].trim();
-    const japanese = match[3].trim();
-    const description = match[4].trim();
+    const id = (match[1] ?? "").trim();
+    const english = (match[2] ?? "").trim();
+    const japanese = (match[3] ?? "").trim();
+    const description = (match[4] ?? "").trim();
 
     if (japanese && japanese !== "-") {
       terms.push({ id, term: japanese, description });
@@ -128,7 +153,7 @@ const readGlossaryTerms = (glossaryPath) => {
   return terms;
 };
 
-const slugifyHeading = (text, usedIds) => {
+const slugifyHeading = (text: string, usedIds: Set<string>): string => {
   const base =
     String(text)
       .normalize("NFKD")
@@ -148,7 +173,10 @@ const slugifyHeading = (text, usedIds) => {
   return candidate;
 };
 
-const rewriteLinks = (document, glossaryDescriptions) => {
+const rewriteLinks = (
+  document: Document,
+  glossaryDescriptions: Map<string, string>,
+): void => {
   for (const anchor of document.querySelectorAll("a[href]")) {
     const href = anchor.getAttribute("href");
     if (!href) {
@@ -160,7 +188,8 @@ const rewriteLinks = (document, glossaryDescriptions) => {
     );
 
     if (glossaryMatch?.groups) {
-      const { prefix, id } = glossaryMatch.groups;
+      const prefix = glossaryMatch.groups.prefix ?? "";
+      const id = glossaryMatch.groups.id ?? "";
       const description = glossaryDescriptions.get(id) || "";
       anchor.classList.add("term");
       anchor.setAttribute("href", `${prefix}domain-glossary.html#${id}`);
@@ -180,11 +209,16 @@ const rewriteLinks = (document, glossaryDescriptions) => {
   }
 };
 
-const escapeRegExp = (value) => {
+const escapeRegExp = (value: string): string => {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 };
 
-const buildTermMatcher = (terms) => {
+const buildTermMatcher = (
+  terms: GlossaryTerm[],
+): {
+  termsByText: Map<string, GlossaryTerm>;
+  regex: RegExp | null;
+} => {
   const uniqueTerms = [
     ...new Map(terms.map((entry) => [entry.term, entry])).values(),
   ];
@@ -199,7 +233,11 @@ const buildTermMatcher = (terms) => {
   };
 };
 
-const linkGlossaryTerms = (document, article, glossaryTerms) => {
+const linkGlossaryTerms = (
+  document: Document,
+  article: Element | null,
+  glossaryTerms: GlossaryTerm[],
+): void => {
   if (!article || glossaryTerms.length === 0) {
     return;
   }
@@ -209,9 +247,14 @@ const linkGlossaryTerms = (document, article, glossaryTerms) => {
     return;
   }
 
-  const filter = document.defaultView.NodeFilter;
+  const defaultView = document.defaultView;
+  if (!defaultView) {
+    return;
+  }
+
+  const filter = defaultView.NodeFilter;
   const skipTags = new Set(["A", "CODE", "PRE", "SCRIPT", "STYLE"]);
-  const textNodes = [];
+  const textNodes: Node[] = [];
   const walker = document.createTreeWalker(article, filter.SHOW_TEXT, {
     acceptNode(node) {
       const text = node.nodeValue || "";
@@ -280,8 +323,8 @@ const linkGlossaryTerms = (document, article, glossaryTerms) => {
   }
 };
 
-const annotateHeadings = (document) => {
-  const usedIds = new Set();
+const annotateHeadings = (document: Document): void => {
+  const usedIds = new Set<string>();
 
   for (const heading of document.querySelectorAll("h1, h2, h3, h4, h5, h6")) {
     if (!heading.id) {
@@ -292,13 +335,13 @@ const annotateHeadings = (document) => {
   }
 };
 
-const getFenceToken = (codeBlock) => {
+const getFenceToken = (codeBlock: HTMLElement): string | undefined => {
   return Array.from(codeBlock.classList).find((className) =>
     className.startsWith("language-"),
   );
 };
 
-const parseFenceToken = (token) => {
+const parseFenceToken = (token: string): ParsedFenceToken => {
   const value = token.replace(/^language-/, "");
   const parts = value.split(".").filter(Boolean);
   const base = parts[0] || "";
@@ -306,11 +349,28 @@ const parseFenceToken = (token) => {
   return { base, tags, raw: value };
 };
 
-const stripListMarker = (line) => {
+const stripListMarker = (line: string): string => {
   return line.replace(/^\s*(?:[-*+]\s+|\d+[.)]\s+)/, "").trim();
 };
 
-const createListElement = (document, tagName, className, items) => {
+function createListElement(
+  document: Document,
+  tagName: "ol",
+  className: string,
+  items: string[],
+): HTMLOListElement;
+function createListElement(
+  document: Document,
+  tagName: "ul",
+  className: string,
+  items: string[],
+): HTMLUListElement;
+function createListElement(
+  document: Document,
+  tagName: "ol" | "ul",
+  className: string,
+  items: string[],
+): HTMLOListElement | HTMLUListElement {
   const list = document.createElement(tagName);
   list.className = className;
 
@@ -321,9 +381,9 @@ const createListElement = (document, tagName, className, items) => {
   }
 
   return list;
-};
+}
 
-const extractCodeExampleLabel = (base) => {
+const extractCodeExampleLabel = (base: string): string => {
   const normalized = base.toLowerCase();
   if (normalized === "json") {
     return "JSON";
@@ -343,7 +403,11 @@ const extractCodeExampleLabel = (base) => {
   return normalized.toUpperCase();
 };
 
-const renderCodeExample = (document, codeBlock, base) => {
+const renderCodeExample = (
+  document: Document,
+  codeBlock: HTMLElement,
+  base: string,
+): HTMLDivElement => {
   const box = document.createElement("div");
   box.className = "code-example-box";
 
@@ -365,7 +429,10 @@ const renderCodeExample = (document, codeBlock, base) => {
   return box;
 };
 
-const renderTakeaway = (document, lines) => {
+const renderTakeaway = (
+  document: Document,
+  lines: string[],
+): HTMLDivElement => {
   const box = document.createElement("div");
   box.className = "takeaway-box";
 
@@ -379,14 +446,20 @@ const renderTakeaway = (document, lines) => {
   return box;
 };
 
-const renderDefinition = async (document, text) => {
+const renderDefinition = async (
+  document: Document,
+  text: string,
+): Promise<HTMLDivElement> => {
   const box = document.createElement("div");
   box.className = "definition-box";
   const dl = document.createElement("dl");
   const lines = text.split(/\r?\n/);
   let index = 0;
 
-  const flushSection = async (title, sectionLines) => {
+  const flushSection = async (
+    title: string,
+    sectionLines: string[],
+  ): Promise<void> => {
     const dt = document.createElement("dt");
     dt.textContent = title;
     const dd = document.createElement("dd");
@@ -396,7 +469,7 @@ const renderDefinition = async (document, text) => {
   };
 
   while (index < lines.length) {
-    const line = lines[index].trim();
+    const line = (lines[index] ?? "").trim();
     if (!line) {
       index += 1;
       continue;
@@ -404,11 +477,14 @@ const renderDefinition = async (document, text) => {
 
     const headingMatch = line.match(/^#{2,6}\s+(.+)$/);
     if (headingMatch) {
-      const title = headingMatch[1].trim();
+      const title = (headingMatch[1] ?? "").trim();
       index += 1;
-      const sectionLines = [];
+      const sectionLines: string[] = [];
       while (index < lines.length) {
         const nextLine = lines[index];
+        if (nextLine === undefined) {
+          break;
+        }
         if (/^#{2,6}\s+/.test(nextLine.trim())) {
           break;
         }
@@ -421,11 +497,14 @@ const renderDefinition = async (document, text) => {
 
     const colonMatch = line.match(/^(.+?)[：:]\s*(.*)$/);
     if (colonMatch) {
-      const title = colonMatch[1].trim();
-      const sectionLines = [colonMatch[2] || ""];
+      const title = (colonMatch[1] ?? "").trim();
+      const sectionLines: string[] = [colonMatch[2] ?? ""];
       index += 1;
       while (index < lines.length) {
         const nextLine = lines[index];
+        if (nextLine === undefined) {
+          break;
+        }
         if (!nextLine.trim()) {
           index += 1;
           break;
@@ -445,9 +524,12 @@ const renderDefinition = async (document, text) => {
 
     const title = line;
     index += 1;
-    const sectionLines = [];
+    const sectionLines: string[] = [];
     while (index < lines.length) {
       const nextLine = lines[index];
+      if (nextLine === undefined) {
+        break;
+      }
       if (/^#{2,6}\s+/.test(nextLine.trim())) {
         break;
       }
@@ -467,7 +549,10 @@ const renderDefinition = async (document, text) => {
   return box;
 };
 
-const renderStructuredList = (document, lines) => {
+const renderStructuredList = (
+  document: Document,
+  lines: string[],
+): HTMLDivElement => {
   const box = document.createElement("div");
   box.className = "structured-list";
 
@@ -478,9 +563,9 @@ const renderStructuredList = (document, lines) => {
     const match = line.match(/^(.+?)[：:]\s*(.+)$/);
     if (match) {
       const strong = document.createElement("strong");
-      strong.textContent = match[1].trim();
+      strong.textContent = (match[1] ?? "").trim();
       item.appendChild(strong);
-      item.appendChild(document.createTextNode(match[2].trim()));
+      item.appendChild(document.createTextNode((match[2] ?? "").trim()));
     } else {
       item.textContent = line;
     }
@@ -491,11 +576,11 @@ const renderStructuredList = (document, lines) => {
   return box;
 };
 
-const renderRiskLadder = (document, text) => {
+const renderRiskLadder = (document: Document, text: string): HTMLDivElement => {
   const box = document.createElement("div");
   box.className = "risk-ladder";
   const lines = text.split(/\r?\n/);
-  let current = null;
+  let current: RiskLevel | null = null;
 
   const finalize = () => {
     if (!current) {
@@ -523,8 +608,9 @@ const renderRiskLadder = (document, text) => {
     if (labelMatch) {
       finalize();
 
-      const rawLabel = labelMatch[1].toLowerCase();
-      const remainder = labelMatch[2].trim();
+      const label = labelMatch[1] ?? "";
+      const rawLabel = label.toLowerCase();
+      const remainder = (labelMatch[2] ?? "").trim();
       const className =
         rawLabel.includes("低") || rawLabel.startsWith("low")
           ? "risk-low"
@@ -534,7 +620,7 @@ const renderRiskLadder = (document, text) => {
 
       current = {
         className,
-        label: labelMatch[1],
+        label,
         items: remainder ? [remainder] : [],
       };
       continue;
@@ -549,23 +635,48 @@ const renderRiskLadder = (document, text) => {
   return box;
 };
 
-const renderListFromLines = (document, tagName, className, text) => {
+function renderListFromLines(
+  document: Document,
+  tagName: "ol",
+  className: string,
+  text: string,
+): HTMLOListElement;
+function renderListFromLines(
+  document: Document,
+  tagName: "ul",
+  className: string,
+  text: string,
+): HTMLUListElement;
+function renderListFromLines(
+  document: Document,
+  tagName: "ol" | "ul",
+  className: string,
+  text: string,
+): HTMLOListElement | HTMLUListElement {
   const lines = text
     .split(/\r?\n/)
     .map((line) => stripListMarker(line))
     .filter(Boolean);
-  return createListElement(document, tagName, className, lines);
-};
+  if (tagName === "ol") {
+    return createListElement(document, "ol", className, lines);
+  }
 
-const renderProcessSteps = (document, text) => {
+  return createListElement(document, "ul", className, lines);
+}
+
+const renderProcessSteps = (
+  document: Document,
+  text: string,
+): HTMLOListElement => {
   const textLines = text
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean);
-  const items = [];
+  const items: string[] = [];
 
-  if (textLines.length === 1 && /(?:→|->|↓)/.test(textLines[0])) {
-    for (const part of textLines[0].split(/(?:→|->|↓)/)) {
+  const firstLine = textLines[0] ?? "";
+  if (textLines.length === 1 && /(?:→|->|↓)/.test(firstLine)) {
+    for (const part of firstLine.split(/(?:→|->|↓)/)) {
       const cleaned = part.trim();
       if (cleaned) {
         items.push(cleaned);
@@ -586,22 +697,29 @@ const renderProcessSteps = (document, text) => {
   return createListElement(document, "ol", "process-steps", items);
 };
 
-const renderChecklist = (document, text, question = false) => {
+const renderChecklist = (
+  document: Document,
+  text: string,
+  question = false,
+): HTMLUListElement => {
   const className = question ? "checklist question-checklist" : "checklist";
   return renderListFromLines(document, "ul", className, text);
 };
 
-const renderGuidelineList = (document, text) => {
+const renderGuidelineList = (
+  document: Document,
+  text: string,
+): HTMLUListElement => {
   return renderListFromLines(document, "ul", "guideline-list", text);
 };
 
-const renderRiskBox = (document, text) => {
+const renderRiskBox = (document: Document, text: string): HTMLUListElement => {
   return renderListFromLines(document, "ul", "risk-box", text);
 };
 
-const transformMarkedFences = async (document) => {
+const transformMarkedFences = async (document: Document): Promise<void> => {
   const codeBlocks = Array.from(
-    document.querySelectorAll('pre > code[class*="language-"]'),
+    document.querySelectorAll<HTMLElement>('pre > code[class*="language-"]'),
   );
 
   for (const codeBlock of codeBlocks) {
@@ -617,7 +735,7 @@ const transformMarkedFences = async (document) => {
       .map((line) => line.trim())
       .filter(Boolean);
     const firstTag = [...tags][0] || "";
-    let replacement = null;
+    let replacement: HTMLElement | null = null;
 
     if (base.startsWith("tone-") && tags.size === 0) {
       const list = document.createElement("div");
@@ -669,11 +787,11 @@ const transformMarkedFences = async (document) => {
 };
 
 const buildPage = async (
-  markdown,
-  sourceFileName,
-  glossaryDescriptions,
-  glossaryTerms,
-) => {
+  markdown: string,
+  sourceFileName: string,
+  glossaryDescriptions: Map<string, string>,
+  glossaryTerms: GlossaryTerm[],
+): Promise<string> => {
   const rendered = await markdownToHtml(markdown);
 
   const dom = new JSDOM(
@@ -708,7 +826,7 @@ const buildPage = async (
 `;
 };
 
-const main = async () => {
+const main = async (): Promise<void> => {
   const options = parseArgs(process.argv.slice(2));
   if (!existsSync(options.inputDir)) {
     throw new Error(`Input directory not found: ${options.inputDir}`);

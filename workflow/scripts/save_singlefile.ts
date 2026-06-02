@@ -4,7 +4,6 @@ import { spawn } from "node:child_process";
 import {
   existsSync,
   mkdirSync,
-  readFileSync,
   renameSync,
   rmSync,
   statSync,
@@ -12,8 +11,8 @@ import {
 } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { parse } from "csv-parse/sync";
 import { stringify } from "csv-stringify/sync";
+import { type ArticleRow, readArticles } from "./article_rows.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
@@ -27,18 +26,6 @@ const pendingOnly = !args.has("--all");
 const csvPath = join(repoRoot, "sources/articles.csv");
 const outputRoot = join(repoRoot, "archive/singlefile");
 const defaultTimeoutSeconds = 120;
-
-type ArticleRow = {
-  id: string;
-  title?: string;
-  url?: string;
-  source?: string;
-  category?: string;
-  status?: string;
-  captured_at?: string;
-  markdown_path?: string;
-  raw_path?: string;
-};
 
 type RunOptions = {
   timeoutMs: number;
@@ -183,18 +170,6 @@ const run = (
     });
   });
 
-const readArticles = (): ArticleRow[] => {
-  if (!existsSync(csvPath)) {
-    throw new Error(`articles.csv was not found: ${csvPath}`);
-  }
-
-  return parse(readFileSync(csvPath, "utf8"), {
-    columns: true,
-    skip_empty_lines: true,
-    bom: true,
-  }) as ArticleRow[];
-};
-
 const writeArticles = (rows: ArticleRow[]): void => {
   const columns = [
     "id",
@@ -306,7 +281,7 @@ const saveArticle = async (row: ArticleRow): Promise<"saved" | "skipped"> => {
 };
 
 const main = async (): Promise<void> => {
-  const rows = readArticles();
+  const rows = readArticles(csvPath);
   let saved = 0;
   let skipped = 0;
   let failed = 0;

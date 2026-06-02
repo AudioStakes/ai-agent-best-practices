@@ -1,26 +1,14 @@
 #!/usr/bin/env node
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { parse } from "csv-parse/sync";
+import { type ArticleRow, readArticles } from "./article_rows.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
-const csvPath = join(repoRoot, "sources/articles.csv");
 const singlefileRoot = join(repoRoot, "archive/singlefile");
 const indexPath = join(singlefileRoot, "index.html");
-
-type ArticleRow = {
-  id: string;
-  title?: string;
-  url?: string;
-  source?: string;
-  category?: string;
-  status?: string;
-  captured_at?: string;
-  raw_path?: string;
-};
 
 function normalizeSource(source: string | undefined): string {
   return (
@@ -42,19 +30,11 @@ function escapeHtml(value: string | number | null | undefined): string {
     .replace(/'/g, "&#039;");
 }
 
-function readArticles(): ArticleRow[] {
-  if (!existsSync(csvPath)) {
-    throw new Error(`articles.csv was not found: ${csvPath}`);
-  }
-
-  return parse(readFileSync(csvPath, "utf8"), {
-    columns: true,
-    skip_empty_lines: true,
-    bom: true,
-  }) as ArticleRow[];
-}
-
-function resolveSinglefilePath(row: ArticleRow): string {
+function resolveSinglefilePath(row: {
+  id: string;
+  source?: string;
+  raw_path?: string;
+}): string {
   if (row.raw_path?.trim()) {
     return row.raw_path.trim();
   }
@@ -203,7 +183,7 @@ function buildIndex(rows: ArticleRow[]): string {
 }
 
 function main() {
-  const rows = readArticles();
+  const rows = readArticles(join(repoRoot, "sources/articles.csv"));
   mkdirSync(singlefileRoot, { recursive: true });
   writeFileSync(indexPath, buildIndex(rows), "utf8");
   console.log(`generated: ${relative(repoRoot, indexPath)}`);
