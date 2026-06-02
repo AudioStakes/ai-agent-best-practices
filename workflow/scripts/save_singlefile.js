@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { spawn } from "node:child_process";
 import {
   existsSync,
   mkdirSync,
@@ -11,7 +12,6 @@ import {
 } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { spawn } from "node:child_process";
 import { parse } from "csv-parse/sync";
 import { stringify } from "csv-stringify/sync";
 

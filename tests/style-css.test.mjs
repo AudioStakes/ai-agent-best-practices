@@ -1,10 +1,10 @@
+import { spawn } from "node:child_process";
+import { once } from "node:events";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { spawn } from "node:child_process";
-import { once } from "node:events";
 import { fileURLToPath } from "node:url";
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(testDir, "..");

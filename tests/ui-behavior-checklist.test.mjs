@@ -1,10 +1,10 @@
 import { spawn } from "node:child_process";
 import { once } from "node:events";
-import net from "node:net";
 import { existsSync, readFileSync } from "node:fs";
+import net from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 const siteDir = path.resolve(testDir, "..");

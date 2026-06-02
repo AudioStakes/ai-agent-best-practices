@@ -4,8 +4,8 @@
   "type": "module",
   "scripts": {
     "lint": "biome lint .",
-    "format": "biome format --write .",
-    "format:check": "biome format .",
+    "format": "biome check --write .",
+    "format:check": "biome check .",
     "test:fast": "playwright test tests/markdown-rendering.test.mjs tests/style-css.test.mjs",
     "test": "playwright test tests/*.test.mjs",
     "verify:fast": "npm run lint && npm run format:check && npm run check:tag-guides && npm run test:fast",

@@ -1,19 +1,19 @@
+import { spawn } from "node:child_process";
+import { once } from "node:events";
 import {
   chmodSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
-  readFileSync,
   readdirSync,
+  readFileSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { spawn } from "node:child_process";
-import { once } from "node:events";
 import { fileURLToPath } from "node:url";
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { JSDOM } from "jsdom";
 
 const testDir = path.dirname(fileURLToPath(import.meta.url));
