@@ -3,6 +3,7 @@
 import {
   existsSync,
   mkdirSync,
+  readFileSync,
   rmSync,
   statSync,
   writeFileSync,
@@ -12,6 +13,7 @@ import { fileURLToPath } from "node:url";
 import { Readability } from "@mozilla/readability";
 import { JSDOM } from "jsdom";
 import TurndownService from "turndown";
+import { extractArticleDates } from "./article_dates.js";
 import { type ArticleRow, readArticles } from "./article_rows.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -26,68 +28,59 @@ const saveImages = !args.has("--no-images");
 
 const contentRoot = join(repoRoot, "archive/extracted");
 const assetsRoot = join(repoRoot, "archive/assets");
+const singlefileRoot = join(repoRoot, "archive/singlefile");
 const defaultTimeoutSeconds = 60;
 
 type FetchOptions = {
   headers?: Record<string, string>;
+  signal?: AbortSignal;
 };
 
 const usage = (): void => {
   console.log(`Usage: tsx workflow/scripts/save_content.ts [options]
 
 Options:
-  --dry-run                   Show what would be saved without downloading pages.
-  --overwrite                 Re-save Markdown even when the output file already exists.
-  --refresh-days <days>       Re-save an existing Markdown file when it is older than this many days.
-  --timeout-seconds <seconds> Skip a page or image request when it takes longer than this. Default: ${defaultTimeoutSeconds}.
-  --no-images                 Save Markdown only. Do not download images.
-  --all                       Process all rows, not only rows whose content file is missing.
-
-Examples:
-  npm run save:content
-  tsx workflow/scripts/save_content.ts --all --refresh-days 30
-  tsx workflow/scripts/save_content.ts --all --overwrite
-  tsx workflow/scripts/save_content.ts --no-images
-
-Output:
-  archive/extracted/<source>/<id>.md
-  archive/assets/<source>/<id>/image-001.<ext>
+  --dry-run             Show what would be saved without writing files.
+  --overwrite           Re-save pages even when the output file already exists.
+  --refresh-days <days> Re-save an existing file when it is older than this many days.
+  --timeout-seconds <n> Timeout for fetches (default: ${defaultTimeoutSeconds}).
+  --all                 Save all rows, not only rows whose status is pending or failed.
+  --no-images           Save Markdown only. Do not download images.
+  -h, --help            Show this help message.
 `);
 };
 
-if (args.has("--help") || args.has("-h")) {
+if (args.has("-h") || args.has("--help")) {
   usage();
   process.exit(0);
 }
 
-const readNumberArg = (name: string): number | null => {
-  const equalsPrefix = `${name}=`;
-  const equalsArg = rawArgs.find((arg) => arg.startsWith(equalsPrefix));
-
-  if (equalsArg) {
-    return Number(equalsArg.slice(equalsPrefix.length));
-  }
-
-  const index = rawArgs.indexOf(name);
-  if (index === -1) {
-    return null;
-  }
-
-  return Number(rawArgs[index + 1]);
-};
-
-const refreshDays = readNumberArg("--refresh-days");
-const timeoutSeconds =
-  readNumberArg("--timeout-seconds") ?? defaultTimeoutSeconds;
+const refreshDaysArg = rawArgs.indexOf("--refresh-days");
+const refreshDays =
+  refreshDaysArg >= 0 ? Number(rawArgs[refreshDaysArg + 1]) : undefined;
 
 if (
-  refreshDays !== null &&
-  (!Number.isFinite(refreshDays) || refreshDays < 0)
+  refreshDaysArg >= 0 &&
+  (rawArgs[refreshDaysArg + 1] === undefined ||
+    !Number.isFinite(refreshDays) ||
+    refreshDays === undefined ||
+    refreshDays < 0)
 ) {
   throw new Error("--refresh-days must be a non-negative number.");
 }
 
-if (!Number.isFinite(timeoutSeconds) || timeoutSeconds <= 0) {
+const timeoutSecondsArg = rawArgs.indexOf("--timeout-seconds");
+const timeoutSeconds =
+  timeoutSecondsArg >= 0
+    ? Number(rawArgs[timeoutSecondsArg + 1])
+    : defaultTimeoutSeconds;
+
+if (
+  timeoutSecondsArg >= 0 &&
+  (rawArgs[timeoutSecondsArg + 1] === undefined ||
+    !Number.isFinite(timeoutSeconds) ||
+    timeoutSeconds <= 0)
+) {
   throw new Error("--timeout-seconds must be a positive number.");
 }
 
@@ -116,11 +109,10 @@ const fileAgeDays = (path: string): number => {
   return (Date.now() - mtimeMs) / (1000 * 60 * 60 * 24);
 };
 
-const escapeYaml = (value: string | number | null | undefined): string => {
-  return String(value ?? "")
+const escapeYaml = (value: string | number | null | undefined): string =>
+  String(value ?? "")
     .replace(/\\/g, "\\\\")
     .replace(/"/g, '\\"');
-};
 
 const sanitizeMarkdown = (markdown: string): string =>
   markdown.replace(/\n{3,}/g, "\n\n").trim();
@@ -131,7 +123,6 @@ const extensionFromContentType = (
   if (!contentType) return null;
   const [typePart] = contentType.split(";");
   const type = (typePart ?? "").trim().toLowerCase();
-
   const map: Record<string, string> = {
     "image/jpeg": ".jpg",
     "image/png": ".png",
@@ -149,15 +140,14 @@ const extensionFromUrl = (url: string): string | null => {
     const pathname = new URL(url).pathname;
     const ext = extname(pathname).toLowerCase();
     if (
-      [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".avif"].includes(ext)
+      ![".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".avif"].includes(ext)
     ) {
-      return ext === ".jpeg" ? ".jpg" : ext;
+      return null;
     }
+    return ext === ".jpeg" ? ".jpg" : ext;
   } catch {
-    // Ignore invalid image URLs.
+    return null;
   }
-
-  return null;
 };
 
 const fetchWithTimeout = async (
@@ -170,12 +160,12 @@ const fetchWithTimeout = async (
   try {
     return await fetch(url, {
       ...options,
-      signal: controller.signal,
+      signal: options.signal ?? controller.signal,
       headers: {
         "user-agent": "Mozilla/5.0 ai-agent-best-practices-content-archiver",
         accept:
           "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        ...(options.headers ?? {}),
+        ...options.headers,
       },
     });
   } finally {
@@ -185,10 +175,7 @@ const fetchWithTimeout = async (
 
 const shouldProcessContent = (
   outputPath: string,
-): {
-  process: boolean;
-  reason: string;
-} => {
+): { process: boolean; reason: string } => {
   if (!existsSync(outputPath)) {
     return { process: true, reason: "missing content file" };
   }
@@ -197,7 +184,7 @@ const shouldProcessContent = (
     return { process: true, reason: "overwrite requested" };
   }
 
-  if (refreshDays !== null) {
+  if (refreshDays !== undefined) {
     const ageDays = fileAgeDays(outputPath);
     if (ageDays >= refreshDays) {
       return {
@@ -215,12 +202,39 @@ const shouldProcessContent = (
   return { process: false, reason: "existing content file" };
 };
 
-const prepareArticleHtml = (document: Document): void => {
+export const loadArticleHtml = async (
+  row: ArticleRow,
+): Promise<{ html: string; sourceLabel: string }> => {
+  const localPath =
+    row.id && row.source
+      ? join(singlefileRoot, normalizeSource(row.source), `${row.id}.html`)
+      : null;
+
+  if (localPath && existsSync(localPath)) {
+    return {
+      html: readFileSync(localPath, "utf8"),
+      sourceLabel: relative(repoRoot, localPath),
+    };
+  }
+
+  if (!row.url) {
+    throw new Error(`Missing url for ${row.id}`);
+  }
+
+  const response = await fetchWithTimeout(row.url);
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status} ${response.statusText}`);
+  }
+
+  return { html: await response.text(), sourceLabel: row.url };
+};
+
+export const prepareArticleHtml = (document: Document): void => {
   document
     .querySelectorAll(
       "script, style, noscript, iframe, nav, header, footer, aside, form, button",
     )
-    .forEach((node: Element) => {
+    .forEach((node) => {
       node.remove();
     });
 
@@ -229,6 +243,7 @@ const prepareArticleHtml = (document: Document): void => {
       img.getAttribute("src") ||
       img.getAttribute("data-src") ||
       img.getAttribute("data-original");
+
     if (src) {
       img.setAttribute("src", src);
     }
@@ -236,6 +251,44 @@ const prepareArticleHtml = (document: Document): void => {
     img.removeAttribute("srcset");
     img.removeAttribute("sizes");
   });
+};
+
+const isHtmlElement = (node: Node): node is Element => {
+  return node.nodeType === 1;
+};
+
+export const configureTurndown = (): TurndownService => {
+  const turndown = new TurndownService({
+    headingStyle: "atx",
+    codeBlockStyle: "fenced",
+    bulletListMarker: "-",
+  });
+
+  turndown.keep(["table", "thead", "tbody", "tr", "th", "td"]);
+
+  turndown.addRule("fencedCodeWithLanguage", {
+    filter: (node: Node) =>
+      node.nodeName === "PRE" &&
+      isHtmlElement(node) &&
+      node.querySelector("code") !== null,
+    replacement: (_content: string, node: Node) => {
+      if (!isHtmlElement(node)) {
+        return "";
+      }
+
+      const code = node.querySelector("code");
+      if (!code) {
+        return "";
+      }
+
+      const className = code.getAttribute("class") || "";
+      const language = className.match(/language-([^\s]+)/)?.[1] || "";
+      const text = code.textContent?.replace(/\n$/, "") ?? "";
+      return `\n\n\`\`\`${language}\n${text}\n\`\`\`\n\n`;
+    },
+  });
+
+  return turndown;
 };
 
 const downloadImages = async (
@@ -250,8 +303,8 @@ const downloadImages = async (
   if (images.length === 0) return;
 
   ensureDir(assetsDir);
-  let index = 1;
 
+  let index = 1;
   for (const img of images) {
     const src = img.getAttribute("src");
     if (!src || src.startsWith("data:")) continue;
@@ -289,7 +342,6 @@ const downloadImages = async (
       const filename = `image-${String(index).padStart(3, "0")}${ext}`;
       const imagePath = join(assetsDir, filename);
       const bytes = Buffer.from(await response.arrayBuffer());
-
       writeFileSync(imagePath, bytes);
 
       const markdownRelativePath = relative(
@@ -308,42 +360,6 @@ const downloadImages = async (
   }
 };
 
-const configureTurndown = (): TurndownService => {
-  const turndown = new TurndownService({
-    headingStyle: "atx",
-    codeBlockStyle: "fenced",
-    bulletListMarker: "-",
-  });
-
-  turndown.keep(["table", "thead", "tbody", "tr", "th", "td"]);
-
-  turndown.addRule("fencedCodeWithLanguage", {
-    filter: (node: Node) => {
-      return (
-        node.nodeName === "PRE" &&
-        node instanceof HTMLElement &&
-        node.querySelector("code") !== null
-      );
-    },
-    replacement: (_content: string, node: Node) => {
-      if (!(node instanceof HTMLElement)) {
-        return "";
-      }
-
-      const code = node.querySelector("code");
-      if (!code) {
-        return "";
-      }
-
-      const className = code.getAttribute("class") || "";
-      const language = className.match(/language-([^\s]+)/)?.[1] || "";
-      return `\n\n\`\`\`${language}\n${code.textContent?.replace(/\n$/, "") ?? ""}\n\`\`\`\n\n`;
-    },
-  });
-
-  return turndown;
-};
-
 const saveArticle = async (row: ArticleRow): Promise<"saved" | "skipped"> => {
   const id = row.id.trim();
   const url = row.url?.trim();
@@ -359,34 +375,24 @@ const saveArticle = async (row: ArticleRow): Promise<"saved" | "skipped"> => {
   const relativeOutputPath = `archive/extracted/${sourceDir}/${id}.md`;
 
   const { process, reason } = shouldProcessContent(outputPath);
-  if (!process && !pendingOnly) {
-    console.log(`skip existing: ${relativeOutputPath} (${reason})`);
-    return "skipped";
-  }
-  if (!process && pendingOnly) {
+  if (!process) {
     console.log(`skip existing: ${relativeOutputPath} (${reason})`);
     return "skipped";
   }
 
   console.log(`${dryRun ? "would save" : "saving"}: ${url}`);
-  console.log(`  -> ${relativeOutputPath}`);
+  console.log(` -> ${relativeOutputPath}`);
 
-  if (dryRun) return "saved";
-
-  const response = await fetchWithTimeout(url);
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status} ${response.statusText}`);
+  if (dryRun) {
+    return "saved";
   }
 
-  const html = await response.text();
+  const { html } = await loadArticleHtml(row);
   const dom = new JSDOM(html, { url });
   prepareArticleHtml(dom.window.document);
 
-  const reader = new Readability(dom.window.document, {
-    keepClasses: false,
-  });
+  const reader = new Readability(dom.window.document, { keepClasses: false });
   const article = reader.parse();
-
   if (!article?.content) {
     throw new Error("Readability could not extract main content.");
   }
@@ -399,6 +405,9 @@ const saveArticle = async (row: ArticleRow): Promise<"saved" | "skipped"> => {
   const markdownBody = sanitizeMarkdown(
     turndown.turndown(articleDom.window.document.body.innerHTML),
   );
+
+  const dates = extractArticleDates(dom.window.document);
+
   const capturedAt = new Date().toISOString();
   const title = article.title || row.title || id;
   const byline = article.byline || "";
@@ -410,6 +419,8 @@ title: "${escapeYaml(title)}"
 url: "${escapeYaml(url)}"
 source: "${escapeYaml(row.source)}"
 category: "${escapeYaml(row.category)}"
+published_at: "${escapeYaml(dates.publishedAt)}"
+updated_at: "${escapeYaml(dates.updatedAt)}"
 captured_at: "${capturedAt}"
 byline: "${escapeYaml(byline)}"
 excerpt: "${escapeYaml(excerpt)}"
@@ -422,7 +433,6 @@ ${markdownBody}
 
   ensureDir(outputDir);
   writeFileSync(outputPath, markdown, "utf8");
-
   return "saved";
 };
 
@@ -433,6 +443,18 @@ const main = async (): Promise<void> => {
   let failed = 0;
 
   for (const row of rows) {
+    const status = String(row.status || "")
+      .trim()
+      .toLowerCase();
+    const shouldProcess = pendingOnly
+      ? status === "pending" || status === "failed" || status === ""
+      : true;
+
+    if (!shouldProcess) {
+      skipped += 1;
+      continue;
+    }
+
     try {
       const result = await saveArticle(row);
       if (result === "skipped") {
@@ -440,24 +462,21 @@ const main = async (): Promise<void> => {
       } else if (!dryRun) {
         saved += 1;
       }
-    } catch (error) {
+    } catch (error: unknown) {
       failed += 1;
       console.error(`failed: ${row.id} ${row.url}`);
       console.error(error instanceof Error ? error.message : String(error));
     }
   }
 
-  console.log("\nDone.");
   console.log(`saved: ${saved}`);
   console.log(`skipped: ${skipped}`);
   console.log(`failed: ${failed}`);
-
-  if (dryRun) {
-    console.log("Dry run only. No files were written.");
-  }
 };
 
-main().catch((error: unknown) => {
-  console.error(error instanceof Error ? error : String(error));
-  process.exit(1);
-});
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main().catch((error: unknown) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  });
+}

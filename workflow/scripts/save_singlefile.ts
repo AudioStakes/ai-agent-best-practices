@@ -4,6 +4,7 @@ import { spawn } from "node:child_process";
 import {
   existsSync,
   mkdirSync,
+  readFileSync,
   renameSync,
   rmSync,
   statSync,
@@ -11,8 +12,13 @@ import {
 } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { stringify } from "csv-stringify/sync";
-import { type ArticleRow, readArticles } from "./article_rows.js";
+import { JSDOM } from "jsdom";
+import {
+  extractArticleDates,
+  renderArticleDatesComment,
+  stripLeadingArticleDatesComment,
+} from "./article_dates.js";
+import { readArticles } from "./article_rows.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "../..");
@@ -35,56 +41,46 @@ const usage = (): void => {
   console.log(`Usage: tsx workflow/scripts/save_singlefile.ts [options]
 
 Options:
-  --dry-run                   Show what would be saved without downloading pages.
-  --overwrite                 Re-save pages even when the output file already exists.
-  --refresh-days <days>       Re-save an existing file when it is older than this many days.
-  --timeout-seconds <seconds> Skip a page when SingleFile takes longer than this. Default: ${defaultTimeoutSeconds}.
-  --all                       Save all rows, not only rows whose status is pending or failed.
-
-Examples:
-  npm run save:singlefile
-  tsx workflow/scripts/save_singlefile.ts --all --refresh-days 30
-  tsx workflow/scripts/save_singlefile.ts --all --timeout-seconds 300
-  tsx workflow/scripts/save_singlefile.ts --all --overwrite
-
-Output:
-  archive/singlefile/<source>/<id>.html
+  --dry-run             Show what would be saved without downloading pages.
+  --overwrite           Re-save pages even when the output file already exists.
+  --refresh-days <days> Re-save an existing file when it is older than this many days.
+  --timeout-seconds <n> Timeout for SingleFile downloads (default: ${defaultTimeoutSeconds}).
+  --all                 Save all rows, not only rows whose status is pending or failed.
+  -h, --help            Show this help message.
 `);
 };
 
-if (args.has("--help") || args.has("-h")) {
+if (args.has("-h") || args.has("--help")) {
   usage();
   process.exit(0);
 }
 
-const readNumberArg = (name: string): number | null => {
-  const equalsPrefix = `${name}=`;
-  const equalsArg = rawArgs.find((arg) => arg.startsWith(equalsPrefix));
-
-  if (equalsArg) {
-    return Number(equalsArg.slice(equalsPrefix.length));
-  }
-
-  const index = rawArgs.indexOf(name);
-  if (index === -1) {
-    return null;
-  }
-
-  return Number(rawArgs[index + 1]);
-};
-
-const refreshDays = readNumberArg("--refresh-days");
-const timeoutSeconds =
-  readNumberArg("--timeout-seconds") ?? defaultTimeoutSeconds;
+const refreshDaysArg = rawArgs.indexOf("--refresh-days");
+const refreshDays =
+  refreshDaysArg >= 0 ? Number(rawArgs[refreshDaysArg + 1]) : undefined;
 
 if (
-  refreshDays !== null &&
-  (!Number.isFinite(refreshDays) || refreshDays < 0)
+  refreshDaysArg >= 0 &&
+  (rawArgs[refreshDaysArg + 1] === undefined ||
+    !Number.isFinite(refreshDays) ||
+    refreshDays === undefined ||
+    refreshDays < 0)
 ) {
   throw new Error("--refresh-days must be a non-negative number.");
 }
 
-if (!Number.isFinite(timeoutSeconds) || timeoutSeconds <= 0) {
+const timeoutSecondsArg = rawArgs.indexOf("--timeout-seconds");
+const timeoutSeconds =
+  timeoutSecondsArg >= 0
+    ? Number(rawArgs[timeoutSecondsArg + 1])
+    : defaultTimeoutSeconds;
+
+if (
+  timeoutSecondsArg >= 0 &&
+  (rawArgs[timeoutSecondsArg + 1] === undefined ||
+    !Number.isFinite(timeoutSeconds) ||
+    timeoutSeconds <= 0)
+) {
   throw new Error("--timeout-seconds must be a positive number.");
 }
 
@@ -107,6 +103,11 @@ const removeFileIfExists = (path: string): void => {
     rmSync(path, { force: true });
   }
 };
+
+const sleep = (milliseconds: number): Promise<void> =>
+  new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
 
 const fileAgeDays = (path: string): number => {
   const { mtimeMs } = statSync(path);
@@ -134,7 +135,6 @@ const run = (
         `timeout: ${command} exceeded ${(timeoutMs / 1000).toFixed(0)} seconds`,
       );
       child.kill("SIGTERM");
-
       setTimeout(() => {
         if (!settled) {
           child.kill("SIGKILL");
@@ -160,48 +160,31 @@ const run = (
             `${command} timed out after ${(timeoutMs / 1000).toFixed(0)} seconds`,
           ),
         );
-      } else if (code === 0) {
-        resolve();
-      } else if (signal) {
-        reject(new Error(`${command} exited with signal ${signal}`));
-      } else {
-        reject(new Error(`${command} exited with code ${code}`));
+        return;
       }
+
+      if (code === 0) {
+        resolve();
+        return;
+      }
+
+      if (signal) {
+        reject(new Error(`${command} exited with signal ${signal}`));
+        return;
+      }
+
+      reject(new Error(`${command} exited with code ${code}`));
     });
   });
 
-const writeArticles = (rows: ArticleRow[]): void => {
-  const columns = [
-    "id",
-    "title",
-    "url",
-    "source",
-    "category",
-    "status",
-    "captured_at",
-    "markdown_path",
-    "raw_path",
-  ];
-
-  const csv = stringify(rows, {
-    header: true,
-    columns,
-  });
-
-  writeFileSync(csvPath, csv, "utf8");
-};
-
 const shouldRefreshExistingFile = (
   outputPath: string,
-): {
-  refresh: boolean;
-  reason: string;
-} => {
+): { refresh: boolean; reason: string } => {
   if (overwrite) {
     return { refresh: true, reason: "overwrite requested" };
   }
 
-  if (refreshDays === null) {
+  if (refreshDays === undefined) {
     return { refresh: false, reason: "existing file" };
   }
 
@@ -219,8 +202,13 @@ const shouldRefreshExistingFile = (
   };
 };
 
-const saveArticle = async (row: ArticleRow): Promise<"saved" | "skipped"> => {
-  const id = row.id?.trim();
+const saveArticle = async (row: {
+  id: string;
+  url?: string;
+  source?: string;
+  title?: string;
+}): Promise<"saved" | "skipped"> => {
+  const id = row.id.trim();
   const url = row.url?.trim();
   const sourceDir = normalizeSource(row.source);
 
@@ -235,49 +223,87 @@ const saveArticle = async (row: ArticleRow): Promise<"saved" | "skipped"> => {
 
   if (existsSync(outputPath)) {
     const { refresh, reason } = shouldRefreshExistingFile(outputPath);
-
     if (!refresh) {
-      console.log(`skip existing: ${relativeOutputPath} (${reason})`);
-      row.status = row.status || "saved";
-      row.raw_path = row.raw_path || relativeOutputPath;
+      console.log(`skip ${reason}: ${relativeOutputPath}`);
       return "skipped";
     }
-
-    console.log(`refresh existing: ${relativeOutputPath} (${reason})`);
   }
 
   console.log(`${dryRun ? "would save" : "saving"}: ${url}`);
-  console.log(`  -> ${relativeOutputPath}`);
+  console.log(` -> ${relativeOutputPath}`);
 
   if (dryRun) {
     return "saved";
   }
 
   ensureDir(outputDir);
-  removeFileIfExists(tempOutputPath);
+  const maxAttempts = 5;
+  let lastError: unknown;
 
-  try {
-    await run("npx", ["single-file", url, tempOutputPath], {
-      timeoutMs: timeoutSeconds * 1000,
-    });
-
-    if (!existsSync(tempOutputPath)) {
-      throw new Error(
-        `SingleFile finished but did not create output: ${tempOutputPath}`,
-      );
-    }
-
-    renameSync(tempOutputPath, outputPath);
-  } catch (error) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     removeFileIfExists(tempOutputPath);
-    throw error;
+
+    try {
+      await run(
+        "npx",
+        [
+          "single-file",
+          url,
+          tempOutputPath,
+          "--browser-load-max-time",
+          String(Math.max(timeoutSeconds * 1000, 120000)),
+          "--browser-capture-max-time",
+          String(Math.max(timeoutSeconds * 1000, 120000)),
+        ],
+        {
+          timeoutMs: timeoutSeconds * 1000,
+        },
+      );
+
+      if (!existsSync(tempOutputPath)) {
+        throw new Error(
+          `SingleFile finished but did not create output: ${tempOutputPath}`,
+        );
+      }
+
+      renameSync(tempOutputPath, outputPath);
+
+      const html = readFileSync(outputPath, "utf8");
+      const dom = new JSDOM(html, { url });
+      const dates = extractArticleDates(dom.window.document);
+      const comment = renderArticleDatesComment(dates);
+      if (comment) {
+        writeFileSync(
+          outputPath,
+          `${comment}${stripLeadingArticleDatesComment(html)}`,
+          "utf8",
+        );
+      }
+
+      return "saved";
+    } catch (error: unknown) {
+      lastError = error;
+      removeFileIfExists(tempOutputPath);
+
+      if (attempt < maxAttempts) {
+        console.log(
+          `retry ${attempt}/${maxAttempts} after error for ${row.id}: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+        await sleep(1000 * attempt);
+        continue;
+      }
+
+      throw error;
+    } finally {
+      removeFileIfExists(tempOutputPath);
+    }
   }
 
-  row.status = "saved";
-  row.captured_at = new Date().toISOString();
-  row.raw_path = relativeOutputPath;
-
-  return "saved";
+  throw lastError instanceof Error
+    ? lastError
+    : new Error(`Failed to save ${url}`);
 };
 
 const main = async (): Promise<void> => {
@@ -308,27 +334,19 @@ const main = async (): Promise<void> => {
       }
     } catch (error: unknown) {
       failed += 1;
-      row.status = "failed";
       console.error(`failed: ${row.id} ${row.url}`);
       console.error(error instanceof Error ? error.message : String(error));
     }
   }
 
-  if (!dryRun) {
-    writeArticles(rows);
-  }
-
-  console.log("\nDone.");
   console.log(`saved: ${saved}`);
   console.log(`skipped: ${skipped}`);
   console.log(`failed: ${failed}`);
-
-  if (dryRun) {
-    console.log("Dry run only. No files were written.");
-  }
 };
 
-main().catch((error: unknown) => {
-  console.error(error instanceof Error ? error : String(error));
-  process.exit(1);
-});
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main().catch((error: unknown) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  });
+}

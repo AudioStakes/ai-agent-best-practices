@@ -181,6 +181,132 @@ test.describe
       expect(script).toContain("closePopup");
     });
 
+    test("tag guide review overlay stays hidden until opened and saves on backdrop click", async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.goto(
+        `${server.url}tag-guides/11-markdown-code-block-gallery.html`,
+      );
+
+      await expect(
+        page.locator('script[src*="html-review.js?v="]'),
+      ).toHaveCount(1);
+      await expect(page.locator(".html-review-launcher")).toBeHidden();
+      await expect(page.locator(".html-review-overlay")).toBeHidden();
+
+      const firstReviewable = page.locator('[data-reviewable="true"]').first();
+      const box = await firstReviewable.boundingBox();
+      expect(box).not.toBeNull();
+
+      const hit = await page.evaluate(
+        ({ x, y }) => {
+          const element = document.elementFromPoint(x, y);
+          return element
+            ? {
+                className: element.className,
+                tagName: element.tagName,
+              }
+            : null;
+        },
+        { x: box.x + box.width / 2, y: box.y + box.height / 2 },
+      );
+
+      expect(hit?.tagName).toBe("H1");
+
+      await firstReviewable.click();
+      await expect(page.locator(".html-review-overlay")).toBeVisible();
+      await expect(page.locator(".html-review-input")).toBeVisible();
+
+      await page.locator(".html-review-input").fill("Saved by backdrop click");
+      await page
+        .locator(".html-review-overlay")
+        .click({ position: { x: 8, y: 8 } });
+
+      await expect(page.locator(".html-review-overlay")).toBeHidden();
+
+      const comments = await page.evaluate(() =>
+        JSON.parse(window.localStorage.getItem("html-review-comments") ?? "[]"),
+      );
+
+      expect(comments).toHaveLength(1);
+      expect(comments[0].text).toBe("Saved by backdrop click");
+    });
+
+    test("enter key saves comment from the editor", async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.goto(
+        `${server.url}tag-guides/11-markdown-code-block-gallery.html`,
+      );
+
+      const firstReviewable = page.locator('[data-reviewable="true"]').first();
+      await firstReviewable.click();
+
+      const input = page.locator(".html-review-input");
+      await expect(input).toBeVisible();
+      await input.fill("Saved with Enter");
+      await input.press("Enter");
+
+      await expect(page.locator(".html-review-overlay")).toBeHidden();
+
+      const comments = await page.evaluate(() =>
+        JSON.parse(window.localStorage.getItem("html-review-comments") ?? "[]"),
+      );
+
+      expect(comments).toHaveLength(1);
+      expect(comments[0].text).toBe("Saved with Enter");
+    });
+
+    test("copy all includes a line-to-comment explanation by default", async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.addInitScript(() => {
+        window.__copiedText = null;
+        Object.defineProperty(navigator, "clipboard", {
+          configurable: true,
+          value: {
+            writeText: async (text) => {
+              window.__copiedText = text;
+            },
+          },
+        });
+      });
+      await page.goto(
+        `${server.url}tag-guides/11-markdown-code-block-gallery.html`,
+      );
+
+      await page.evaluate(() => {
+        window.localStorage.setItem(
+          "html-review-comments",
+          JSON.stringify([
+            {
+              createdAt: 1,
+              endLine: 12,
+              id: "comment-1",
+              sourcePath: "content/tag-guides/example.md",
+              startLine: 10,
+              text: "First note",
+            },
+          ]),
+        );
+      });
+
+      await page.reload();
+      await page.locator(".html-review-launcher").click();
+      await page.locator(".html-review-copy").click();
+
+      const copiedText = await page.evaluate(() => window.__copiedText);
+
+      expect(copiedText).toContain(
+        "各コメントは、ファイル名と行番号の対応が分かる形式で表示しています。",
+      );
+      expect(copiedText).toContain("範囲コメントは開始行-終了行の形式です。");
+      expect(copiedText).toContain("## `content/tag-guides/example.md`");
+      expect(copiedText).toContain("`10-12`");
+      expect(copiedText).toContain("First note");
+    });
+
     test("mobile term popups open once and second tap follows the glossary link", async ({
       browser,
     }) => {

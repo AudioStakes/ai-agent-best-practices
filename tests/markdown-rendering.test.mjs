@@ -6,7 +6,10 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { expect, test } from "@playwright/test";
 import { JSDOM } from "jsdom";
-import { markdownToHtml } from "../workflow/scripts/markdown_to_html.ts";
+import {
+  markdownToHtml,
+  markdownToHtmlWithSourceMetadata,
+} from "../workflow/scripts/markdown_to_html.ts";
 
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(testDir, "..");
@@ -22,6 +25,11 @@ const renderMarkdownFileScript = path.join(
 
 async function renderDocument(markdown) {
   const html = await markdownToHtml(markdown);
+  return new JSDOM(html).window.document;
+}
+
+async function renderDocumentWithMetadata(markdown, sourcePath) {
+  const html = await markdownToHtmlWithSourceMetadata(markdown, sourcePath);
   return new JSDOM(html).window.document;
 }
 
@@ -110,6 +118,42 @@ console.log("hello");
   expect(document.querySelector("blockquote")?.textContent).toContain(
     "Quoted line",
   );
+});
+
+test("markdownToHtmlWithSourceMetadata annotates reviewable blocks with source positions", async () => {
+  const markdown = `# Heading
+
+Paragraph text.
+
+> Quoted line
+
+- List item
+
+\`\`\`js
+console.log("hello");
+\`\`\`
+`;
+
+  const document = await renderDocumentWithMetadata(
+    markdown,
+    "content/tag-guides/sample.md",
+  );
+
+  const h1 = document.querySelector("h1");
+  const paragraph = document.querySelector("p");
+  const blockquote = document.querySelector("blockquote");
+  const listItem = document.querySelector("li");
+  const pre = document.querySelector("pre");
+
+  expect(h1?.getAttribute("data-reviewable")).toBe("true");
+  expect(h1?.getAttribute("data-source-path")).toBe(
+    "content/tag-guides/sample.md",
+  );
+  expect(h1?.getAttribute("data-source-start-line")).toBe("1");
+  expect(paragraph?.getAttribute("data-reviewable")).toBe("true");
+  expect(blockquote?.getAttribute("data-reviewable")).toBe("true");
+  expect(listItem?.getAttribute("data-reviewable")).toBe("true");
+  expect(pre?.getAttribute("data-reviewable")).toBe("true");
 });
 
 test("GitHub Markdown style guide renders into the expected DOM", async () => {

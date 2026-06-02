@@ -71,7 +71,7 @@ const transpileBrowserScript = (
   const source = readFileSync(sourcePath, "utf8");
   const compilerOptions = {
     target: ScriptTarget.ES2022,
-    module: ModuleKind.NodeNext,
+    module: ModuleKind.ES2022,
   } satisfies CompilerOptions;
 
   const result = transpileModule(source, {
@@ -106,6 +106,10 @@ const copySiteAssets = (distDir: string): void => {
   transpileBrowserScript(
     join(repoRoot, "site/scripts/term-popup.ts"),
     join(distDir, "site/scripts/term-popup.js"),
+  );
+  transpileBrowserScript(
+    join(repoRoot, "site/scripts/html-review.ts"),
+    join(distDir, "site/scripts/html-review.js"),
   );
 };
 

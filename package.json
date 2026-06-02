@@ -24,7 +24,9 @@
     "build:tag-guides": "tsx workflow/scripts/build_tag_guides_html.ts",
     "render:github-markdown-style-guide": "tsx workflow/scripts/render_markdown_file.ts workflow/guides/github-markdown-style-guide.md dist/github-markdown-style-guide.html",
     "build:root": "tsx workflow/scripts/build_root_pages.ts",
-    "build:assets": "tsx workflow/scripts/package_dist_assets.ts"
+    "build:assets": "tsx workflow/scripts/package_dist_assets.ts",
+    "backfill:article-dates": "tsx workflow/scripts/backfill_article_dates.ts",
+    "backfill:article-dates:dry-run": "tsx workflow/scripts/backfill_article_dates.ts --dry-run"
   },
   "devDependencies": {
     "@biomejs/biome": "latest",

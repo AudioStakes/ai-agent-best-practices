@@ -9,6 +9,11 @@ export type ArticleRow = {
   url?: string;
   source?: string;
   category?: string;
+  source_type?: string;
+  initial_tags?: string;
+  relevance?: string;
+  priority?: string;
+  notes?: string;
   status?: string;
   captured_at?: string;
   markdown_path?: string;
@@ -18,10 +23,6 @@ export type ArticleRow = {
 type RawRow = Record<string, unknown>;
 
 const toStringValue = (value: unknown): string | undefined => {
-  if (typeof value === "string") {
-    return value;
-  }
-
   if (value === undefined || value === null) {
     return undefined;
   }
@@ -35,6 +36,7 @@ const requireString = (
   rowIndex: number,
 ): string => {
   const normalized = toStringValue(value)?.trim();
+
   if (!normalized) {
     throw new Error(`Invalid ${label} in articles.csv row ${rowIndex + 1}`);
   }
@@ -66,33 +68,71 @@ export const readArticles = (csvPath: string): ArticleRow[] => {
       throw new Error(`Invalid article row ${index + 1} in ${csvPath}`);
     }
 
-    const articleRow: ArticleRow = {
-      id: requireString(row.id, "id", index),
-    };
+    const id = requireString(row.id, "id", index);
+    const articleRow: ArticleRow = { id };
 
     const title = toStringValue(row.title);
-    if (title !== undefined) articleRow.title = title;
+    if (title !== undefined) {
+      articleRow.title = title;
+    }
 
     const url = toStringValue(row.url);
-    if (url !== undefined) articleRow.url = url;
+    if (url !== undefined) {
+      articleRow.url = url;
+    }
 
-    const source = toStringValue(row.source);
-    if (source !== undefined) articleRow.source = source;
+    const source = toStringValue(row.source) ?? toStringValue(row.provider);
+    if (source !== undefined) {
+      articleRow.source = source;
+    }
 
     const category = toStringValue(row.category);
-    if (category !== undefined) articleRow.category = category;
+    if (category !== undefined) {
+      articleRow.category = category;
+    }
+
+    const sourceType = toStringValue(row.source_type);
+    if (sourceType !== undefined) {
+      articleRow.source_type = sourceType;
+    }
+
+    const initialTags = toStringValue(row.initial_tags);
+    if (initialTags !== undefined) {
+      articleRow.initial_tags = initialTags;
+    }
+
+    const relevance = toStringValue(row.relevance);
+    if (relevance !== undefined) {
+      articleRow.relevance = relevance;
+    }
+
+    const priority = toStringValue(row.priority);
+    if (priority !== undefined) {
+      articleRow.priority = priority;
+    }
+
+    const notes = toStringValue(row.notes);
+    if (notes !== undefined) {
+      articleRow.notes = notes;
+    }
 
     const status = toStringValue(row.status);
-    if (status !== undefined) articleRow.status = status;
+    articleRow.status = status?.trim() || "pending";
 
     const capturedAt = toStringValue(row.captured_at);
-    if (capturedAt !== undefined) articleRow.captured_at = capturedAt;
+    if (capturedAt !== undefined) {
+      articleRow.captured_at = capturedAt;
+    }
 
     const markdownPath = toStringValue(row.markdown_path);
-    if (markdownPath !== undefined) articleRow.markdown_path = markdownPath;
+    if (markdownPath !== undefined) {
+      articleRow.markdown_path = markdownPath;
+    }
 
     const rawPath = toStringValue(row.raw_path);
-    if (rawPath !== undefined) articleRow.raw_path = rawPath;
+    if (rawPath !== undefined) {
+      articleRow.raw_path = rawPath;
+    }
 
     return articleRow;
   });

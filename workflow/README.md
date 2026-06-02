@@ -23,17 +23,19 @@ npm run save:singlefile:dry-run
 npm run save:singlefile
 ```
 
-`sources/articles.csv` を読み込み、`status` が `pending` または `failed` の記事を次の形式で保存します。
+`sources/articles.csv` を読み込み、保存対象の記事を次の形式で保存します。
+
+`archive/singlefile/<source>/<id>.html` があればそれを優先し、なければ元 URL を取得します。
+
+保存した Markdown には `published_at` と `updated_at` を frontmatter に入れます。保存した SingleFile HTML には同じ日時を先頭コメントとして埋め込みます。
+
+既存の `archive/extracted/*.md` と `archive/singlefile/*.html` に後から日時を埋め直す場合は、`npm run backfill:article-dates` を使えます。
 
 ```text
 archive/singlefile/<source>/<id>.html
 ```
 
-保存が成功すると、`sources/articles.csv` の次の列を更新します。
-
-- `status`: `saved`
-- `captured_at`: 保存日時
-- `raw_path`: 保存した SingleFile HTML の相対パス
+このコマンドは `sources/articles.csv` を更新しません。`status` が入っている行はその値を使い、未設定の行は保存対象として扱います。
 
 ## メインコンテンツを Markdown として保存する
 
@@ -116,6 +118,8 @@ npm run build:assets
 ## 保存済み SingleFile を一覧表示する
 
 `npm run save:singlefile` を実行すると、保存処理のあとに次の一覧ページが生成されます。
+
+保存した SingleFile HTML の先頭には `published_at` と `updated_at` のコメントを埋め込みます。
 
 ```text
 archive/singlefile/index.html
