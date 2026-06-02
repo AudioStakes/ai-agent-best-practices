@@ -254,7 +254,7 @@ export const prepareArticleHtml = (document: Document): void => {
 };
 
 const isHtmlElement = (node: Node): node is Element => {
-  return node.nodeType === Node.ELEMENT_NODE;
+  return node.nodeType === 1;
 };
 
 export const configureTurndown = (): TurndownService => {

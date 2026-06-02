@@ -514,14 +514,14 @@ const openEditor = (target: HTMLElement): void => {
 
 launcher.addEventListener("click", openList);
 
-  overlay.addEventListener("click", (event: MouseEvent) => {
-    if (event.target === overlay) {
-      if (clickActiveSaveButton()) {
-        return;
-      }
-      closeDialog();
+overlay.addEventListener("click", (event: MouseEvent) => {
+  if (event.target === overlay) {
+    if (clickActiveSaveButton()) {
+      return;
     }
-  });
+    closeDialog();
+  }
+});
 
 document.addEventListener("keydown", (event: KeyboardEvent) => {
   if (event.key === "Escape" && dialogState.mode !== "hidden") {
@@ -545,17 +545,17 @@ document.addEventListener("click", (event: MouseEvent) => {
     return;
   }
 
-    const draft = getReviewDraft(reviewable);
-    if (!draft) {
-      return;
-    }
+  const draft = getReviewDraft(reviewable);
+  if (!draft) {
+    return;
+  }
 
-    event.preventDefault();
-    if (dialogState.mode === "editor" && clickActiveSaveButton()) {
-      return;
-    }
-    openEditor(reviewable);
-  });
+  event.preventDefault();
+  if (dialogState.mode === "editor" && clickActiveSaveButton()) {
+    return;
+  }
+  openEditor(reviewable);
+});
 
 updateLauncher();
 
